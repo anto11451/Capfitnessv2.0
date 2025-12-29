@@ -34,11 +34,13 @@ const plans: PricingPlan[] = [
   {
     name: "Platform Access",
     price: "₹499",
-    period: "/ month",
+    period: "/2 Weeks",
     description:
       "Full access to Cap’s Fitness platform for self-driven users.",
     features: [
       "Save & track progress",
+      "Basic Diet plan"
+      "Basic workout plan"
       "Workout & nutrition logging",
       "Streak tracking",
       "Progress analytics",
@@ -49,7 +51,7 @@ const plans: PricingPlan[] = [
   },
   {
     name: "4-Week Coaching + Platform",
-    price: "₹1,499",
+    price: "1299",
     period: "/ 4 weeks",
     description:
       "Personal coaching combined with full platform access.",
