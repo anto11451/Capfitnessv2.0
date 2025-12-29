@@ -47,6 +47,11 @@ export default function StreakPage() {
     lastLogDate: new Date().toISOString()
   });
   const [loading, setLoading] = useState(true);
+  const [selectedDay, setSelectedDay] = useState<{ date: Date, log: DayLog | undefined } | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
 
   // Load data from Google Sheets
   useEffect(() => {
@@ -193,6 +198,16 @@ export default function StreakPage() {
     }
   };
 
+
+  // Generate last 30 days for calendar
+  const calendarDays = useMemo(() => {
+    return Array.from({ length: 30 }, (_, i) => {
+      const date = subDays(new Date(), 29 - i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const log = streakData.history.find(h => h.date === dateStr);
+      return { date, log };
+    });
+  }, [streakData.history]);
 
   // Calculate Display Stats
   const daysRecorded = streakData.history.length;
