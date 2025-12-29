@@ -165,9 +165,10 @@ export default function LandingPage() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
-              <p className="neon-glow bg-primary hover:bg-primary/90 text-lg px-8 py-6">
+           <p className="neon-glow bg-primary hover:bg-primary/90 text-black/90 text-lg px-8 py-6">
   One-to-One Online Coaching
 </p>
+
 
               
             </motion.div>
