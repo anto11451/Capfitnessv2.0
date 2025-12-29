@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { AlertTriangle, Target, TrendingDown, Clock } from 'lucide-react';
 import { format, differenceInDays, parseISO, addWeeks } from 'date-fns';
 import { useAuth } from '@/App';
+import { getUserProgress, submitProgress } from '@/lib/googleSheetsApi';
 
 const WEIGHT_HISTORY_KEY_PREFIX = 'capsfitness_weight_history_';
 
@@ -40,55 +41,68 @@ export default function ProgressPage() {
   }, [user?.programEndDate]);
   
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [newWeight, setNewWeight] = useState('');
-  
-  const userStorageKey = useMemo(() => {
-    return user?.email ? `${WEIGHT_HISTORY_KEY_PREFIX}${user.email}` : null;
-  }, [user?.email]);
-  
+
+  // Load data from Google Sheets
   useEffect(() => {
-    if (!user || !userStorageKey) {
-      setWeightHistory([]);
-      return;
-    }
-    
-    const stored = localStorage.getItem(userStorageKey);
-    if (stored) {
-      setWeightHistory(JSON.parse(stored));
-    } else {
-      const initialHistory: WeightEntry[] = [
-        { date: format(programStart, 'yyyy-MM-dd'), weight: user.startingWeight }
-      ];
-      if (user.currentWeight !== user.startingWeight) {
-        initialHistory.push({ date: format(new Date(), 'yyyy-MM-dd'), weight: user.currentWeight });
+    async function loadData() {
+      if (!user?.id) return;
+      try {
+        setLoading(true);
+        const progress = await getUserProgress(user.id);
+        if (progress) {
+          const history: WeightEntry[] = progress
+            .filter(p => p.weight_kg !== undefined)
+            .map(p => ({
+              date: p.date,
+              weight: p.weight_kg!
+            }));
+          
+          if (history.length === 0 && user.startingWeight) {
+             history.push({ date: format(programStart, 'yyyy-MM-dd'), weight: user.startingWeight });
+          }
+          
+          history.sort((a, b) => a.date.localeCompare(b.date));
+          setWeightHistory(history);
+        }
+      } catch (error) {
+        console.error("Failed to load progress data:", error);
+      } finally {
+        setLoading(false);
       }
-      setWeightHistory(initialHistory);
-      localStorage.setItem(userStorageKey, JSON.stringify(initialHistory));
     }
-  }, [user, userStorageKey, programStart]);
-  
-  const handleAddWeight = () => {
-    if (!userStorageKey) return;
+    loadData();
+  }, [user?.id, programStart]);
+
+  const handleAddWeight = async () => {
+    if (!user?.id) return;
     
     const weight = parseFloat(newWeight);
     if (!isNaN(weight) && weight > 0) {
       const today = format(new Date(), 'yyyy-MM-dd');
-      const existingIndex = weightHistory.findIndex(e => e.date === today);
-      let updatedHistory: WeightEntry[];
       
-      if (existingIndex >= 0) {
-        updatedHistory = [...weightHistory];
-        updatedHistory[existingIndex].weight = weight;
-      } else {
-        updatedHistory = [...weightHistory, { date: today, weight }];
+      try {
+        const result = await submitProgress(user.id, today, { weight });
+        if (result?.ok) {
+          setWeightHistory(prev => {
+            const updated = [...prev];
+            const existingIndex = updated.findIndex(e => e.date === today);
+            if (existingIndex >= 0) {
+              updated[existingIndex].weight = weight;
+            } else {
+              updated.push({ date: today, weight });
+            }
+            return updated.sort((a, b) => a.date.localeCompare(b.date));
+          });
+          setNewWeight('');
+        }
+      } catch (error) {
+        console.error("Failed to submit progress:", error);
       }
-      
-      updatedHistory.sort((a, b) => a.date.localeCompare(b.date));
-      setWeightHistory(updatedHistory);
-      localStorage.setItem(userStorageKey, JSON.stringify(updatedHistory));
-      setNewWeight('');
     }
   };
+
   
   const chartData = useMemo(() => {
     return weightHistory.map((entry, index) => ({

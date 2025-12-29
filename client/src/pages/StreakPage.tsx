@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, CheckCircle, XCircle, Calendar as CalendarIcon, Trophy, Coffee, Edit3, CheckSquare, Square } from 'lucide-react';
+import { Flame, CheckCircle, XCircle, Calendar as CalendarIcon, Trophy, Coffee, Edit3, CheckSquare, Square, Dumbbell as DumbbellIcon, Utensils as UtensilsIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, subDays, isSameDay, parseISO, isToday } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/App';
+import { getUserStreaks, updateStreak } from '@/lib/googleSheetsApi';
 
 interface DayLog {
   date: string;
@@ -39,264 +40,159 @@ export default function StreakPage() {
     return [];
   };
   
-  const [streakData, setStreakData] = useState<StreakState>(() => {
-    const storedHistory = loadHistoryFromStorage();
-    return {
-      currentStreak: user?.currentStreak || 0,
-      longestStreak: user?.currentStreak || 0,
-      history: storedHistory,
-      lastLogDate: new Date().toISOString()
-    };
+  const [streakData, setStreakData] = useState<StreakState>({
+    currentStreak: 0,
+    longestStreak: 0,
+    history: [],
+    lastLogDate: new Date().toISOString()
   });
-  const [selectedDay, setSelectedDay] = useState<{ date: Date, log: DayLog | undefined } | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isBulkMode, setIsBulkMode] = useState(false);
-  const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
-  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const calculateStreak = (history: DayLog[]): { current: number; longest: number } => {
-    if (history.length === 0) {
-      return { current: user?.currentStreak || 0, longest: user?.currentStreak || 0 };
-    }
-    
-    const sortedHistory = [...history].sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-    let streakBroken = false;
-    
-    for (let i = 0; i < 365; i++) {
-      const checkDate = subDays(today, i);
-      const dateStr = format(checkDate, 'yyyy-MM-dd');
-      const log = sortedHistory.find(h => h.date === dateStr);
-      
-      const isValidDay = log && (log.isRestDay || (log.workoutDone && log.dietDone));
-      
-      if (isValidDay) {
-        tempStreak++;
-      } else {
-        longestStreak = Math.max(longestStreak, tempStreak);
-        if (!streakBroken) {
-          currentStreak = tempStreak;
-          streakBroken = true;
+  // Load data from Google Sheets
+  useEffect(() => {
+    async function loadData() {
+      if (!user?.id) return;
+      try {
+        setLoading(true);
+        const streaks = await getUserStreaks(user.id);
+        if (streaks && streaks.length > 0) {
+          const history: DayLog[] = streaks.map(s => ({
+            date: s.date,
+            workoutDone: s.workout_done,
+            dietDone: s.diet_done,
+            isRestDay: s.rest_day
+          }));
+          
+          const { current, longest } = calculateStreak(history);
+          setStreakData({
+            currentStreak: current,
+            longestStreak: longest,
+            history: history,
+            lastLogDate: new Date().toISOString()
+          });
         }
-        tempStreak = 0;
+      } catch (error) {
+        console.error("Failed to load streak data:", error);
+      } finally {
+        setLoading(false);
       }
     }
-    
-    longestStreak = Math.max(longestStreak, tempStreak);
-    if (!streakBroken) {
-      currentStreak = tempStreak;
-    }
-    
-    return { current: currentStreak, longest: longestStreak };
-  };
+    loadData();
+  }, [user?.id]);
 
-  useEffect(() => {
-    localStorage.setItem(STREAK_HISTORY_KEY, JSON.stringify(streakData.history));
-    
-    const { current, longest } = calculateStreak(streakData.history);
-    
-    if (current !== streakData.currentStreak || longest !== streakData.longestStreak) {
-      setStreakData(prev => ({
-        ...prev,
-        currentStreak: current,
-        longestStreak: longest
-      }));
-    }
-    
-    if (current !== user?.currentStreak) {
-      updateStreak(current);
-    }
-  }, [streakData.history]);
-
-  // Generate last 30 days for calendar
-  const calendarDays = Array.from({ length: 30 }, (_, i) => {
-    const date = subDays(new Date(), 29 - i);
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const log = streakData.history.find(h => h.date === dateStr);
-    return { date, log };
-  });
-
-  const handleLog = (type: 'workout' | 'diet' | 'rest') => {
+  const handleLog = async (type: 'workout' | 'diet' | 'rest') => {
+    if (!user?.id) return;
     const today = format(new Date(), 'yyyy-MM-dd');
     
-    setStreakData(prev => {
-      const existingLogIndex = prev.history.findIndex(h => h.date === today);
-      let newHistory = [...prev.history];
-      
-      if (existingLogIndex >= 0) {
-        const log = { ...newHistory[existingLogIndex] };
-        if (type === 'rest') {
-          log.isRestDay = !log.isRestDay;
-          // If rest day is active, clear other flags? Or keep them?
-          // User said "Count as a valid day without requiring workout or diet"
-        } else if (type === 'workout') {
-          log.workoutDone = !log.workoutDone;
-          log.isRestDay = false; // Disable rest if logging activity
-        } else if (type === 'diet') {
-          log.dietDone = !log.dietDone;
-          log.isRestDay = false;
-        }
-        newHistory[existingLogIndex] = log;
-      } else {
-        // Create new log
-        newHistory.push({
-          date: today,
-          workoutDone: type === 'workout',
-          dietDone: type === 'diet',
-          isRestDay: type === 'rest'
+    const existingLog = streakData.history.find(h => h.date === today) || {
+      date: today,
+      workoutDone: false,
+      dietDone: false,
+      isRestDay: false
+    };
+
+    let updatedLog = { ...existingLog };
+    if (type === 'rest') {
+      updatedLog.isRestDay = !updatedLog.isRestDay;
+      if (updatedLog.isRestDay) {
+        updatedLog.workoutDone = false;
+        updatedLog.dietDone = false;
+      }
+    } else if (type === 'workout') {
+      updatedLog.workoutDone = !updatedLog.workoutDone;
+      updatedLog.isRestDay = false;
+    } else if (type === 'diet') {
+      updatedLog.dietDone = !updatedLog.dietDone;
+      updatedLog.isRestDay = false;
+    }
+
+    try {
+      const result = await updateStreak(user.id, today, {
+        workout_done: updatedLog.workoutDone,
+        diet_done: updatedLog.dietDone,
+        rest_day: updatedLog.isRestDay
+      });
+
+      if (result?.ok) {
+        setStreakData(prev => {
+          const newHistory = [...prev.history];
+          const index = newHistory.findIndex(h => h.date === today);
+          if (index >= 0) {
+            newHistory[index] = updatedLog;
+          } else {
+            newHistory.push(updatedLog);
+          }
+          const { current, longest } = calculateStreak(newHistory);
+          return {
+            ...prev,
+            history: newHistory,
+            currentStreak: current,
+            longestStreak: longest
+          };
         });
       }
-
-      // Recalculate current streak based on today's status
-      // Logic: Workout+Diet = continue. Rest = continue.
-      const todayLog = newHistory.find(h => h.date === today);
-      let streakChange = 0;
-      
-      if (todayLog) {
-        if (todayLog.isRestDay || (todayLog.workoutDone && todayLog.dietDone)) {
-           // If we just completed it, increment? 
-           // For simplicity in this mock, we assume the previous streak was correct
-           // and we just ensure today is counted.
-           // In real app, we'd traverse back from today.
-           streakChange = 0; // Keeping static for mock stability unless we do full traverse
-        }
-      }
-
-      return {
-        ...prev,
-        history: newHistory,
-        lastLogDate: new Date().toISOString()
-      };
-    });
+    } catch (error) {
+      console.error("Failed to update streak:", error);
+    }
   };
 
-  const handleEditDay = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const log = streakData.history.find(h => h.date === dateStr);
-    setSelectedDay({ date, log });
-    setIsDialogOpen(true);
-  };
-
-  const handleBulkToggle = (dateStr: string) => {
-    setSelectedDays(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(dateStr)) {
-        newSet.delete(dateStr);
-      } else {
-        newSet.add(dateStr);
-      }
-      return newSet;
-    });
-  };
-
-  const handleBulkUpdate = (type: 'workout' | 'diet' | 'rest' | 'perfect' | 'clear') => {
-    setStreakData(prev => {
-      let newHistory = [...prev.history];
-      
-      selectedDays.forEach(dateStr => {
-        const existingLogIndex = newHistory.findIndex(h => h.date === dateStr);
-        
-        if (type === 'clear') {
-          if (existingLogIndex >= 0) {
-            newHistory.splice(existingLogIndex, 1);
-          }
-          return;
-        }
-        
-        let log: DayLog;
-        if (existingLogIndex >= 0) {
-          log = { ...newHistory[existingLogIndex] };
-        } else {
-          log = { date: dateStr, workoutDone: false, dietDone: false, isRestDay: false };
-        }
-        
-        if (type === 'perfect') {
-          log.workoutDone = true;
-          log.dietDone = true;
-          log.isRestDay = false;
-        } else if (type === 'rest') {
-          log.isRestDay = true;
-          log.workoutDone = false;
-          log.dietDone = false;
-        } else if (type === 'workout') {
-          log.workoutDone = true;
-          log.isRestDay = false;
-        } else if (type === 'diet') {
-          log.dietDone = true;
-          log.isRestDay = false;
-        }
-        
-        if (existingLogIndex >= 0) {
-          newHistory[existingLogIndex] = log;
-        } else {
-          newHistory.push(log);
-        }
-      });
-      
-      return { ...prev, history: newHistory, lastLogDate: new Date().toISOString() };
-    });
-    
-    setSelectedDays(new Set());
-    setIsBulkMode(false);
-    setIsBulkDialogOpen(false);
-  };
-
-  const updateDayLog = (type: 'workout' | 'diet' | 'rest') => {
-    if (!selectedDay) return;
+  const updateDayLog = async (type: 'workout' | 'diet' | 'rest') => {
+    if (!selectedDay || !user?.id) return;
     const dateStr = format(selectedDay.date, 'yyyy-MM-dd');
 
-    setStreakData(prev => {
-      const existingLogIndex = prev.history.findIndex(h => h.date === dateStr);
-      let newHistory = [...prev.history];
-      
-      if (existingLogIndex >= 0) {
-        const log = { ...newHistory[existingLogIndex] };
-        if (type === 'rest') {
-          log.isRestDay = !log.isRestDay;
-        } else if (type === 'workout') {
-          log.workoutDone = !log.workoutDone;
-          log.isRestDay = false;
-        } else if (type === 'diet') {
-          log.dietDone = !log.dietDone;
-          log.isRestDay = false;
-        }
-        newHistory[existingLogIndex] = log;
-      } else {
-        newHistory.push({
-          date: dateStr,
-          workoutDone: type === 'workout',
-          dietDone: type === 'diet',
-          isRestDay: type === 'rest'
-        });
-      }
+    const existingLog = streakData.history.find(h => h.date === dateStr) || {
+      date: dateStr,
+      workoutDone: false,
+      dietDone: false,
+      isRestDay: false
+    };
 
-      return { ...prev, history: newHistory };
-    });
-    
-    // Update local selected state for immediate UI feedback in dialog
-    setSelectedDay(prev => {
-      if (!prev) return null;
-      // Re-find the log we just updated (simulated)
-      // Actually we need to toggle the local state to match logic above
-      // This is complex to sync perfectly without a reducer, but for mock:
-      const currentLog = prev.log || { date: dateStr, workoutDone: false, dietDone: false, isRestDay: false };
-      let updatedLog = { ...currentLog };
-      
-      if (type === 'rest') updatedLog.isRestDay = !updatedLog.isRestDay;
-      if (type === 'workout') { updatedLog.workoutDone = !updatedLog.workoutDone; updatedLog.isRestDay = false; }
-      if (type === 'diet') { updatedLog.dietDone = !updatedLog.dietDone; updatedLog.isRestDay = false; }
-      
-      return { ...prev, log: updatedLog };
-    });
+    let updatedLog = { ...existingLog };
+    if (type === 'rest') {
+      updatedLog.isRestDay = !updatedLog.isRestDay;
+      if (updatedLog.isRestDay) {
+        updatedLog.workoutDone = false;
+        updatedLog.dietDone = false;
+      }
+    } else if (type === 'workout') {
+      updatedLog.workoutDone = !updatedLog.workoutDone;
+      updatedLog.isRestDay = false;
+    } else if (type === 'diet') {
+      updatedLog.dietDone = !updatedLog.dietDone;
+      updatedLog.isRestDay = false;
+    }
+
+    try {
+      const result = await updateStreak(user.id, dateStr, {
+        workout_done: updatedLog.workoutDone,
+        diet_done: updatedLog.dietDone,
+        rest_day: updatedLog.isRestDay
+      });
+
+      if (result?.ok) {
+        setStreakData(prev => {
+          const newHistory = [...prev.history];
+          const index = newHistory.findIndex(h => h.date === dateStr);
+          if (index >= 0) {
+            newHistory[index] = updatedLog;
+          } else {
+            newHistory.push(updatedLog);
+          }
+          const { current, longest } = calculateStreak(newHistory);
+          return {
+            ...prev,
+            history: newHistory,
+            currentStreak: current,
+            longestStreak: longest
+          };
+        });
+        setSelectedDay(prev => prev ? { ...prev, log: updatedLog } : null);
+      }
+    } catch (error) {
+      console.error("Failed to update log:", error);
+    }
   };
+
 
   // Calculate Display Stats
   const daysRecorded = streakData.history.length;
