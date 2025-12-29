@@ -161,12 +161,11 @@ export default function LandingPage() {
                 onClick={scrollToTools}
                 className="neon-glow bg-primary hover:bg-primary/90 text-lg px-8 py-6"
               >
-                <ArrowRight className="w-5 h-5 mr-2" />
                 Explore
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
 
-              <p className="text-sm uppercase tracking-widest text-muted-foreground">
+              <p className="neon-glow bg-primary hover:bg-primary/90 text-lg px-8 py-6">
   One-to-One Online Coaching
 </p>
 
