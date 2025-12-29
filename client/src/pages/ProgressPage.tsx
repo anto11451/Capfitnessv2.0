@@ -95,6 +95,11 @@ export default function ProgressPage() {
             }
             return updated.sort((a, b) => a.date.localeCompare(b.date));
           });
+          
+          // Also update user object in context if needed, but local state should be enough for now
+          // If you want to sync back to profile:
+          // updateUserProfile(user.id, { current_weight: weight });
+          
           setNewWeight('');
         }
       } catch (error) {

@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Flame, CheckCircle, XCircle, Calendar as CalendarIcon, Trophy, Coffee, Edit3, CheckSquare, Square, Dumbbell as DumbbellIcon, Utensils as UtensilsIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format, subDays, isSameDay, parseISO, isToday } from 'date-fns';
+import { format, subDays, isSameDay, parseISO, isToday, differenceInDays } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useAuth } from '@/App';
 import { getUserStreaks, updateStreak } from '@/lib/googleSheetsApi';
@@ -85,7 +85,140 @@ export default function StreakPage() {
     loadData();
   }, [user?.id]);
 
-  const handleLog = async (type: 'workout' | 'diet' | 'rest') => {
+  const calculateStreak = (history: DayLog[]) => {
+    if (!history || history.length === 0) return { current: 0, longest: 0 };
+    
+    const sorted = [...history].sort((a, b) => b.date.localeCompare(a.date));
+    let current = 0;
+    let longest = 0;
+    let tempCount = 0;
+    
+    // Simple current streak check starting from today or yesterday
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+    
+    let hasToday = sorted.some(h => h.date === today && (h.workoutDone || h.dietDone || h.isRestDay));
+    let hasYesterday = sorted.some(h => h.date === yesterday && (h.workoutDone || h.dietDone || h.isRestDay));
+    
+    if (hasToday || hasYesterday) {
+      let checkDate = hasToday ? new Date() : subDays(new Date(), 1);
+      while (true) {
+        const dateStr = format(checkDate, 'yyyy-MM-dd');
+        const log = sorted.find(h => h.date === dateStr);
+        if (log && (log.workoutDone || log.dietDone || log.isRestDay)) {
+          current++;
+          checkDate = subDays(checkDate, 1);
+        } else {
+          break;
+        }
+      }
+    }
+
+    // Longest streak calculation
+    const allSorted = [...history].sort((a, b) => a.date.localeCompare(b.date));
+    let max = 0;
+    let currentMax = 0;
+    let lastDate: Date | null = null;
+
+    allSorted.forEach(log => {
+      if (log.workoutDone || log.dietDone || log.isRestDay) {
+        const currentDate = parseISO(log.date);
+        if (lastDate) {
+          const diff = differenceInDays(currentDate, lastDate);
+          if (diff === 1) {
+            currentMax++;
+          } else if (diff > 1) {
+            currentMax = 1;
+          }
+        } else {
+          currentMax = 1;
+        }
+        lastDate = currentDate;
+        if (currentMax > max) max = currentMax;
+      }
+    });
+    
+    return { current, longest: max };
+  };
+
+  const handleBulkToggle = (dateStr: string) => {
+    setSelectedDays(prev => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) next.delete(dateStr);
+      else next.add(dateStr);
+      return next;
+    });
+  };
+
+  const handleEditDay = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const log = streakData.history.find(h => h.date === dateStr);
+    setSelectedDay({ date, log });
+    setIsDialogOpen(true);
+  };
+
+  const handleBulkUpdate = async (type: 'workout' | 'diet' | 'rest' | 'perfect' | 'clear') => {
+    if (!user?.id || selectedDays.size === 0) return;
+    
+    setLoading(true);
+    try {
+      const results = await Promise.all(Array.from(selectedDays).map(async (dateStr) => {
+        let updatedLog: DayLog;
+        if (type === 'clear') {
+          updatedLog = { date: dateStr, workoutDone: false, dietDone: false, isRestDay: false };
+        } else {
+          updatedLog = {
+            date: dateStr,
+            workoutDone: type === 'perfect' || type === 'workout',
+            dietDone: type === 'perfect' || type === 'diet',
+            isRestDay: type === 'rest'
+          };
+          if (type === 'rest') {
+            updatedLog.workoutDone = false;
+            updatedLog.dietDone = false;
+          }
+        }
+
+        const result = await updateStreak(user.id, dateStr, {
+          workout_done: updatedLog.workoutDone,
+          diet_done: updatedLog.dietDone,
+          rest_day: updatedLog.isRestDay
+        });
+        
+        return { date: dateStr, log: updatedLog, ok: result?.ok };
+      }));
+      
+      setStreakData(prev => {
+        const newHistory = [...prev.history];
+        results.forEach(res => {
+          if (res.ok) {
+            const index = newHistory.findIndex(h => h.date === res.date);
+            if (type === 'clear') {
+               if (index >= 0) newHistory.splice(index, 1);
+            } else {
+              if (index >= 0) newHistory[index] = res.log;
+              else newHistory.push(res.log);
+            }
+          }
+        });
+        const { current, longest } = calculateStreak(newHistory);
+        return {
+          ...prev,
+          history: newHistory,
+          currentStreak: current,
+          longestStreak: longest
+        };
+      });
+
+      setSelectedDays(new Set());
+      setIsBulkMode(false);
+      setIsBulkDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to bulk update streaks:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
     if (!user?.id) return;
     const today = format(new Date(), 'yyyy-MM-dd');
     
