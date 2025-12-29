@@ -219,6 +219,7 @@ export default function StreakPage() {
       setLoading(false);
     }
   };
+  const handleLog = async (type: 'workout' | 'diet' | 'rest') => {
     if (!user?.id) return;
     const today = format(new Date(), 'yyyy-MM-dd');
     
