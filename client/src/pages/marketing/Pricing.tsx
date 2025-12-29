@@ -1,51 +1,58 @@
-import { motion } from "framer-motion";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, ArrowLeft, Sparkles, Crown, Rocket } from "lucide-react";
-import { useLocation } from "wouter";
 import PageWrapper from "@/components/PageWrapper";
+import { Button } from "@/components/ui/button";
+import { Check, Sparkles, Crown, Rocket } from "lucide-react";
+import clsx from "clsx";
 
-export default function Pricing() {
-  const [, setLocation] = useLocation();
+type PricingPlan = {
+  name: string;
+  price: string;
+  period?: string;
+  description: string;
+  features: string[];
+  cta: string;
+  popular?: boolean;
+  icon?: any;
+};
 
-  const plans = [
+const plans: PricingPlan[] = [
   {
     name: "Free Demo",
     price: "₹0",
     period: "72 hours",
-    description: "Explore the full Cap’s Fitness platform before upgrading",
+    description:
+      "Explore the complete Cap’s Fitness platform before committing.",
     features: [
       "Full dashboard access",
       "Body analysis & BMI",
       "Workout repository",
       "Workout partner",
       "Nutrition hub (view + calculate)",
-      "Progress & streak (view-only)"
+      "Progress & streak (view-only)",
     ],
     cta: "Start Free Demo",
-    popular: false,
   },
   {
     name: "Platform Access",
     price: "₹499",
     period: "/ month",
-    description: "Full access to the Cap’s Fitness platform",
+    description:
+      "Full access to Cap’s Fitness platform for self-driven users.",
     features: [
       "Save & track progress",
       "Workout & nutrition logging",
       "Streak tracking",
       "Progress analytics",
-      "All core platform features"
+      "All core platform features",
     ],
     cta: "Unlock Platform",
-    popular: false,
+    icon: Sparkles,
   },
   {
     name: "4-Week Coaching + Platform",
     price: "₹1,499",
     period: "/ 4 weeks",
-    description: "Personal coaching with full platform access",
+    description:
+      "Personal coaching combined with full platform access.",
     features: [
       "Everything in Platform Access",
       "Fully personalised diet plan",
@@ -53,16 +60,18 @@ export default function Pricing() {
       "Weekly check-ins & adjustments",
       "WhatsApp support (fixed hours)",
       "Habit & lifestyle coaching",
-      "Progress review"
+      "Progress review",
     ],
     cta: "Start Coaching",
     popular: true,
+    icon: Crown,
   },
   {
     name: "8-Week Transformation PRO",
     price: "₹2,999",
     period: "/ 8 weeks",
-    description: "Complete transformation with priority support",
+    description:
+      "Complete transformation with priority support and deep analysis.",
     features: [
       "Everything in Coaching plan",
       "Priority WhatsApp support",
@@ -70,146 +79,109 @@ export default function Pricing() {
       "Weekly personalised updates",
       "Advanced progress analysis",
       "End-of-program review",
-      "Maintenance roadmap"
+      "Maintenance roadmap",
     ],
     cta: "Go Pro",
-    popular: false,
-  }
+    icon: Rocket,
+  },
 ];
 
-
+export default function Pricing() {
   return (
     <PageWrapper>
-      <div className="py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Button
-              variant="ghost"
-              onClick={() => setLocation("/")}
-              className="mb-8 hover:bg-primary/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </motion.div>
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Choose Your <span className="text-primary">Plan</span>
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Whether you want to explore the platform or commit to a full
+            transformation — there’s a plan for you.
+          </p>
+        </div>
 
-          <motion.div 
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <h1 className="text-4xl md:text-6xl font-display font-bold mb-4">
-              Choose Your <span className="text-primary neon-text">Coaching Plan</span>
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Transparent pricing. No hidden charges. Choose the plan that fits your goal.
-            </p>
-          </motion.div>
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {plans.map((plan, index) => {
+            const Icon = plan.icon ?? null;
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {plans.map((plan, index) => {
-              const Icon = plan.icon ?? null;
-              return (
-                <motion.div
-                  key={plan.name}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                  className={plan.popular ? "md:-mt-4 md:mb-4" : ""}
+            return (
+              <div
+                key={index}
+                className={clsx(
+                  "relative rounded-2xl border bg-card/40 backdrop-blur p-8 flex flex-col",
+                  plan.popular
+                    ? "border-primary shadow-[0_0_40px_rgba(0,255,255,0.15)]"
+                    : "border-white/10"
+                )}
+              >
+                {/* Popular Badge */}
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-black text-sm font-semibold px-4 py-1 rounded-full">
+                    Most Popular
+                  </div>
+                )}
+
+                {/* Icon */}
+                {Icon && (
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-6 mx-auto">
+                    <Icon className="w-7 h-7 text-primary" />
+                  </div>
+                )}
+
+                {/* Title */}
+                <h3 className="text-xl font-semibold text-white text-center mb-2">
+                  {plan.name}
+                </h3>
+
+                {/* Price */}
+                <div className="text-center mb-4">
+                  <span className="text-4xl font-bold text-white">
+                    {plan.price}
+                  </span>
+                  {plan.period && (
+                    <span className="text-muted-foreground ml-1">
+                      {plan.period}
+                    </span>
+                  )}
+                </div>
+
+                {/* Description */}
+                <p className="text-sm text-muted-foreground text-center mb-6">
+                  {plan.description}
+                </p>
+
+                {/* Features */}
+                <ul className="space-y-3 mb-8 flex-1">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-3 text-sm">
+                      <Check className="w-5 h-5 text-primary mt-0.5" />
+                      <span className="text-muted-foreground">
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA */}
+                <Button
+                  type="button"
+                  className={clsx(
+                    "w-full",
+                    plan.popular
+                      ? "bg-primary text-black hover:bg-primary/90"
+                      : "bg-white/10 hover:bg-white/20 text-white"
+                  )}
                 >
-                  <Card
-                    className={`
-                      relative overflow-hidden h-full
-                      bg-card/80 backdrop-blur-sm
-                      border ${plan.borderColor}
-                      transition-all duration-300
-                      hover:scale-[1.02]
-                      ${plan.popular ? "neon-glow" : ""}
-                    `}
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${plan.gradient} pointer-events-none`} />
-                    
-                    {plan.popular && (
-                      <div className="absolute -top-px left-1/2 -translate-x-1/2">
-                        <Badge className="px-4 py-1 bg-primary text-primary-foreground rounded-b-lg rounded-t-none neon-glow">
-                          Most Popular
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    <CardHeader className="relative space-y-4 pb-8 pt-8">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mx-auto">
-                        <Icon className="w-7 h-7 text-primary" />
-                      </div>
-                      <CardTitle className="text-2xl text-center font-display">{plan.name}</CardTitle>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-5xl font-bold font-display text-foreground">{plan.price}</span>
-                        <span className="text-muted-foreground">{plan.period}</span>
-                      </div>
-                      <CardDescription className="text-base text-center">{plan.description}</CardDescription>
-                    </CardHeader>
-                    
-                    <CardContent className="relative space-y-6">
-                      <ul className="space-y-3">
-                        {plan.features.map((feature, idx) => (
-                          <motion.li 
-                            key={idx} 
-                            className="flex items-start gap-3"
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.4 + idx * 0.05 }}
-                          >
-                            <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                              <Check className="w-3 h-3 text-primary" />
-                            </div>
-                            <span className="text-sm text-foreground/90">{feature}</span>
-                          </motion.li>
-                        ))}
-                      </ul>
-
-                      <Button
-                        className={`w-full ${plan.popular ? "neon-glow bg-primary hover:bg-primary/90" : ""}`}
-                        variant={plan.popular ? "default" : "outline"}
-                        size="lg"
-                        onClick={() => setLocation("/intake")}
-                      >
-                        Get Started
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          <motion.div 
-            className="mt-16"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-          >
-            <Card className="max-w-3xl mx-auto bg-card/80 backdrop-blur-sm border border-accent/30 neon-border-blue">
-              <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent pointer-events-none rounded-lg" />
-              <CardHeader className="relative">
-                <CardTitle className="text-2xl font-display text-center">Need a Custom Plan?</CardTitle>
-                <CardDescription className="text-center">
-                  We offer personalised coaching for corporate teams, athletes, or special goals.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative text-center">
-                <Button variant="outline" size="lg" onClick={() => setLocation("/intake")} className="hover:bg-accent/10 hover:border-accent/50">
-                  Contact for Custom Pricing
+                  {plan.cta}
                 </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </PageWrapper>
   );
 }
+
