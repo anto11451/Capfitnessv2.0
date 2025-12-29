@@ -10,62 +10,73 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
 
   const plans = [
-    {
-      name: "Weekly Starter Plan",
-      price: "₹199",
-      period: "/week",
-      description: "Perfect for beginners who want light guidance and a basic structured plan",
-      features: [
-        "Basic personalised diet",
-        "Basic workout plan",
-        "Weekly check-in",
-        "Light guidance",
-        "No mid-week adjustments"
-      ],
-      popular: false,
-      icon: Sparkles,
-      gradient: "from-blue-500/20 to-cyan-500/20",
-      borderColor: "border-blue-500/30",
-    },
-    {
-      name: "4-Week Coaching Plan",
-      price: "₹699",
-      period: "/4 weeks",
-      description: "Full coaching experience with adjustments, support & complete personalization",
-      features: [
-        "Fully personalised diet plan",
-        "Custom workout plan (home/gym)",
-        "Weekly check-ins",
-        "Weekly adjustments",
-        "WhatsApp support (reasonable hours)",
-        "Lifestyle habit guidance"
-      ],
-      popular: true,
-      icon: Crown,
-      gradient: "from-primary/20 to-accent/20",
-      borderColor: "border-primary/50",
-    },
-    {
-      name: "8-Week Transformation Plan",
-      price: "₹1499",
-      period: "/8 weeks",
-      description: "Complete transformation program with priority support and weekly upgrades",
-      features: [
-        "Everything in 4-week plan",
-        "Weekly personalised updates",
-        "Habit & lifestyle coaching",
-        "Priority support",
-        "Form review (video-based)",
-        "Progress tracking",
-        "End-of-program review",
-        "Maintenance strategy"
-      ],
-      popular: false,
-      icon: Rocket,
-      gradient: "from-purple-500/20 to-pink-500/20",
-      borderColor: "border-purple-500/30",
-    },
-  ];
+  {
+    name: "Free Demo",
+    price: "₹0",
+    period: "72 hours",
+    description: "Explore the full Cap’s Fitness platform before upgrading",
+    features: [
+      "Full dashboard access",
+      "Body analysis & BMI",
+      "Workout repository",
+      "Workout partner",
+      "Nutrition hub (view + calculate)",
+      "Progress & streak (view-only)"
+    ],
+    cta: "Start Free Demo",
+    popular: false,
+  },
+  {
+    name: "Platform Access",
+    price: "₹499",
+    period: "/ month",
+    description: "Full access to the Cap’s Fitness platform",
+    features: [
+      "Save & track progress",
+      "Workout & nutrition logging",
+      "Streak tracking",
+      "Progress analytics",
+      "All core platform features"
+    ],
+    cta: "Unlock Platform",
+    popular: false,
+  },
+  {
+    name: "4-Week Coaching + Platform",
+    price: "₹1,499",
+    period: "/ 4 weeks",
+    description: "Personal coaching with full platform access",
+    features: [
+      "Everything in Platform Access",
+      "Fully personalised diet plan",
+      "Custom workout plan (home/gym)",
+      "Weekly check-ins & adjustments",
+      "WhatsApp support (fixed hours)",
+      "Habit & lifestyle coaching",
+      "Progress review"
+    ],
+    cta: "Start Coaching",
+    popular: true,
+  },
+  {
+    name: "8-Week Transformation PRO",
+    price: "₹2,999",
+    period: "/ 8 weeks",
+    description: "Complete transformation with priority support",
+    features: [
+      "Everything in Coaching plan",
+      "Priority WhatsApp support",
+      "Video-based form checks",
+      "Weekly personalised updates",
+      "Advanced progress analysis",
+      "End-of-program review",
+      "Maintenance roadmap"
+    ],
+    cta: "Go Pro",
+    popular: false,
+  }
+];
+
 
   return (
     <PageWrapper>
