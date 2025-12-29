@@ -1,0 +1,228 @@
+OBJECTIVE
+
+Upgrade my existing fitness website UI and data integration using the current codebase and working API.
+Do NOT create a new project.
+Do NOT change routing, authentication, or backend endpoints.
+All data must remain Google Sheet–driven.
+
+PART 1 — DASHBOARD STRUCTURE (FINAL)
+
+Reorder and simplify the Members Dashboard as follows (top → bottom):
+
+Body Analysis (Primary Visual Section)
+
+Today Focus Button
+
+Action Buttons (Nutrition)
+
+Fuel Tracker (Today only)
+
+Progress Snapshot
+
+Streak Display
+
+Reduce information overload. No dense text blocks.
+
+PART 2 — BODY ANALYSIS VISUAL UPGRADE (IMPORTANT)
+CURRENT ISSUE
+
+The current body silhouette looks flat and basic.
+
+REQUIRED UPGRADE
+
+Replace the flat silhouette with a high-detail, realistic 3D human body model (male neutral pose).
+
+The body should look premium, anatomical, and visually rich, similar to a fitness mannequin / anatomical render.
+
+Keep the dark + neon futuristic theme.
+
+Apply:
+
+Subtle neon rim lighting
+
+Soft glow accents (cyan / teal)
+
+Depth and muscle definition
+
+The body must remain non-interactive (for now).
+
+This is a visual enhancement, not a medical model.
+
+DO NOT:
+
+Do NOT change user identity or gender dynamically
+
+Do NOT animate excessively
+
+Do NOT load heavy 3D libraries unless lightweight and optimized
+
+Do NOT impact page performance
+
+UI LABELING
+
+Show current body category highlight (e.g. FIT / SKINNY / MUSCULAR)
+
+Keep existing BMI, target weight, protein info unchanged
+
+PART 3 — ACTION BUTTONS (UNDER BODY ANALYSIS)
+
+Place three clean buttons directly below the Body Analysis section:
+
+Macro Calculator
+→ Route to Macro Calculator page
+
+Recipes
+→ Route to Nutrition → Recipes page
+
+Protein Hacks
+→ Route to Nutrition Plan → Protein Hacks tab
+
+Buttons should be visually distinct but minimal.
+
+PART 4 — TODAY FOCUS FIX (DATA CLARITY)
+ISSUE
+
+Week and Day are not pulling data.
+
+FIX
+
+Day and week labels must be system-generated (not sheet-based).
+
+Workout plan must be pulled from the users sheet using:
+
+workout_plan header
+
+Display today’s workout focus based on the plan.
+
+PART 5 — FUEL TRACKER ↔ MACRO CALCULATOR SYNC
+DATA SOURCE
+
+Use daily_logs sheet.
+
+LOGIC
+
+When a user submits Macro Calculator:
+
+Write calories + macros to daily_logs
+
+Fuel Tracker must:
+
+Read only today’s entry
+
+Show “No log yet” if empty
+
+Entry validity:
+
+Valid until 12:00 noon next day
+
+After that → auto refresh / reset view
+
+Prevent duplicate entries per user per day.
+
+PART 6 — PROGRESS (WEIGHT LOGGING)
+DATA SOURCE
+
+Use weight_logs sheet.
+
+LOGIC
+
+When user logs weight:
+
+Record via API
+
+Dashboard:
+
+Show latest logged weight only
+
+Progress page:
+
+Show historical trend
+
+PART 7 — USER PROFILE (SINGLE SOURCE OF TRUTH)
+CRITICAL RULE
+
+All pages must pull user data from ONE place only:
+
+Sheet: users
+
+DISPLAY
+
+Profile page must show:
+
+Name
+
+Age
+
+Height
+
+Current Weight
+
+Goal
+
+Calories
+
+Workout Plan
+
+Macro targets
+
+PERMISSIONS
+
+Users: read-only
+
+Admin: edit-only
+
+No user-side edits anywhere else
+
+Every page (Dashboard, Nutrition, Workout) must reference this profile data.
+
+PART 8 — STREAK TRACKING
+DATA SOURCE
+
+Use streaks sheet.
+
+LOGIC
+
+One streak entry per user per day
+
+No duplicates
+
+Streak increases only for continuous days
+
+Streak type examples:
+
+login
+
+workout_logged
+
+calorie_logged
+
+Display streak count on dashboard.
+
+PART 9 — UX & PERFORMANCE RULES
+
+Minimal text
+
+Card-based layout
+
+Mobile-first spacing
+
+Lazy-load body visual if needed
+
+Fallback UI if any field is missing
+
+No raw sheet data visible to users
+
+FINAL NOTE
+
+This update must:
+
+Improve visual richness
+
+Reduce cognitive overload
+
+Preserve existing functionality
+
+Keep performance smooth
+
+Do not over-engineer.
+Enhance, refine, and stabilize.

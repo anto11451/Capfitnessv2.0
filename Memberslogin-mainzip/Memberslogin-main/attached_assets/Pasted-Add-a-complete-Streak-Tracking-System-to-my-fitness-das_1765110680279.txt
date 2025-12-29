@@ -1,0 +1,82 @@
+Add a complete Streak Tracking System to my fitness dashboard with the following functionality and UI requirements:
+
+===================================================
+STREAK SYSTEM – USER CHECK-IN
+===================================================
+
+1. On the landing page, add a “Your Streak 🔥” card/button that displays:
+   - Current streak count
+   - Longest streak
+   - Quick link to full streak dashboard
+
+2. Create a full Streak Dashboard page where the user logs their daily adherence:
+   - Toggle/button: “I completed my workout today”
+   - Toggle/button: “I followed my diet today”
+   - Submit button that records the day’s results
+
+Store each daily record with:
+{
+  date: "YYYY-MM-DD",
+  workoutDone: true/false,
+  dietDone: true/false,
+  streakContinued: true/false
+}
+
+3. When a user submits the day, automatically:
+   - Update current streak count
+   - Update longest streak if needed
+   - Mark whether streak was continued or broken
+   - Save data to localStorage (upgrade later to Google Sheets)
+
+===================================================
+STREAK VISUALIZATIONS
+===================================================
+
+A. Calendar View
+• Create a calendar-style grid showing daily compliance:
+   - Green: both workout + diet completed
+   - Yellow: only one completed
+   - Red: missed both
+   - Grey: no entry for the day
+
+B. Graph View
+• Line or bar graph showing:
+   - Workout adherence over time
+   - Diet adherence over time
+   - Weekly compliance percentage
+
+C. Summary Indicators
+• Current streak number
+• Longest streak ever
+• Total days tracked
+• Suggestion text (motivational or corrective)
+
+===================================================
+ACHIEVEMENTS SYSTEM
+===================================================
+Create badges awarded automatically when streaks hit milestones:
+
+• “🔥 Consistency King” — 7-day streak  
+• “💪 Discipline Beast” — 30-day streak  
+• “🏆 Warrior Mode” — 60-day streak  
+• “⚡ Comeback Hero” — if streak breaks but user restarts  
+• “🥇 90-Day Transformation” — 90-day streak
+
+Badges should appear in the streak dashboard and user dashboard.
+
+===================================================
+UI REQUIREMENTS
+===================================================
+• Dark neon theme matching my website  
+• Clean card layout  
+• Smooth animations  
+• Mobile-friendly  
+• Motivational messages each day  
+• App-like streak visuals similar to Duolingo / Ultrahuman  
+
+===================================================
+INTEGRATION
+===================================================
+• Streak summary must appear on landing page and in the user dashboard.  
+• Daily streak log must update progress graphs in the dashboard.  
+• Calendar and graphs update automatically based on the stored streak data.  

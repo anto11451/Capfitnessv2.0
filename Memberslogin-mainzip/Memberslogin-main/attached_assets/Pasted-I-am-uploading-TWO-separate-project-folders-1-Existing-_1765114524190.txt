@@ -1,0 +1,187 @@
+I am uploading TWO separate project folders:
+
+1. **Existing Live Website (Cap’s Fitness main)** — this is the public-facing website currently live.   
+2. **New Dashboard Build**(Cap Fitness) — this contains the new fitness application UI (body map, workouts, nutrition hub, etc.). 
+
+Your task is to:
+
+==============================================================
+A) MERGE BOTH CODEBASES CLEANLY INTO ONE UNIFIED PROJECT
+==============================================================
+
+• DO NOT rebuild from scratch — combine both uploaded folders.  
+• Preserve ALL existing public-facing pages from the current Cap’s Fitness site.  
+• Add a new button on the existing website header called:
+
+   “Members — Click Here”
+
+• When clicked, it must open the NEW login page (from the new dashboard build).  
+• After login, the user must enter the NEW fitness dashboard.
+
+• Ensure routing structure, components, pages, and assets from BOTH projects are merged without conflict.
+
+• Resolve duplicate file names, duplicate components, overlapping CSS, or clashing routes.
+
+• Maintain a SINGLE consistent design system:
+   - Dark neon theme
+   - Smooth transitions
+   - Cap’s Fitness branding
+
+• The merged project must run with NO breaking errors.
+
+==============================================================
+B) LOGIN SYSTEM USING GOOGLE SHEETS (MANDATORY)
+==============================================================
+
+Implement Google Sheets authentication.
+
+User flow:
+
+1. User clicks “Members — Click Here”.
+2. Show login screen (email + password).
+3. Validate credentials against a Google Sheet with these fields:
+   - email
+   - password
+   - name
+   - plan assigned
+   - calorie target
+   - macro targets
+   - workout schedule
+4. If credentials match → login successful → load dashboard.
+5. If wrong → show error.
+6. Dashboard must display all user-specific data pulled from Google Sheets.
+
+==============================================================
+C) ADMIN LOGIN + BACKEND CONTROL PANEL
+==============================================================
+
+Add secure admin login BEFORE accessing admin panel.
+
+TEMPORARY CREDENTIALS:
+• Username: Iamadmincap  
+• Password: Capfitness@2025  
+
+Admin panel must allow uploading and editing of:
+• Workout plans  
+• User-specific calorie/macro targets  
+• User programs  
+• Recipes  
+• Resources  
+
+All admin updates must sync to Google Sheets or Google Drive.
+
+==============================================================
+D) FIX ALL ISSUES IN NEW DASHBOARD (FROM PREVIOUS PROMPTS)
+==============================================================
+
+Fix and upgrade the following:
+
+1. **Body Map Not Showing**
+   - Add a correct SVG model
+   - Add working hotspots
+   - On click → show muscles & exercises
+
+2. **Workout Repository**
+   - Add 12–15 exercises per muscle group  
+   - Add working YouTube video links  
+   - Add detailed modal UI for each exercise
+
+3. **Training Plans**
+   - Add HIIT, fat-loss program, strength program, abs program, home program
+   - When a user selects a plan → open detailed interface  
+   - Show sets, reps, tempo, rest, progression  
+   - User can customize (edit sets/reps/swap exercises)  
+
+4. **Macro Calculator**
+   - Fix submit button visibility  
+   - Add MANY more Indian food presets:
+       paneer, idli, dosa, poha, upma, rajma, chole,
+       sprouts, chicken curry, fish fry, whey scoop, etc.
+   - Add quick-add buttons  
+   - Show target vs consumed macros  
+   - Show calorie surplus/deficit based on user targets from Google Sheets  
+
+5. **Nutrition Hub**
+   - “View Recipe” should open recipe detail page  
+   - Add more recipes with images, macros, steps  
+   - Admin must be able to upload new recipes  
+
+6. **Streak System**
+   - Fix daily tracking so entries record properly  
+   - Add REST DAY option that does not break streak  
+   - Recalculate streak correctly  
+   - Calendar:
+       Green = workout+diet  
+       Yellow = one done  
+       Blue/Grey = rest day  
+       Red = missed  
+   - Add achievement badges  
+
+7. **Progress Tracker**
+   - Add start date and end date  
+   - Add trend graph  
+   - Show weekly average change  
+   - Show estimated completion date  
+   - Show motivational messages  
+
+==============================================================
+E) TODAY’S WORKOUT + TODAY’S NUTRITION LOG FLOW
+==============================================================
+
+Dashboard must include:
+
+### 1. TODAY’S WORKOUT
+• Click → open today’s routine (pulled from Google Sheets plan).  
+• Allow user to:
+   - Pick today’s body part  
+   - View exercises with sets/reps/rest  
+   - Edit sets  
+   - Edit reps  
+   - Swap exercises  
+• Save the completed workout for the day.
+
+### 2. TODAY’S NUTRITION LOG
+• Opens macro calculator  
+• Shows:
+   - Calories target vs consumed
+   - Protein target vs achieved
+   - Carbs and fats tracking  
+• Stores daily nutrition log  
+• Uses trainer-provided targets stored in Google Sheets.  
+
+==============================================================
+F) MERGED DASHBOARD REQUIREMENTS
+==============================================================
+
+User dashboard must show:
+• Today's workout  
+• Today’s nutrition statistics  
+• Streak summary  
+• Weight progress  
+• Program status (Day X of Y)  
+• Next session date  
+• Calorie/macros target vs actual  
+• Buttons:
+   - Today’s Workout
+   - Today’s Nutrition Log
+   - Streak  
+   - Progress Tracker  
+   - Workout Plans  
+   - Body Map  
+   - Nutrition Hub  
+
+==============================================================
+G) UI/UX GUIDELINES
+==============================================================
+
+• Theme must match Cap’s Fitness (dark neon, glowing accents)  
+• Smooth animations (Framer Motion)  
+• Consistent spacing and layout  
+• All buttons visible and responsive  
+• Mobile-first  
+• App-like transitions  
+• Dashboard must feel like a premium fitness app  
+
+==============================================================
+END OF MASTER MERGE PROMPT
+==============================================================

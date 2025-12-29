@@ -1,0 +1,100 @@
+Apply the following NEW modifications to the existing system. 
+Do NOT rebuild anything already completed — only enhance the features described below.
+
+=====================================================
+1. DAILY STREAK SYSTEM – FIX & ENHANCE
+=====================================================
+
+A. Recording Fix  
+• Ensure that daily streak submissions (workout done, diet done) are properly recorded on the "Your Streak" page.  
+• Each record must update the calendar view immediately.
+
+B. Calendar Improvements  
+• Allow the user to click any day on the calendar and view or edit entries.  
+• Add a “Rest Day” option. Rest day should:
+   - Not break the streak
+   - Mark the day with a neutral blue/grey color
+   - Count as a valid day without requiring workout or diet completion
+
+C. Streak Calculation  
+• Update streak logic so:
+   - Workout + Diet = continues streak  
+   - One of two = partial day (yellow) but does NOT continue streak  
+   - Rest day = streak maintained  
+   - Neither done = streak breaks  
+
+• Recalculate and display:
+   - Current streak  
+   - Longest streak  
+   - Days recorded  
+   - Missed days  
+
+=====================================================
+2. DASHBOARD – ADD TODAY’S WORKOUT & NUTRITION LOG FLOW
+=====================================================
+
+Add a new interface on the main user dashboard:
+
+A. “Today’s Workout” Button  
+• When clicked, show the user their training program for the day.  
+• This must be based on their assigned plan stored in backend Google Drive / Google Sheets.  
+• User flow:
+   1. Click “Today’s Workout”  
+   2. See plan overview (from admin-uploaded data)  
+   3. Select body part of the day  
+   4. Display full routine:
+      - Exercises  
+      - Sets & reps  
+      - Rest times  
+      - Estimated workout duration  
+   5. Allow user to customize:
+      - Change reps  
+      - Change sets  
+      - Swap exercises  
+   6. Save their customized version for the day  
+
+• The workout shown must always match:
+   - Today’s date  
+   - The program schedule uploaded by admin  
+   - Next session date must be pulled from backend plan data  
+
+B. “Today’s Nutrition Log” Button  
+• Clicking this opens the Macro Calculator interface.  
+• New required behavior:
+   - Track total calories, protein, carbs, and fats for the day  
+   - Compare intake vs target calories set by trainer (from backend data)  
+   - Show:
+       • Calories remaining or surplus  
+       • Protein target vs achieved  
+       • Carb & fat target vs achieved  
+       • Overall percentage of goal met  
+
+• Daily nutrition summary must be saved and shown in the dashboard.
+
+C. Backend Data Integration (Google Drive / Sheets)  
+Admin should control the user’s program and nutrition targets through backend data:
+
+Admin-provided data must include:
+• Daily workout plan  
+• Next session date  
+• Daily calorie target  
+• Daily protein / carb / fat targets  
+• Program start date and end date  
+
+User dashboard must dynamically:
+• Pull these values from Google Drive / Google Sheets  
+• Display correct information each day  
+• Update any changes made by admin instantly  
+
+D. Dashboard Display  
+The dashboard must show:
+• Today’s workout summary  
+• Today’s nutrition progress  
+• Calories target vs consumed  
+• Macros target vs achieved  
+• Next session date  
+• Program status (day X of Y)
+
+=====================================================
+END OF NEW CORRECTIONS
+=====================================================

@@ -1,0 +1,186 @@
+  @import "tailwindcss";
+  
+  @plugin "tailwindcss-animate";
+  
+  @custom-variant dark (&:is(.dark *));
+  
+  @theme inline {
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'Outfit', sans-serif;
+    --font-mono: 'Rajdhani', monospace;
+  
+    --color-background: hsl(240 10% 3%);
+    --color-foreground: hsl(0 0% 98%);
+  
+    --color-card: hsl(240 10% 5%);
+    --color-card-foreground: hsl(0 0% 98%);
+  
+    --color-popover: hsl(240 10% 5%);
+    --color-popover-foreground: hsl(0 0% 98%);
+  
+    --color-primary: hsl(150 100% 50%); /* Neon Green - Premium Glow */
+    --color-primary-foreground: hsl(240 10% 3%);
+  
+    --color-secondary: hsl(150 100% 45%); /* Bright Green Accent */
+    --color-secondary-foreground: hsl(0 0% 98%);
+  
+    --color-muted: hsl(240 10% 10%);
+    --color-muted-foreground: hsl(240 5% 60%);
+  
+    --color-accent: hsl(150 95% 48%); /* Green Alt */
+    --color-accent-foreground: hsl(240 10% 3%);
+  
+    --color-destructive: hsl(0 85% 60%);
+    --color-destructive-foreground: hsl(0 0% 98%);
+  
+    --color-border: hsl(240 10% 12%);
+    --color-input: hsl(240 10% 12%);
+    --color-ring: hsl(150 100% 50%);
+  
+    --color-chart-1: hsl(150 100% 50%);
+    --color-chart-2: hsl(150 90% 45%);
+    --color-chart-3: hsl(150 85% 40%);
+    --color-chart-4: hsl(150 100% 55%);
+    --color-chart-5: hsl(150 95% 50%);
+  
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    
+    --animate-glow: glow 2s ease-in-out infinite alternate;
+    
+    @keyframes glow {
+      from {
+        box-shadow: 0 0 5px hsla(150, 100%, 50%, 0.2);
+      }
+      to {
+        box-shadow: 0 0 20px hsla(150, 100%, 50%, 0.6);
+      }
+    }
+  }
+  
+  @layer base {
+    :root {
+      color-scheme: dark;
+    }
+  
+    *:not(button):not(.btn):not(.no-border-fix) {
+      @apply border-border;
+    }
+  
+    body {
+      @apply font-body antialiased bg-background text-foreground;
+      background-image: 
+        radial-gradient(circle at 50% 0%, hsla(150, 100%, 50%, 0.2), transparent 40%),
+        radial-gradient(circle at 0% 50%, hsla(150, 100%, 50%, 0.12), transparent 30%),
+        radial-gradient(circle at 100% 50%, hsla(150, 90%, 45%, 0.1), transparent 30%);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+  
+    h1, h2, h3, h4, h5, h6 {
+      @apply font-display tracking-wider uppercase;
+    }
+  }
+  
+  @layer utilities {
+    .text-neon-green {
+      color: hsl(150 100% 50%);
+      text-shadow: 0 0 10px hsla(150, 100%, 50%, 0.5), 0 0 20px hsla(150, 100%, 50%, 0.3), 0 0 40px hsla(150, 100%, 50%, 0.2);
+    }
+    
+    .text-neon-purple {
+      color: hsl(270 100% 60%);
+      text-shadow: 0 0 10px hsla(270, 100%, 60%, 0.5), 0 0 20px hsla(270, 100%, 60%, 0.3), 0 0 40px hsla(270, 100%, 60%, 0.2);
+    }
+    
+    .text-neon-blue {
+      color: hsl(190 100% 50%);
+      text-shadow: 0 0 10px hsla(190, 100%, 50%, 0.5), 0 0 20px hsla(190, 100%, 50%, 0.3), 0 0 40px hsla(190, 100%, 50%, 0.2);
+    }
+  
+    .border-neon-green {
+      border-color: hsl(150 100% 50%);
+      box-shadow: 0 0 10px hsla(150, 100%, 50%, 0.3), 0 0 20px hsla(150, 100%, 50%, 0.2), inset 0 0 10px hsla(150, 100%, 50%, 0.1);
+    }
+  
+    .bg-glass {
+      background: hsla(240, 10%, 6%, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid hsla(0, 0%, 100%, 0.1);
+    }
+  
+    .card-gradient {
+      background: linear-gradient(145deg, hsla(240, 10%, 10%, 0.9), hsla(240, 10%, 6%, 0.9));
+    }
+  
+    .neon-glow-primary {
+      box-shadow: 0 0 12px hsla(150, 100%, 50%, 0.5), 0 0 24px hsla(150, 100%, 50%, 0.3), 0 0 48px hsla(150, 100%, 50%, 0.15);
+      transition: box-shadow 0.3s ease;
+    }
+    .neon-glow-primary:hover {
+      box-shadow: 0 0 18px hsla(150, 100%, 50%, 0.8), 0 0 36px hsla(150, 100%, 50%, 0.5), 0 0 72px hsla(150, 100%, 50%, 0.3);
+    }
+  
+    .neon-glow-secondary {
+      box-shadow: 0 0 12px hsla(150, 100%, 45%, 0.5), 0 0 24px hsla(150, 100%, 45%, 0.3), 0 0 48px hsla(150, 100%, 45%, 0.15);
+      transition: box-shadow 0.3s ease;
+    }
+    .neon-glow-secondary:hover {
+      box-shadow: 0 0 18px hsla(150, 100%, 45%, 0.8), 0 0 36px hsla(150, 100%, 45%, 0.5), 0 0 72px hsla(150, 100%, 45%, 0.3);
+    }
+  
+    .neon-glow-accent {
+      box-shadow: 0 0 12px hsla(150, 95%, 48%, 0.5), 0 0 24px hsla(150, 95%, 48%, 0.3), 0 0 48px hsla(150, 95%, 48%, 0.15);
+      transition: box-shadow 0.3s ease;
+    }
+    .neon-glow-accent:hover {
+      box-shadow: 0 0 18px hsla(150, 95%, 48%, 0.8), 0 0 36px hsla(150, 95%, 48%, 0.5), 0 0 72px hsla(150, 95%, 48%, 0.3);
+    }
+  
+    .neon-border {
+      position: relative;
+      border: 1px solid transparent;
+      background: linear-gradient(var(--color-card), var(--color-card)) padding-box,
+                  linear-gradient(135deg, hsla(150, 100%, 50%, 0.5), hsla(270, 100%, 60%, 0.5), hsla(190, 100%, 50%, 0.5)) border-box;
+      box-shadow: 0 0 15px hsla(150, 100%, 50%, 0.15), 0 0 30px hsla(270, 100%, 60%, 0.1);
+    }
+  
+    .neon-card {
+      background: linear-gradient(145deg, hsla(240, 10%, 8%, 0.95), hsla(240, 10%, 4%, 0.95));
+      border: 1px solid hsla(150, 100%, 50%, 0.3);
+      box-shadow: 0 0 20px hsla(150, 100%, 50%, 0.15), 0 0 40px hsla(150, 100%, 50%, 0.08), inset 0 1px 1px hsla(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    .neon-card:hover {
+      border-color: hsla(150, 100%, 50%, 0.6);
+      box-shadow: 0 0 30px hsla(150, 100%, 50%, 0.3), 0 0 60px hsla(150, 100%, 50%, 0.15), inset 0 1px 1px hsla(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+  
+    .neon-text-glow {
+      text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+    }
+  
+    .animate-neon-pulse {
+      animation: neon-pulse 2s ease-in-out infinite alternate;
+    }
+  
+    @keyframes neon-pulse {
+      from {
+        opacity: 0.8;
+        filter: brightness(1);
+      }
+      to {
+        opacity: 1;
+        filter: brightness(1.2);
+      }
+    }
+  
+    .neon-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, hsla(150, 100%, 50%, 0.8), hsla(270, 100%, 60%, 0.8), transparent);
+      box-shadow: 0 0 10px hsla(150, 100%, 50%, 0.5), 0 0 20px hsla(270, 100%, 60%, 0.3);
+    }
+  }
+  

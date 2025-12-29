@@ -1,0 +1,95 @@
+TASK:
+1.	Upgrade my existing fitness website’s Members Login Dashboard based on the requirements below.
+2.	Do NOT create a new project — modify the current codebase and keep all routing, components, and styling conventions exactly as they are.
+3.	No changes to existing API fields, API mapping , just add and update
+4.	Also check the entire members page any blank or incomplete information add them .
+
+1. Dashboard Improvements
+a.Today’s Workout
+
+Merge “Today's Focus” with “Today’s Workout”.
+
+When clicked, it should open the Workout patner page
+
+b.Nutrition Section
+
+
+“Calories Remaining”.
+Rename to something engaging, e.g., Fuel Tracker or Nutrition Balance when user clicks it should open macro calculator
+
+
+c.Interactive Body Analysis
+.Add a holographic body map visual.(should vary as per user data , obese, fit, skinny , muscular as per somatotypes. )
+Display:
+Ideal weight range
+Recommended protein intake
+Small progress graph (click → full Progress Tracker page)
+Logic should adjust results for users with high muscle mass (avoid misleading BMI).
+
+2.. Create new Admin Interface in the members login
+- very imp 
+a. User Management
+⦁	Build admin UI to add new users:
+⦁	Weight, height, workout plan, membership duration
+⦁	Auto-generate login credentials
+⦁	Sync everything to Google Sheet
+⦁	Display this data on user’s profile page
+
+b. Editing
+⦁	Allow plan start & end dates
+⦁	Assign milestones & surprise notifications
+⦁	Reward medals for completion
+
+c.Content Management
+⦁	Admin should be able to upload/modify:
+⦁	Recipes with images
+⦁	Workout plans (formatted like existing page)
+⦁	Protein hack blogs
+
+3. Workout Plan Enhancements
+
+⦁	Add workout plans eg bro split, upper lower HIIT and many more with with detailed workout explanations.
+⦁	Add clear workout names, step-by-step instructions, reps/sets, and difficulty modes (Beginner, Intermediate, Advanced).
+⦁	Add option to select weight units (kg/lbs).
+Add cycle repeat selection inside the workout execution screen.
+
+4. Workout Repository Page
+
+Add new workouts for all the body parts a hig level plans realistic
+⦁	Legs, Arms, Cardio, Stretching
+⦁	Each category must have:
+⦁	Complete list of exercises
+⦁	Names + instructions
+⦁	GIF/video support
+
+
+5. Workout Partner Feature
+
+When user selects a mode + routine:
+⦁	Show workout names
+⦁	Add countdown voice during exercises
+Add timer counter counting for sec based workout
+Add count basis ounter for reps ounter ensure he delay is 1.5 sec 
+⦁	Fix timer where “3, 2, 1” gets cut off (add small spacing before transitions)
+
+
+6. Nutrition Plan Page
+Add Protein Hack Blog add 4-5 blog with images
+When user clicks a blog → open new full-content page
+
+
+7. Phase 2 – Zumba Mode
+
+Add music-based countdown similar to Abs mode
+Show GIF or short video demonstrating zumba steps
+
+
+IMPORTANT RULES
+
+⦁	Update only the logged-in member dashboard.
+⦁	Maintain the website’s existing design system.
+⦁	Keep file structure unchanged.
+⦁	Use clean, modular code and avoid breaking existing pages.
+⦁	Ensure fully mobile-responsive output.
+
+END OF PROMPT

@@ -1,0 +1,369 @@
+// Apps Script (Code.gs)
+// Paste into a new Apps Script project (https://script.google.com/)
+// Set the SHEET_ID below to your Google Sheet ID.
+
+const SHEET_ID = "1u85NPq9HJQkWPs4kq2HFNbZ0wzHVcbInSCMXU1GW5yw"; // <<<< change this
+const ADMIN_USERNAME = "Iamadmincap";        // temporary admin creds (dev only)
+const ADMIN_PASSWORD = "Capfitness@2025";    // dev only - do NOT use in production
+
+// Utility: open sheet
+function getSheet(name) {
+  return SpreadsheetApp.openById(SHEET_ID).getSheetByName(name);
+}
+
+// Utility: convert rows to objects using header row
+function sheetToObjects(sheetName) {
+  const sheet = getSheet(sheetName);
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return [];
+  const headers = values[0];
+  const data = [];
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    const obj = {};
+    for (let j = 0; j < headers.length; j++) {
+      obj[headers[j]] = row[j];
+    }
+    data.push(obj);
+  }
+  return data;
+}
+
+// Utility: find row index where column == value (first match)
+function findRowIndex(sheetName, columnName, value) {
+  const sheet = getSheet(sheetName);
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const colIndex = headers.indexOf(columnName);
+  if (colIndex === -1) return -1;
+  const columnValues = sheet.getRange(2, colIndex + 1, sheet.getLastRow() - 1).getValues();
+  for (let i = 0; i < columnValues.length; i++) {
+    if (String(columnValues[i][0]) === String(value)) {
+      return i + 2; // actual sheet row
+    }
+  }
+  return -1;
+}
+
+// Simple CORS wrapper for JSON responses
+function jsonResponse(data, statusCode) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ---------- Public endpoints (doPost / doGet) ----------
+// We route using 'action' query param or JSON body field 'action'
+
+function doGet(e) {
+  // For basic testing: provide a small status endpoint
+  return jsonResponse({ status: "ok", message: "CapFitness Apps Script running" });
+}
+
+function doPost(e) {
+  try {
+    const content = e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
+    const action = (content.action || (e.parameter && e.parameter.action) || "").toString();
+
+    switch (action) {
+      case "login": return handleLogin(content);
+      case "getDashboard": return handleGetDashboard(content);
+      case "submitNutrition": return handleSubmitNutrition(content);
+      case "submitProgress": return handleSubmitProgress(content);
+      case "getProgramForDate": return handleGetProgramForDate(content);
+      case "updateStreak": return handleUpdateStreak(content);
+      case "adminAddExercise": return handleAdminAddExercise(content);
+      case "adminEditRecipe": return handleAdminEditRecipe(content);
+      case "adminAuth": return handleAdminAuth(content);
+      default:
+        return jsonResponse({ ok: false, error: "Unknown action" });
+    }
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err.message, stack: err.stack });
+  }
+}
+
+// ---------- Handlers ----------
+
+// 1) Login - validate against Users sheet (email + password)
+function handleLogin(payload) {
+  const email = payload.email;
+  const password = payload.password;
+  if (!email || !password) return jsonResponse({ ok: false, error: "email & password required" });
+
+  const users = sheetToObjects("Users");
+  const user = users.find(u => String(u.email).toLowerCase() === String(email).toLowerCase() && String(u.password) === String(password));
+  if (!user) return jsonResponse({ ok: false, error: "Invalid credentials" });
+
+  // Return minimal profile info (do NOT return password)
+  const profile = {
+    user_id: user.user_id,
+    email: user.email,
+    name: user.name,
+    gender: user.gender,
+    plan_assigned: user.plan_assigned,
+    calorie_target: Number(user.calorie_target) || 0,
+    protein_target: Number(user.protein_target) || 0,
+    carbs_target: Number(user.carbs_target) || 0,
+    fats_target: Number(user.fats_target) || 0,
+    plan_start_date: user.plan_start_date,
+    plan_end_date: user.plan_end_date,
+    next_session_date: user.next_session_date,
+    avatar_type: user.avatar_type
+  };
+  return jsonResponse({ ok: true, profile });
+}
+
+// 2) Get Dashboard - returns user progress summary, streak summary, today nutrition (aggregated)
+function handleGetDashboard(payload) {
+  const userId = payload.user_id;
+  if (!userId) return jsonResponse({ ok: false, error: "user_id required" });
+
+  // User row
+  const userRowIdx = findRowIndex("Users", "user_id", userId);
+  if (userRowIdx === -1) return jsonResponse({ ok: false, error: "User not found" });
+  const usersheet = getSheet("Users");
+  const userRow = usersheet.getRange(userRowIdx, 1, 1, usersheet.getLastColumn()).getValues()[0];
+  const headers = usersheet.getRange(1,1,1,usersheet.getLastColumn()).getValues()[0];
+  const userObj = {};
+  headers.forEach((h, i) => userObj[h] = userRow[i]);
+
+  // Today's date (YYYY-MM-DD)
+  const today = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+
+  // Aggregate today's nutrition from User_Progress (sum calories/protein/carbs/fats where date = today)
+  const progresses = sheetToObjects("User_Progress").filter(p => p.user_id === userId);
+  let todayCalories = 0, todayProtein = 0, todayCarbs = 0, todayFats = 0;
+  progresses.forEach(p => {
+    const pDate = formatDateStr(p.date);
+    if (pDate === today) {
+      todayCalories += Number(p.calories_consumed || 0);
+      todayProtein += Number(p.protein_consumed || 0);
+      todayCarbs += Number(p.carbs_consumed || 0);
+      todayFats += Number(p.fats_consumed || 0);
+    }
+  });
+
+  // Streak summary (latest continuous count)
+  const streaks = sheetToObjects("User_Streaks").filter(s => s.user_id === userId)
+    .sort((a,b) => compareDateStr(a.date, b.date));
+  // compute current streak (simple rule: workout+diet true continues; rest day maintains)
+  let currentStreak = 0, longest = 0, tempStreak = 0;
+  for (let i = 0; i < streaks.length; i++) {
+    const r = streaks[i];
+    const workoutDone = String(r.workout_done).toLowerCase() === 'true';
+    const dietDone = String(r.diet_done).toLowerCase() === 'true';
+    const restDay = String(r.rest_day).toLowerCase() === 'true';
+    if (workoutDone && dietDone) {
+      tempStreak++;
+    } else if (restDay) {
+      // rest day maintain current streak (do not increment)
+    } else {
+      if (tempStreak > longest) longest = tempStreak;
+      tempStreak = 0;
+    }
+  }
+  currentStreak = tempStreak;
+  if (tempStreak > longest) longest = tempStreak;
+
+  const dashboard = {
+    user: { user_id: userObj.user_id, name: userObj.name, plan_assigned: userObj.plan_assigned },
+    today: { date: today, calories: todayCalories, protein: todayProtein, carbs: todayCarbs, fats: todayFats },
+    streak: { current: currentStreak, longest: longest }
+  };
+
+  return jsonResponse({ ok: true, dashboard });
+}
+
+// 3) Submit Nutrition - payload: { user_id, date, items: [{food, unit, portion, calories, protein, carbs, fats}], action: 'submit' }
+function handleSubmitNutrition(payload) {
+  const userId = payload.user_id;
+  const date = payload.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  const items = payload.items || [];
+  if (!userId) return jsonResponse({ ok: false, error: "user_id required" });
+
+  // Sum macros
+  let calories = 0, protein = 0, carbs = 0, fats = 0;
+  items.forEach(it => {
+    calories += Number(it.calories || 0);
+    protein += Number(it.protein || 0);
+    carbs += Number(it.carbs || 0);
+    fats += Number(it.fats || 0);
+  });
+
+  // Find user's target calories for deficit calc
+  const userIdx = findRowIndex("Users", "user_id", userId);
+  let calorieTarget = 0;
+  if (userIdx !== -1) {
+    const usersheet = getSheet("Users");
+    const headers = usersheet.getRange(1,1,1,usersheet.getLastColumn()).getValues()[0];
+    const row = usersheet.getRange(userIdx,1,1,usersheet.getLastColumn()).getValues()[0];
+    const userObj = {};
+    headers.forEach((h,i) => userObj[h] = row[i]);
+    calorieTarget = Number(userObj.calorie_target || 0);
+  }
+
+  const deficit_surplus = calories - calorieTarget;
+
+  // Save to User_Progress as a single aggregated daily row
+  const progSheet = getSheet("User_Progress");
+  const newId = "P" + (new Date().getTime());
+  progSheet.appendRow([newId, userId, date, "", calories, protein, carbs, fats, deficit_surplus, "Submitted via API"]);
+
+  return jsonResponse({ ok: true, calories, protein, carbs, fats, deficit_surplus });
+}
+
+// 4) Submit Progress (weight updates). payload: { user_id, date, weight, notes }
+function handleSubmitProgress(payload) {
+  const userId = payload.user_id;
+  const date = payload.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  const weight = Number(payload.weight || 0);
+  if (!userId || !weight) return jsonResponse({ ok: false, error: "user_id & weight required" });
+
+  // append progress row
+  const progSheet = getSheet("User_Progress");
+  const newId = "P" + (new Date().getTime());
+  progSheet.appendRow([newId, userId, date, weight, "", "", "", "", "", payload.notes || ""]);
+
+  // Optionally update Users.current_weight
+  const userRow = findRowIndex("Users", "user_id", userId);
+  if (userRow !== -1) {
+    const usersheet = getSheet("Users");
+    const headers = usersheet.getRange(1,1,1,usersheet.getLastColumn()).getValues()[0];
+    const colIdx = headers.indexOf("current_weight");
+    if (colIdx !== -1) {
+      usersheet.getRange(userRow, colIdx + 1).setValue(weight);
+    }
+  }
+
+  return jsonResponse({ ok: true });
+}
+
+// 5) Get Program For Date (payload: { user_id, date })
+function handleGetProgramForDate(payload) {
+  const userId = payload.user_id;
+  const date = payload.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  if (!userId) return jsonResponse({ ok: false, error: "user_id required" });
+
+  // Load user's plan assignment and find program schedule
+  const users = sheetToObjects("Users");
+  const user = users.find(u => u.user_id === userId);
+  if (!user) return jsonResponse({ ok: false, error: "User not found" });
+
+  const assignedPlan = user.plan_assigned;
+  if (!assignedPlan) return jsonResponse({ ok: false, error: "No plan assigned" });
+
+  // Simple approach: find program entries with plan_name == assignedPlan and compute week/day based on start_date
+  const programs = sheetToObjects("Programs").filter(p => p.plan_name === assignedPlan);
+  if (!programs || programs.length === 0) return jsonResponse({ ok: false, error: "No program data" });
+
+  // Parse plan start date to compute day index
+  const startDateStr = user.plan_start_date;
+  const startDate = parseDateStr(startDateStr);
+  const queryDate = parseDateStr(date);
+  if (!startDate || !queryDate) return jsonResponse({ ok: false, error: "Invalid dates" });
+
+  const diffDays = Math.floor((queryDate - startDate) / (1000*60*60*24));
+  const weekNumber = Math.floor(diffDays / 7) + 1;
+  const dayOfWeek = (diffDays % 7) + 1;
+
+  // find matching program rows for computed week/day
+  const matching = programs.filter(p => Number(p.week_number) === weekNumber && Number(p.day_number) === dayOfWeek);
+  return jsonResponse({ ok: true, weekNumber, dayOfWeek, program: matching });
+}
+
+// 6) Update Streak (payload: { user_id, date, workout_done, diet_done, rest_day })
+function handleUpdateStreak(payload) {
+  const userId = payload.user_id;
+  const date = payload.date || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd");
+  if (!userId) return jsonResponse({ ok: false, error: "user_id required" });
+
+  const workout_done = !!payload.workout_done;
+  const diet_done = !!payload.diet_done;
+  const rest_day = !!payload.rest_day;
+
+  // compute streak_status (simple rule: workout+diet => continued else broken unless rest_day)
+  const streak_status = (workout_done && diet_done) || rest_day ? "continued" : "broken";
+
+  // append to User_Streaks
+  const streakSheet = getSheet("User_Streaks");
+  const newId = "S" + (new Date().getTime());
+  streakSheet.appendRow([newId, userId, date, workout_done, diet_done, rest_day, streak_status, payload.notes || ""]);
+
+  return jsonResponse({ ok: true, streak_status });
+}
+
+// 7) Admin - Add Exercise (payload: { admin_user, admin_pass, exercise: {...} })
+function handleAdminAddExercise(payload) {
+  if (!payload.admin_user || !payload.admin_pass) return jsonResponse({ ok: false, error: "admin credentials required" });
+  if (payload.admin_user !== ADMIN_USERNAME || payload.admin_pass !== ADMIN_PASSWORD) return jsonResponse({ ok: false, error: "admin auth failed" });
+
+  const ex = payload.exercise;
+  if (!ex || !ex.name) return jsonResponse({ ok: false, error: "exercise object required" });
+
+  const sheet = getSheet("Global_Workouts");
+  const newId = "E" + (new Date().getTime());
+  sheet.appendRow([newId, ex.name, ex.muscle_group || "", ex.difficulty || "", ex.equipment || "", ex.sets || "", ex.reps || "", ex.rest || "", ex.tempo || "", ex.video_url || "", ex.cues || "", ex.description || "", ex.thumbnail_url || ""]);
+  return jsonResponse({ ok: true });
+}
+
+// 8) Admin - Edit Recipe (payload: { admin_user, admin_pass, recipe_id, updates: {...} })
+function handleAdminEditRecipe(payload) {
+  if (!payload.admin_user || !payload.admin_pass) return jsonResponse({ ok: false, error: "admin credentials required" });
+  if (payload.admin_user !== ADMIN_USERNAME || payload.admin_pass !== ADMIN_PASSWORD) return jsonResponse({ ok: false, error: "admin auth failed" });
+
+  const recipeId = payload.recipe_id;
+  if (!recipeId) return jsonResponse({ ok: false, error: "recipe_id required" });
+
+  const sheet = getSheet("Global_Recipes");
+  const headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
+  const data = sheet.getDataRange().getValues();
+  let foundRow = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(recipeId)) { foundRow = i+1; break; }
+  }
+  if (foundRow === -1) return jsonResponse({ ok: false, error: "recipe not found" });
+
+  const updates = payload.updates || {};
+  headers.forEach((h, idx) => {
+    if (updates.hasOwnProperty(h)) {
+      sheet.getRange(foundRow, idx+1).setValue(updates[h]);
+    }
+  });
+
+  return jsonResponse({ ok: true });
+}
+
+// Admin auth simple endpoint
+function handleAdminAuth(payload) {
+  return jsonResponse({ ok: payload.admin_user === ADMIN_USERNAME && payload.admin_pass === ADMIN_PASSWORD });
+}
+
+// ---------- Helper date parse/format ----------
+function parseDateStr(s) {
+  if (!s) return null;
+  // Supports yyyy-mm-dd or dd-mm-yyyy and common formats
+  try {
+    if (s.indexOf("-") !== -1) {
+      const parts = s.split("-");
+      if (parts[0].length === 4) {
+        // yyyy-mm-dd
+        return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      } else {
+        // dd-mm-yyyy
+        return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      }
+    } else {
+      return new Date(s);
+    }
+  } catch (e) { return null; }
+}
+function formatDateStr(s) {
+  if (!s) return "";
+  const d = parseDateStr(s);
+  if (!d) return "";
+  return Utilities.formatDate(d, Session.getScriptTimeZone(), "yyyy-MM-dd");
+}
+function compareDateStr(a, b) {
+  const da = parseDateStr(a);
+  const db = parseDateStr(b);
+  return da - db;
+}
