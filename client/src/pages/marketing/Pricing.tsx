@@ -39,8 +39,8 @@ const plans: PricingPlan[] = [
       "Full access to Cap’s Fitness platform for self-driven users.",
     features: [
       "Save & track progress",
-      "Basic Diet plan"
-      "Basic workout plan"
+      "Basic Diet plan",
+      "Basic workout plan",
       "Workout & nutrition logging",
       "Streak tracking",
       "Progress analytics",
