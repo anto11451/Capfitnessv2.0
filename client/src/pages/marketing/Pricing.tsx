@@ -113,7 +113,7 @@ export default function Pricing() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => {
-              const Icon = plan.icon;
+              const Icon = plan.icon ?? null;
               return (
                 <motion.div
                   key={plan.name}
