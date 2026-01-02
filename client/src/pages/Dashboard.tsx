@@ -41,10 +41,14 @@ function determineBodyType(
   bmi: number,
   muscleMass: string = "average",
 ): BodyType {
-  if (muscleMass === "high") return "muscular";
-  if (bmi >= 30) return "obese";
+  // Muscular override (important)
+  if (muscleMass === "high" && bmi < 30) return "muscular";
+
+  // Overweight + Obese → Obese bucket
+  if (bmi >= 25) return "obese";
+
   if (bmi < 18.5) return "skinny";
-  if (bmi >= 18.5 && bmi < 25) return "fit";
+
   return "fit";
 }
 
