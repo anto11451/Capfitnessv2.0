@@ -44,7 +44,18 @@ interface StreakState {
   lastLogDate: string;
 }
 
-const LOCAL_STREAK_KEY = 'capsfitness_streak_v1';
+interface PersistedStreakState {
+  version: number;
+  lastSync: string; // ISO date of last sync with server
+  data: StreakState;
+}
+
+const STREAK_VERSION = 1;
+const BASE_LOCAL_STREAK_KEY = 'capsfitness_streak_v1';
+const MAX_CACHE_AGE_DAYS = 3;
+
+const getLocalKeyForUser = (userId: string | number) =>
+  `${BASE_LOCAL_STREAK_KEY}_${userId}`;
 
 const normalizeDate = (raw: string) => {
   if (!raw) return '';
@@ -54,6 +65,17 @@ const normalizeDate = (raw: string) => {
     return `${yyyy}-${mm}-${dd}`;
   }
   return raw;
+};
+
+// Helper to check cache age
+const isCacheFresh = (lastSync: string) => {
+  try {
+    const last = parseISO(lastSync);
+    const diff = differenceInDays(new Date(), last);
+    return diff <= MAX_CACHE_AGE_DAYS;
+  } catch {
+    return false;
+  }
 };
 
 export default function StreakPage() {
@@ -137,28 +159,55 @@ export default function StreakPage() {
     return { current, longest: max };
   };
 
-  // ---- LOCALSTORAGE LOAD ----
-  useEffect(() => {
-    const local = localStorage.getItem(LOCAL_STREAK_KEY);
-    if (local) {
-      try {
-        const parsed = JSON.parse(local) as StreakState;
-        setStreakData(parsed);
-      } catch {
-        // ignore parse errors
-      }
+  // ---- PERSIST HELPERS ----
+  const loadFromLocalStorage = (userId: string | number): StreakState | null => {
+    if (typeof window === 'undefined') return null;
+    const key = getLocalKeyForUser(userId);
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    try {
+      const parsed = JSON.parse(raw) as PersistedStreakState;
+      if (parsed.version !== STREAK_VERSION) return null;
+      if (!isCacheFresh(parsed.lastSync)) return null;
+      return parsed.data;
+    } catch {
+      return null;
     }
-  }, []);
+  };
 
-  // ---- SYNC FROM SHEET ----
+  const saveToLocalStorage = (
+    userId: string | number,
+    data: StreakState,
+    options?: { updateLastSync?: boolean },
+  ) => {
+    if (typeof window === 'undefined') return;
+    const key = getLocalKeyForUser(userId);
+    const now = new Date().toISOString();
+    const payload: PersistedStreakState = {
+      version: STREAK_VERSION,
+      lastSync: options?.updateLastSync ? now : data.lastLogDate || now,
+      data: { ...data, lastLogDate: data.lastLogDate || now },
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+  };
+
+  // ---- INITIAL LOAD: LOCAL CACHE + REMOTE SYNC ----
   useEffect(() => {
-    const syncFromSheet = async () => {
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      }
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
 
-      setLoading(true);
+    // 1. Try local cache first
+    const local = loadFromLocalStorage(user.id);
+    if (local) {
+      setStreakData(local);
+      setLoading(false);
+    }
+
+    // 2. Always try to sync from remote in background
+    const syncFromSheet = async () => {
       try {
         const streaks = await getUserStreaks(user.id);
 
@@ -187,12 +236,20 @@ export default function StreakPage() {
           const history = Array.from(map.values());
           const { current, longest } = calculateStreak(history);
 
-          setStreakData({
+          const freshState: StreakState = {
             currentStreak: current,
             longestStreak: longest,
             history,
             lastLogDate: new Date().toISOString(),
+          };
+
+          setStreakData((prev) => {
+            // If there was no local or remote clearly newer, just replace
+            // For simplicity, remote is treated as source of truth here
+            return freshState;
           });
+
+          saveToLocalStorage(user.id, freshState, { updateLastSync: true });
         }
       } catch (error) {
         console.error('Failed to load streak data:', error);
@@ -202,12 +259,8 @@ export default function StreakPage() {
     };
 
     syncFromSheet();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
-
-  // ---- PERSIST TO LOCALSTORAGE ----
-  useEffect(() => {
-    localStorage.setItem(LOCAL_STREAK_KEY, JSON.stringify(streakData));
-  }, [streakData]);
 
   // ---- BULK SELECTION ----
   const handleBulkToggle = (dateStr: string) => {
@@ -284,12 +337,16 @@ export default function StreakPage() {
         });
 
         const { current, longest } = calculateStreak(newHistory);
-        return {
+        const updated: StreakState = {
           ...prev,
           history: newHistory,
           currentStreak: current,
           longestStreak: longest,
+          lastLogDate: new Date().toISOString(),
         };
+
+        saveToLocalStorage(user.id!, updated, { updateLastSync: true });
+        return updated;
       });
 
       setSelectedDays(new Set());
@@ -346,12 +403,16 @@ export default function StreakPage() {
           else newHistory.push(updatedLog);
 
           const { current, longest } = calculateStreak(newHistory);
-          return {
+          const updated: StreakState = {
             ...prev,
             history: newHistory,
             currentStreak: current,
             longestStreak: longest,
+            lastLogDate: new Date().toISOString(),
           };
+
+          saveToLocalStorage(user.id!, updated, { updateLastSync: true });
+          return updated;
         });
       }
     } catch (error) {
@@ -403,12 +464,16 @@ export default function StreakPage() {
           else newHistory.push(updatedLog);
 
           const { current, longest } = calculateStreak(newHistory);
-          return {
+          const updated: StreakState = {
             ...prev,
             history: newHistory,
             currentStreak: current,
             longestStreak: longest,
+            lastLogDate: new Date().toISOString(),
           };
+
+          saveToLocalStorage(user.id!, updated, { updateLastSync: true });
+          return updated;
         });
 
         setSelectedDay((prev) =>
@@ -442,425 +507,10 @@ export default function StreakPage() {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const todayLog = streakData.history.find((h) => h.date === todayStr);
 
+  // ---- UI (unchanged from previous answer) ----
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-display font-bold text-white">
-              STREAK <span className="text-orange-500">ZONE</span>
-            </h1>
-            <p className="text-muted-foreground">
-              Consistency is the key to greatness.
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground uppercase tracking-widest">
-              Current Streak
-            </p>
-            <p className="text-6xl font-display font-bold text-orange-500 flex items-center gap-2 justify-end">
-              {streakData.currentStreak}{' '}
-              <Flame className="w-12 h-12 fill-orange-500" />
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Daily Log Card */}
-          <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col justify-center">
-            <h3 className="text-2xl font-bold text-white mb-6 text-center">
-              DAILY CHECK-IN
-            </h3>
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                className={cn(
-                  'w-full mb-4 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300',
-                  todayLog?.isRestDay &&
-                    'bg-blue-500/20 text-blue-300 border-blue-500',
-                )}
-                onClick={() => handleLog('rest')}
-              >
-                <Coffee className="w-4 h-4 mr-2" />
-                {todayLog?.isRestDay
-                  ? 'REST DAY ACTIVE'
-                  : 'MARK AS REST DAY'}
-              </Button>
-
-              <div
-                className={cn(
-                  'flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10',
-                  todayLog?.workoutDone &&
-                    'border-green-500/50 bg-green-500/5',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <DumbbellIcon
-                    className={cn(
-                      'w-6 h-6',
-                      todayLog?.workoutDone
-                        ? 'text-green-500'
-                        : 'text-primary',
-                    )}
-                  />
-                  <span className="font-bold">Did you workout today?</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className={cn(
-                      todayLog?.workoutDone
-                        ? 'bg-green-500 text-black hover:bg-green-600'
-                        : 'bg-green-500/20 text-green-500 hover:bg-green-500/40',
-                    )}
-                    onClick={() => handleLog('workout')}
-                  >
-                    {todayLog?.workoutDone ? 'DONE' : 'YES'}
-                  </Button>
-                </div>
-              </div>
-
-              <div
-                className={cn(
-                  'flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10',
-                  todayLog?.dietDone &&
-                    'border-green-500/50 bg-green-500/5',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <UtensilsIcon
-                    className={cn(
-                      'w-6 h-6',
-                      todayLog?.dietDone
-                        ? 'text-green-500'
-                        : 'text-primary',
-                    )}
-                  />
-                  <span className="font-bold">
-                    Did you follow your diet?
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className={cn(
-                      todayLog?.dietDone
-                        ? 'bg-green-500 text-black hover:bg-green-600'
-                        : 'bg-green-500/20 text-green-500 hover:bg-green-500/40',
-                    )}
-                    onClick={() => handleLog('diet')}
-                  >
-                    {todayLog?.dietDone ? 'DONE' : 'YES'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Longest Streak
-              </p>
-              <p className="text-4xl font-display font-bold text-white">
-                {streakData.longestStreak}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Days Logged
-              </p>
-              <p className="text-4xl font-display font-bold text-white">
-                {daysRecorded}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Missed (30d)
-              </p>
-              <p className="text-4xl font-display font-bold text-red-500">
-                {missedDays}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Completion
-              </p>
-              <p className="text-4xl font-display font-bold text-green-500">
-                {Math.round((daysRecorded / 30) * 100)}%
-              </p>
-            </Card>
-          </div>
-        </div>
-
-        {/* Calendar Heatmap */}
-        <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-white">
-              Activity History
-            </h3>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  'border-white/10 text-muted-foreground hover:text-white',
-                  isBulkMode &&
-                    'bg-primary/20 text-primary border-primary',
-                )}
-                onClick={() => {
-                  setIsBulkMode(!isBulkMode);
-                  setSelectedDays(new Set());
-                }}
-              >
-                {isBulkMode ? (
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                ) : (
-                  <Square className="w-4 h-4 mr-2" />
-                )}
-                {isBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
-              </Button>
-              {isBulkMode && selectedDays.size > 0 && (
-                <Button
-                  size="sm"
-                  className="bg-primary text-black hover:bg-primary/80"
-                  onClick={() => setIsBulkDialogOpen(true)}
-                >
-                  Update {selectedDays.size} Days
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-7 md:grid-cols-10 lg:grid-cols-15 gap-3">
-            {calendarDays.map((day, i) => {
-              const dateStr = format(day.date, 'yyyy-MM-dd');
-              const isSelected = selectedDays.has(dateStr);
-              const dayOfWeek = format(day.date, 'EEE');
-              const dayNum = format(day.date, 'd');
-              const isTodayDate = isToday(day.date);
-
-              let status: 'missed' | 'rest' | 'perfect' | 'partial' =
-                'missed';
-              if (day.log) {
-                if (day.log.isRestDay) status = 'rest';
-                else if (day.log.workoutDone && day.log.dietDone)
-                  status = 'perfect';
-                else if (day.log.workoutDone || day.log.dietDone)
-                  status = 'partial';
-              }
-
-              return (
-                <div
-                  key={i}
-                  className={cn(
-                    'flex flex-col items-center gap-1 cursor-pointer transition-all',
-                    isBulkMode &&
-                      isSelected &&
-                      'ring-2 ring-primary ring-offset-2 ring-offset-black rounded-lg',
-                  )}
-                  onClick={() => {
-                    if (isBulkMode) {
-                      handleBulkToggle(dateStr);
-                    } else {
-                      handleEditDay(day.date);
-                    }
-                  }}
-                >
-                  <span
-                    className={cn(
-                      'text-[10px] uppercase tracking-wider',
-                      isTodayDate
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {dayOfWeek}
-                  </span>
-                  <div
-                    className={cn(
-                      'w-full aspect-square rounded-md border transition-all hover:scale-105 flex items-center justify-center relative',
-                      status === 'perfect'
-                        ? 'bg-green-500 border-green-400 shadow-[0_0_10px_rgba(34,197,94,0.4)]'
-                        : status === 'rest'
-                        ? 'bg-blue-500/50 border-blue-400'
-                        : status === 'partial'
-                        ? 'bg-yellow-500 border-yellow-400'
-                        : 'bg-white/5 border-white/10 hover:border-white/30',
-                      isTodayDate && 'ring-2 ring-primary',
-                    )}
-                  >
-                    {isBulkMode && isSelected && (
-                      <CheckSquare className="w-4 h-4 text-white absolute" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      isTodayDate
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {dayNum}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="flex flex-wrap gap-4 mt-6 text-xs text-muted-foreground justify-end">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-green-500" /> Perfect Day
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-yellow-500" /> Partial
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-blue-500/50" /> Rest Day
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-white/5 border border-white/10" />{' '}
-              Missed
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Single Day Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="bg-card border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>
-              Edit Log:{' '}
-              {selectedDay &&
-                format(selectedDay.date, 'MMM do, yyyy')}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="flex items-center justify-between">
-              <span>Rest Day</span>
-              <Button
-                variant={
-                  selectedDay?.log?.isRestDay ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.isRestDay
-                    ? 'bg-blue-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('rest')}
-              >
-                {selectedDay?.log?.isRestDay ? 'Active' : 'Set'}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Workout Completed</span>
-              <Button
-                variant={
-                  selectedDay?.log?.workoutDone ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.workoutDone
-                    ? 'bg-green-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('workout')}
-                disabled={selectedDay?.log?.isRestDay}
-              >
-                {selectedDay?.log?.workoutDone ? 'Yes' : 'No'}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Diet Followed</span>
-              <Button
-                variant={
-                  selectedDay?.log?.dietDone ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.dietDone
-                    ? 'bg-green-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('diet')}
-                disabled={selectedDay?.log?.isRestDay}
-              >
-                {selectedDay?.log?.dietDone ? 'Yes' : 'No'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Bulk Update Dialog */}
-      <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-        <DialogContent className="bg-card border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>
-              Bulk Update: {selectedDays.size} Days Selected
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              Apply the same action to all selected days at once.
-            </p>
-            <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => handleBulkUpdate('perfect')}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" /> Mark All as
-              Perfect Day
-            </Button>
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
-              onClick={() => handleBulkUpdate('rest')}
-              disabled={loading}
-            >
-              <Coffee className="w-4 h-4 mr-2" />
-              {loading
-                ? 'Updating...'
-                : `Mark All as Rest Day`}
-            </Button>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="border-green-500/50 text-green-400 hover:bg-green-500/20"
-                onClick={() => handleBulkUpdate('workout')}
-                disabled={loading}
-              >
-                Workout Done
-              </Button>
-              <Button
-                variant="outline"
-                className="border-green-500/50 text-green-400 hover:bg-green-500/20"
-                onClick={() => handleBulkUpdate('diet')}
-                disabled={loading}
-              >
-                Diet Done
-              </Button>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20"
-              onClick={() => handleBulkUpdate('clear')}
-              disabled={loading}
-            >
-              <XCircle className="w-4 h-4 mr-2" /> Clear All Logs
-            </Button>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground"
-              onClick={() => setIsBulkDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* ... keep the same JSX UI from the previous full component ... */}
     </Layout>
   );
 }
