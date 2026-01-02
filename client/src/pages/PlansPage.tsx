@@ -81,7 +81,7 @@ function mapCustomPlanToDetailed(plan: PlanGroup): DetailedPlan {
         name: ex.name,
         sets: ex.sets,
         reps: ex.reps,
-        rest: "—",
+        rest: "2-3 mins",
       })),
     })),
   };
@@ -666,19 +666,7 @@ const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
   name: "Shiva Bala Fat Loss Plan",
   level: "Coach Assigned (Compound Focus)",
   description:
-    "Expect heavy compound lifts, high effort, and controlled intensity. This plan is designed to push your physical limits while preserving muscle and accelerating fat loss.\n\n" +
-"HOW TO TRAIN:\n" +
-"• Main lifts: Push to 1–2 reps in reserve (RPE 8–9)\n" +
-"• Accessories: Near failure with clean form\n" +
-"• Conditioning days: Breathing hard but controlled\n\n" +
-"NON-NEGOTIABLE RULES:\n" +
-"• Log every workout\n" +
-"• Rest 2–3 minutes on compound lifts\n" +
-"• Sleep minimum 7 hours\n" +
-"• Daily steps: 7–9k\n\n" +
-"PROGRESSION:\n" +
-"When you hit the top of the rep range for all sets, increase load by 2.5–5 kg the next session.\n\n" +
-"This program rewards discipline. Show up, execute, and the results will follow.",
+    "Expect heavy compound lifts, high effort, and controlled intensity. This plan is designed to push your physical limits while preserving muscle and accelerating fat loss.",
   days: [
 {
   day_number: 1,
@@ -755,7 +743,7 @@ const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
       focus: "Lower Body + Burn",
       is_rest_day: false,
       exercises: [
-        { name: "Deadlift", sets: 5, reps: "3–5" },
+        { name: "Deadlift", sets: 5, reps: "3–5", rest: "3 min" },
         { name: "Leg Press", sets: 4, reps: "12–15" },
         { name: "Bodyweight Squats", sets: 3, reps: "25" },
         { name: "Farmer Walk", sets: 3, reps: "40 sec" },
