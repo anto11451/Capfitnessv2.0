@@ -755,7 +755,26 @@ const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
       day_name: "Saturday",
       focus: "Active Recovery",
       is_rest_day: true,
-      exercises: [],
+      exercises: [
+        {
+      name: "Brisk Walk",
+      sets: 1,
+      reps: "30–45 min",
+      cue: "Comfortable pace, nasal breathing"
+    },
+    {
+      name: "Yoga / Mobility Flow",
+      sets: 1,
+      reps: "15–20 min",
+      cue: "Slow, controlled stretches"
+    },
+    {
+      name: "Swimming (Optional)",
+      sets: 1,
+      reps: "15–20 min",
+      cue: "Easy pace, relaxed breathing"
+    },
+      ],
     },
 
     {
