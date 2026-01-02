@@ -596,6 +596,101 @@ interface PlanGroup {
   level?: string;
   description?: string;
 }
+// ============================
+// SHIVA BALA – OLD SCHOOL COMPOUND PLAN
+// ============================
+
+const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
+  name: "Shiva Bala – Old School Fat Loss Plan",
+  level: "Coach Assigned (Compound Focus)",
+  description:
+    "No fancy workouts. Heavy compounds, high effort, real fat loss. Built to push limits and create results.",
+  days: [
+    {
+      day_number: 1,
+      day_name: "Monday",
+      focus: "Upper Body – Push + Pull",
+      is_rest_day: false,
+      exercises: [
+        { name: "Barbell Bench Press", sets: 5, reps: "5–8" },
+        { name: "Pull-Ups / Lat Pulldown", sets: 4, reps: "8–12" },
+        { name: "Overhead Barbell Press", sets: 4, reps: "6–8" },
+        { name: "Barbell Row", sets: 4, reps: "8–10" },
+        { name: "Plank Hold", sets: 3, reps: "60 sec" },
+      ],
+    },
+
+    {
+      day_number: 2,
+      day_name: "Tuesday",
+      focus: "Lower Body – Strength",
+      is_rest_day: false,
+      exercises: [
+        { name: "Back Squat", sets: 5, reps: "5–8" },
+        { name: "Romanian Deadlift", sets: 4, reps: "8–10" },
+        { name: "Walking Lunges", sets: 3, reps: "20 steps" },
+        { name: "Standing Calf Raises", sets: 4, reps: "15–20" },
+      ],
+    },
+
+    {
+      day_number: 3,
+      day_name: "Wednesday",
+      focus: "Conditioning + Core",
+      is_rest_day: false,
+      exercises: [
+        { name: "Treadmill Incline Walk", sets: 1, reps: "25 min" },
+        { name: "Burpees", sets: 4, reps: "12" },
+        { name: "Hanging Leg Raises", sets: 4, reps: "10–12" },
+        { name: "Mountain Climbers", sets: 3, reps: "40 sec" },
+      ],
+    },
+
+    {
+      day_number: 4,
+      day_name: "Thursday",
+      focus: "Upper Body – Volume",
+      is_rest_day: false,
+      exercises: [
+        { name: "Incline Barbell Press", sets: 4, reps: "8–10" },
+        { name: "Seated Cable Row", sets: 4, reps: "10–12" },
+        { name: "Dumbbell Shoulder Press", sets: 3, reps: "10" },
+        { name: "Barbell Curls", sets: 3, reps: "10–12" },
+        { name: "Close-Grip Push-Ups", sets: 3, reps: "AMRAP" },
+      ],
+    },
+
+    {
+      day_number: 5,
+      day_name: "Friday",
+      focus: "Lower Body + Burn",
+      is_rest_day: false,
+      exercises: [
+        { name: "Deadlift", sets: 5, reps: "3–5" },
+        { name: "Leg Press", sets: 4, reps: "12–15" },
+        { name: "Bodyweight Squats", sets: 3, reps: "25" },
+        { name: "Farmer Walk", sets: 3, reps: "40 sec" },
+      ],
+    },
+
+    {
+      day_number: 6,
+      day_name: "Saturday",
+      focus: "Active Recovery",
+      is_rest_day: true,
+      exercises: [],
+    },
+
+    {
+      day_number: 7,
+      day_name: "Sunday",
+      focus: "Complete Rest",
+      is_rest_day: true,
+      exercises: [],
+    },
+  ],
+};
+
 
 export default function PlansPage() {
   const [, setLocation] = useLocation();
@@ -657,7 +752,7 @@ export default function PlansPage() {
             description: `A comprehensive ${name} program designed for maximum results.`,
           }));
 
-          setPrograms(planGroups);
+          setPrograms([SHIVA_BALA_CUSTOM_PLAN, ...planGroups]);
         }
       } catch (error) {
         console.error('Failed to fetch programs:', error);
