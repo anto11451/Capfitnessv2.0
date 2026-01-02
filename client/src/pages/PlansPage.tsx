@@ -601,24 +601,39 @@ interface PlanGroup {
 // ============================
 
 const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
-  name: "Shiva Bala – Old School Fat Loss Plan",
+  name: "Shiva Bala Fat Loss Plan",
   level: "Coach Assigned (Compound Focus)",
   description:
-    "No fancy workouts. Heavy compounds, high effort, real fat loss. Built to push limits and create results.",
+    "Heavy compounds, high effort, real fat loss. Built to push limits and create results.",
   days: [
-    {
-      day_number: 1,
-      day_name: "Monday",
-      focus: "Upper Body – Push + Pull",
-      is_rest_day: false,
-      exercises: [
-        { name: "Barbell Bench Press", sets: 5, reps: "5–8" },
-        { name: "Pull-Ups / Lat Pulldown", sets: 4, reps: "8–12" },
-        { name: "Overhead Barbell Press", sets: 4, reps: "6–8" },
-        { name: "Barbell Row", sets: 4, reps: "8–10" },
-        { name: "Plank Hold", sets: 3, reps: "60 sec" },
-      ],
-    },
+{
+  day_number: 1,
+  day_name: "Monday",
+  focus: "Upper Body – Push + Pull",
+  is_rest_day: false,
+
+  // 🔥 PREMIUM CONTEXT (SAFE ADDITIONS)
+  coach_note:
+    "This is a heavy compound foundation day. The goal is strength, muscle recruitment, and calorie burn. Push hard but keep form strict. You should finish this session feeling worked, not sloppy.",
+
+  execution_focus:
+    "Control the negative on every rep. Drive explosively on the way up. Brace your core on all presses and rows.",
+
+  intensity:
+    "Main lifts at RPE 8–9 (1–2 reps left in the tank). Plank should be near failure on last set.",
+
+  rest_guidelines:
+    "Rest 2–3 minutes for barbell lifts. 60–90 seconds for core work.",
+
+  exercises: [
+    { name: "Barbell Bench Press", sets: 5, reps: "5–8" },
+    { name: "Pull-Ups / Lat Pulldown", sets: 4, reps: "8–12" },
+    { name: "Overhead Barbell Press", sets: 4, reps: "6–8" },
+    { name: "Barbell Row", sets: 4, reps: "8–10" },
+    { name: "Plank Hold", sets: 3, reps: "60 sec" },
+  ],
+},
+
 
     {
       day_number: 2,
