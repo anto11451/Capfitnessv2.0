@@ -50,6 +50,43 @@ interface DetailedPlan {
   days: PlanDay[];
   tips: string[];
 }
+
+function mapCustomPlanToDetailed(plan: PlanGroup): DetailedPlan {
+  return {
+    id: plan.name.toLowerCase().replace(/\s+/g, "-"),
+    name: plan.name,
+    shortName: plan.name,
+    description: plan.description || "",
+    level: "Coach Assigned",
+    daysPerWeek: plan.days.filter(d => !d.is_rest_day).length,
+    duration: "60–75 min",
+    goal: "Fat Loss",
+    targetAudience: "Client Specific",
+    weeks: 8,
+    icon: <Flame className="w-6 h-6" />,
+    color: "from-purple-600 to-fuchsia-600",
+    tips: [
+      "Main lifts at RPE 8–9",
+      "Rest 2–3 min on compounds",
+      "Log every workout",
+      "Daily steps: 7–9k",
+    ],
+    days: plan.days.map(d => ({
+      dayNumber: d.day_number,
+      dayName: d.day_name,
+      focus: d.focus,
+      isRest: d.is_rest_day,
+      duration: "60–75 min",
+      exercises: d.exercises.map(ex => ({
+        name: ex.name,
+        sets: ex.sets,
+        reps: ex.reps,
+        rest: "—",
+      })),
+    })),
+  };
+}
+
 const customDetailedPlans: DetailedPlan[] = [
   {
     id: 'shiva-bala-fatloss',
@@ -1181,80 +1218,28 @@ useEffect(() => {
             ) : (
               <div className="grid gap-6">
                 {programs.map((plan, index) => (
-                  <Dialog key={plan.name}>
-                    <DialogTrigger asChild>
-                      <Card className="relative overflow-hidden bg-card/40 backdrop-blur-md border-white/5 hover:border-secondary/50 transition-all group cursor-pointer">
-                        <div className="absolute inset-0 bg-gradient-to-r from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                        
-                        <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:items-center relative z-10">
-                          <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary border border-secondary/20 shadow-[0_0_15px_rgba(188,19,254,0.1)]">
-                            <span className="font-display font-bold text-2xl">{index + 1}</span>
-                          </div>
+            <Card
+  onClick={() => {
+    setSelectedPlan(mapCustomPlanToDetailed(plan));
+    setActiveDay(1);
+  }}
+  className="bg-card/40 border-white/5 p-6 relative overflow-hidden cursor-pointer hover:border-primary/50 transition-all"
+>
+  <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-                          <div className="flex-1 space-y-2">
-                            <div className="flex flex-wrap items-center gap-3">
-                              <h3 className="text-2xl font-display font-bold text-white">{plan.name}</h3>
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest bg-white/5 text-muted-foreground border border-white/5">
-                                {plan.level}
-                              </span>
-                            </div>
-                            <p className="text-muted-foreground max-w-2xl">{plan.description}</p>
-                          </div>
+  <h3 className="text-xl font-display font-bold text-white mb-2">
+    {plan.name}
+  </h3>
 
-                          <div className="flex-shrink-0">
-                            <Button className="w-full md:w-auto bg-secondary text-white hover:bg-secondary/80 font-bold tracking-wide">
-                              VIEW PROGRAM <ChevronRight className="ml-2 w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </Card>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-4xl bg-card border-white/10 text-white h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-3xl font-display font-bold text-white">{plan.name}</DialogTitle>
-                        <DialogDescription>{plan.level}</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-6 mt-4">
-                        <div className="p-4 bg-secondary/10 border border-secondary/20 rounded-lg">
-                          <h4 className="font-bold text-secondary mb-2">Program Overview</h4>
-                          <p className="text-sm text-muted-foreground">{plan.description}</p>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {plan.days.map((day, i) => (
-                            <Card key={i} className={`p-4 border-white/10 ${day.is_rest_day ? 'bg-black/20' : 'bg-black/40'}`}>
-                              <div className="flex justify-between items-center mb-3">
-                                <h4 className="font-bold text-white">
-                                  {day.day_name || `Day ${day.day_number}`}
-                                </h4>
-                                <span className={`text-xs px-2 py-1 rounded ${day.is_rest_day ? 'bg-white/5 text-muted-foreground' : 'bg-secondary/20 text-secondary'}`}>
-                                  {day.focus || (day.is_rest_day ? 'Rest Day' : 'Training')}
-                                </span>
-                              </div>
-                              {day.is_rest_day ? (
-                                <p className="text-sm text-muted-foreground italic">Recovery and rest</p>
-                              ) : (
-                                <ul className="space-y-2">
-                                  {day.exercises?.map((ex, j) => (
-                                    <li key={j} className="text-sm text-muted-foreground flex items-start gap-2">
-                                      <div className="w-1 h-1 bg-secondary rounded-full mt-2" />
-                                      <div>
-                                        <span className="text-white">{ex.name}</span>
-                                        {(ex.sets || ex.reps) && (
-                                          <span className="text-xs ml-2 text-muted-foreground">
-                                            {ex.sets && `${ex.sets} sets`} {ex.reps && `x ${ex.reps}`}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </li>
-                                  )) || <li className="text-sm text-muted-foreground">No exercises listed</li>}
-                                </ul>
-                              )}
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+  <p className="text-sm text-muted-foreground mb-4">
+    Coach Assigned • Compound Focus
+  </p>
+
+  <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold">
+    VIEW PROGRAM
+  </Button>
+</Card>
+
                 ))}
               </div>
             )}
