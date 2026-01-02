@@ -19,6 +19,28 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getMacroData, NutritionData } from "@/lib/nutritionSync";
 
+// ============================
+// STREAK LOCALSTORAGE HOOK
+// ============================
+function useLocalStreak(): number {
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem("capsfitness_streak_v1");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.currentStreak === "number") {
+        setStreak(parsed.currentStreak);
+      }
+    } catch (e) {
+      console.error("Failed to read streak from localStorage:", e);
+    }
+  }, []);
+
+  return streak;
+}
 
 // ============================
 // TODAY FOCUS RESOLVER (SAFE)
@@ -44,7 +66,6 @@ function getTodayFocus(day: number) {
   }
 }
 
-
 // Body type images
 import maleObeseImg from "@/assets/body-types/male_obese_body_type.png";
 import maleSkinnyImg from "@/assets/body-types/male_skinny_body_type.png";
@@ -58,7 +79,6 @@ import femaleMuscularImg from "@/assets/body-types/female_muscular_body_type.png
 // ============================
 // BODY TYPE + SOMATOTYPE LOGIC
 // ============================
-
 type BodyType = "obese" | "skinny" | "fit" | "muscular";
 type Somatotype = "endomorph" | "ectomorph" | "mesomorph";
 
@@ -66,14 +86,9 @@ function determineBodyType(
   bmi: number,
   muscleMass: string = "average",
 ): BodyType {
-  // Muscular override (important)
   if (muscleMass === "high" && bmi < 30) return "muscular";
-
-  // Overweight + Obese → Obese bucket
   if (bmi >= 25) return "obese";
-
   if (bmi < 18.5) return "skinny";
-
   return "fit";
 }
 
@@ -99,7 +114,6 @@ function calculateProteinIntake(weight: number, goal: string): number {
 // ============================
 // SOMATOTYPE DETECTION (BMI + MUSCLE MASS)
 // ============================
-
 function determineSomatotype(bmi: number, muscleMass?: string): Somatotype {
   if (bmi >= 27) return "endomorph";
   if (bmi < 19 && muscleMass !== "high") return "ectomorph";
@@ -122,7 +136,6 @@ function getSomatotypeRecommendation(type: Somatotype): string {
 // ============================
 // IMAGE-BASED BODY TYPE DISPLAY
 // ============================
-
 function ImageBodyMap({
   bodyType,
   gender,
@@ -340,30 +353,30 @@ function ImageBodyMap({
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
   const [liveProfile, setLiveProfile] = useState<UserProfile | null>(null);
-const [loadingProfile, setLoadingProfile] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null);
 
-
+  const currentStreak = useLocalStreak();
 
   //Fetch fresh profile in Dashboard
   useEffect(() => {
-  if (!user?.userId) return;
+    if (!user?.userId) return;
 
-  async function fetchProfile() {
-    try {
-      const data = await getUserById(user.userId);
-      if (data) setLiveProfile(data);
-    } catch (err) {
-      console.error("Dashboard profile fetch failed:", err);
-    } finally {
-      setLoadingProfile(false);
+    async function fetchProfile() {
+      try {
+        const data = await getUserById(user.userId);
+        if (data) setLiveProfile(data);
+      } catch (err) {
+        console.error("Dashboard profile fetch failed:", err);
+      } finally {
+        setLoadingProfile(false);
+      }
     }
-  }
 
-  fetchProfile();
-}, [user?.userId]);
-
+    fetchProfile();
+  }, [user?.userId]);
 
   // Listen for nutrition data updates
   useEffect(() => {
@@ -384,39 +397,33 @@ const [loadingProfile, setLoadingProfile] = useState(true);
   // USER BASIC VALUES
   // ----------------------------
   const firstName = user?.name?.split(" ")[0]?.toUpperCase() || "CHAMP";
-  const currentStreak = user?.currentStreak || 0;
 
-const userHeight = liveProfile?.height_cm ?? 175;
-const userWeight = liveProfile?.current_weight ?? 70;
-const userGender = liveProfile?.gender ?? "male";
-const userMuscleMass = liveProfile?.muscle_mass ?? "average";
+  const userHeight = liveProfile?.height_cm ?? 175;
+  const userWeight = liveProfile?.current_weight ?? 70;
+  const userGender = liveProfile?.gender ?? "male";
+  const userMuscleMass = liveProfile?.muscle_mass ?? "average";
   const goalWeight = liveProfile?.goal_weight;
-const startingWeight = liveProfile?.starting_weight;
+  const startingWeight = liveProfile?.starting_weight;
 
-const progressStatus =
-  goalWeight && userWeight > goalWeight ? "Losing" : "Gaining";
+  const progressStatus =
+    goalWeight && userWeight > goalWeight ? "Losing" : "Gaining";
 
-const weightDelta =
-  startingWeight
+  const weightDelta = startingWeight
     ? Math.abs(userWeight - startingWeight).toFixed(1)
     : "0.0";
-
-
 
   // ----------------------------
   // BODY CALCULATIONS
   // ----------------------------
-
-const userTargets = useMemo(
-  () => ({
-    calories: liveProfile?.calorie_target ?? 2000,
-    protein: liveProfile?.protein_target ?? 150,
-    carbs: liveProfile?.carbs_target ?? 200,
-    fats: liveProfile?.fats_target ?? 65,
-  }),
-  [liveProfile], // ✅ CORRECT
-);
-
+  const userTargets = useMemo(
+    () => ({
+      calories: liveProfile?.calorie_target ?? 2000,
+      protein: liveProfile?.protein_target ?? 150,
+      carbs: liveProfile?.carbs_target ?? 200,
+      fats: liveProfile?.fats_target ?? 65,
+    }),
+    [liveProfile],
+  );
 
   const bmi = userWeight / Math.pow(userHeight / 100, 2);
   const bodyType = determineBodyType(bmi, userMuscleMass);
@@ -453,20 +460,21 @@ const userTargets = useMemo(
       currentWeek,
     };
   }, [user]);
-if (loadingProfile) {
-  return (
-    <Layout>
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-muted-foreground text-sm">
-            Syncing your profile…
-          </p>
+
+  if (loadingProfile) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center space-y-3">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-muted-foreground text-sm">
+              Syncing your profile…
+            </p>
+          </div>
         </div>
-      </div>
-    </Layout>
-  );
-}
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -498,10 +506,8 @@ if (loadingProfile) {
         {/* ================================== */}
         {/* PART 1: BODY ANALYSIS (PRIMARY) */}
         {/* ================================== */}
-
         <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-card/80 to-black/80 p-1">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-accent opacity-50" />
-
           <div className="grid lg:grid-cols-3 gap-8 p-6 lg:p-12">
             {/* LEFT SIDE — BODY STATS + SOMATOTYPE */}
             <div className="lg:col-span-1 space-y-6">
@@ -509,16 +515,13 @@ if (loadingProfile) {
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 Body Analysis
               </div>
-
               <h2 className="text-3xl font-display font-bold">
                 YOUR BODY <span className="text-primary">PROFILE</span>
               </h2>
-
               <p className="text-muted-foreground">
                 Your personalized assessment powered by body composition,
                 somatotype science and BMI.
               </p>
-
               {/* BMI */}
               <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <Heart className="w-5 h-5 text-red-400" />
@@ -527,7 +530,6 @@ if (loadingProfile) {
                   <p className="font-bold text-white">{bmi.toFixed(1)}</p>
                 </div>
               </div>
-
               {/* Ideal Weight */}
               <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <Scale className="w-5 h-5 text-accent" />
@@ -538,7 +540,6 @@ if (loadingProfile) {
                   </p>
                 </div>
               </div>
-
               {/* Protein */}
               <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
                 <Zap className="w-5 h-5 text-primary" />
@@ -547,7 +548,6 @@ if (loadingProfile) {
                   <p className="font-bold text-white">{recommendedProtein}g</p>
                 </div>
               </div>
-
               {/* SOMATOTYPE */}
               <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 mt-4">
                 <p className="text-sm text-primary font-bold uppercase tracking-wider">
@@ -555,14 +555,12 @@ if (loadingProfile) {
                 </p>
                 <p className="text-white mt-1">{somatotypeAdvice}</p>
               </div>
-
               <Link href="/app/progress">
                 <Button className="w-full sm:w-auto bg-primary text-black hover:bg-primary/90 font-bold tracking-wide h-12 px-8">
                   VIEW FULL PROGRESS <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
             </div>
-
             {/* RIGHT SIDE — IMAGE-BASED BODY TYPE */}
             <div className="lg:col-span-2 relative">
               <ImageBodyMap
@@ -574,57 +572,44 @@ if (loadingProfile) {
             </div>
           </div>
         </section>
-                  
 
         {/* ================================== */}
-     
-{/* ================================== */}
-{/* PART 2: TODAY FOCUS BUTTON */}
-{/* ================================== */}
-
-<Link href="/app/plans">
-  <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all h-full">
-    <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
-
-    <div className="flex justify-between items-start mb-4">
-      <div>
-        <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">
-          Today's Focus
-        </p>
-
-        <h3 className="text-2xl font-display font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
-          {getTodayFocus(programInfo.currentDay)}
-          <ChevronRight className="w-5 h-5 text-primary" />
-        </h3>
-
-        <p className="text-xs mt-1 text-primary opacity-80">
-          Week {programInfo.currentWeek} • Day {programInfo.currentDay}
-        </p>
-      </div>
-
-      <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-        <Activity className="w-6 h-6" />
-      </div>
-    </div>
-
-    <p className="text-muted-foreground text-sm mb-4">
-      {programInfo.currentDay === 7
-        ? "Recovery & mobility recommended"
-        : "45–60 min session ready"}
-    </p>
-
-    <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold">
-      VIEW WORKOUT PLANS
-    </Button>
-  </Card>
-</Link>
-
-
+        {/* PART 2: TODAY FOCUS BUTTON */}
+        {/* ================================== */}
+        <Link href="/app/plans">
+          <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all h-full">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">
+                  Today's Focus
+                </p>
+                <h3 className="text-2xl font-display font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
+                  {getTodayFocus(programInfo.currentDay)}
+                  <ChevronRight className="w-5 h-5 text-primary" />
+                </h3>
+                <p className="text-xs mt-1 text-primary opacity-80">
+                  Week {programInfo.currentWeek} • Day {programInfo.currentDay}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                <Activity className="w-6 h-6" />
+              </div>
+            </div>
+            <p className="text-muted-foreground text-sm mb-4">
+              {programInfo.currentDay === 7
+                ? "Recovery & mobility recommended"
+                : "45–60 min session ready"}
+            </p>
+            <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold">
+              VIEW WORKOUT PLANS
+            </Button>
+          </Card>
+        </Link>
 
         {/* ================================== */}
         {/* PART 3: ACTION BUTTONS (NUTRITION) */}
         {/* ================================== */}
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link href="/app/nutrition">
             <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold h-12 neon-glow-primary">
@@ -646,7 +631,6 @@ if (loadingProfile) {
         {/* ================================== */}
         {/* PART 4: FUEL TRACKER (TODAY ONLY) */}
         {/* ================================== */}
-
         <Link href="/app/nutrition">
           <Card className="bg-card/40 border-primary/20 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all neon-card">
             <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
@@ -669,7 +653,6 @@ if (loadingProfile) {
                 <Utensils className="w-6 h-6" />
               </div>
             </div>
-
             <div className="mb-4">
               <div className="flex justify-between text-xs text-muted-foreground mb-1">
                 <span>Daily Progress</span>
@@ -694,7 +677,6 @@ if (loadingProfile) {
                 />
               </div>
             </div>
-
             <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold neon-glow-primary">
               OPEN MACRO CALCULATOR
             </Button>
@@ -704,7 +686,6 @@ if (loadingProfile) {
         {/* ================================== */}
         {/* PART 5: PROGRESS SNAPSHOT */}
         {/* ================================== */}
-
         <div className="grid md:grid-cols-2 gap-6">
           <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-50" />
@@ -716,25 +697,21 @@ if (loadingProfile) {
               Goal: {liveProfile?.goal_weight ?? "N/A"} kg
             </p>
           </Card>
-
           <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden">
             <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl opacity-50" />
             <p className="text-muted-foreground text-xs uppercase tracking-widest mb-2">Progress</p>
-           <h3 className="text-2xl font-display font-bold text-primary">
-  {progressStatus}
-</h3>
-
-<p className="text-xs text-muted-foreground mt-2">
-  {weightDelta} kg from start
-</p>
-
+            <h3 className="text-2xl font-display font-bold text-primary">
+              {progressStatus}
+            </h3>
+            <p className="text-xs text-muted-foreground mt-2">
+              {weightDelta} kg from start
+            </p>
           </Card>
         </div>
 
         {/* ================================== */}
         {/* PART 6: STREAK DISPLAY */}
         {/* ================================== */}
-
         <Link href="/app/streak">
           <Card className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30 p-8 relative overflow-hidden group cursor-pointer hover:border-orange-500/50 transition-all">
             <div className="absolute right-0 top-0 w-40 h-40 bg-orange-500/5 rounded-full blur-3xl opacity-50" />
