@@ -604,7 +604,19 @@ const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
   name: "Shiva Bala Fat Loss Plan",
   level: "Coach Assigned (Compound Focus)",
   description:
-    "Heavy compounds, high effort, real fat loss. Built to push limits and create results.",
+    ""Expect heavy compound lifts, high effort, and controlled intensity. This plan is designed to push your physical limits while preserving muscle and accelerating fat loss.\n\n" +
+"HOW TO TRAIN:\n" +
+"• Main lifts: Push to 1–2 reps in reserve (RPE 8–9)\n" +
+"• Accessories: Near failure with clean form\n" +
+"• Conditioning days: Breathing hard but controlled\n\n" +
+"NON-NEGOTIABLE RULES:\n" +
+"• Log every workout\n" +
+"• Rest 2–3 minutes on compound lifts\n" +
+"• Sleep minimum 7 hours\n" +
+"• Daily steps: 7–9k\n\n" +
+"PROGRESSION:\n" +
+"When you hit the top of the rep range for all sets, increase load by 2.5–5 kg the next session.\n\n" +
+"This program rewards discipline. Show up, execute, and the results will follow."",
   days: [
 {
   day_number: 1,
