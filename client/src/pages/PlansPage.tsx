@@ -729,39 +729,49 @@ export default function PlansPage() {
     setLocation('/app/workout-partner');
   };
 
-  useEffect(() => {
-    async function fetchPrograms() {
-      setLoading(true);
-      try {
-        const data = await getAllPrograms();
-        if (data) {
-          const grouped = data.reduce((acc: Record<string, ProgramDay[]>, day) => {
-            const name = day.plan_name || 'Unknown Plan';
-            if (!acc[name]) acc[name] = [];
-            acc[name].push(day);
-            return acc;
-          }, {});
+useEffect(() => {
+  async function fetchPrograms() {
+    setLoading(true);
+    try {
+      const data = await getAllPrograms();
 
-          const planGroups: PlanGroup[] = Object.entries(grouped).map(([name, days]) => ({
-            name,
-            days: days.sort((a, b) => {
-              if (a.week_number !== b.week_number) return a.week_number - b.week_number;
-              return a.day_number - b.day_number;
-            }),
-            level: 'Intermediate',
-            description: `A comprehensive ${name} program designed for maximum results.`,
-          }));
+      let planGroups: PlanGroup[] = [];
 
-          setPrograms([SHIVA_BALA_CUSTOM_PLAN, ...planGroups]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch programs:', error);
-      } finally {
-        setLoading(false);
+      if (data && data.length > 0) {
+        const grouped = data.reduce((acc: Record<string, ProgramDay[]>, day) => {
+          const name = day.plan_name || 'Unknown Plan';
+          if (!acc[name]) acc[name] = [];
+          acc[name].push(day);
+          return acc;
+        }, {});
+
+        planGroups = Object.entries(grouped).map(([name, days]) => ({
+          name,
+          days: days.sort((a, b) => {
+            if (a.week_number !== b.week_number) return a.week_number - b.week_number;
+            return a.day_number - b.day_number;
+          }),
+          level: 'Intermediate',
+          description: `A comprehensive ${name} program designed for maximum results.`,
+        }));
       }
+
+      // ✅ ALWAYS show Shiva Bala custom plan
+      setPrograms([SHIVA_BALA_CUSTOM_PLAN, ...planGroups]);
+
+    } catch (error) {
+      console.error('Failed to fetch programs:', error);
+
+      // ✅ EVEN IF API FAILS → still show Shiva plan
+      setPrograms([SHIVA_BALA_CUSTOM_PLAN]);
+    } finally {
+      setLoading(false);
     }
-    fetchPrograms();
-  }, []);
+  }
+
+  fetchPrograms();
+}, []);
+
 
   const filteredPlans = difficultyFilter === 'all' 
     ? detailedPlans 
