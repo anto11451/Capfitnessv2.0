@@ -50,6 +50,30 @@ interface DetailedPlan {
   days: PlanDay[];
   tips: string[];
 }
+const customDetailedPlans: DetailedPlan[] = [
+  {
+    id: 'shiva-bala-fatloss',
+    name: 'Shiva Bala Fat Loss Plan',
+    shortName: 'Shiva Bala',
+    description:
+      'Coach-assigned old-school compound fat loss program focused on discipline, strength, and visible results.',
+    level: 'Coach Assigned',
+    daysPerWeek: 5,
+    duration: '60–75 min',
+    goal: 'Fat Loss',
+    targetAudience: 'Client Specific',
+    weeks: 8,
+    icon: <Flame className="w-6 h-6" />,
+    color: 'from-purple-600 to-fuchsia-600',
+    tips: [
+      'Main lifts at RPE 8–9',
+      'Rest 2–3 min on compounds',
+      'Log every workout',
+      'Daily steps: 7–9k',
+    ],
+    days: [ /* SAME days object you already wrote */ ],
+  },
+];
 
 const detailedPlans: DetailedPlan[] = [
   {
@@ -250,111 +274,6 @@ const detailedPlans: DetailedPlan[] = [
       }
     ]
   },
-
-  {
-  id: 'shiva-bala-fatloss',
-  name: 'Shiva Bala Fat Loss Plan',
-  shortName: 'Shiva Bala',
-  description: 'Coach-assigned old-school compound fat loss program focused on strength, discipline, and visible results.',
-  level: 'Intermediate',
-  daysPerWeek: 5,
-  duration: '60–75 min',
-  goal: 'Fat Loss & Strength Retention',
-  targetAudience: 'Client-specific coaching',
-  weeks: 8,
-  icon: <Flame className="w-6 h-6" />,
-  color: 'from-purple-600 to-fuchsia-600',
-  tips: [
-    'Train main lifts at RPE 8–9',
-    'Rest 2–3 minutes on compound lifts',
-    'Log every workout',
-    'Daily steps: 7–9k',
-    'Increase load when top reps are hit'
-  ],
-  days: [
-    {
-      dayNumber: 1,
-      dayName: 'Monday',
-      focus: 'Upper Body – Push + Pull',
-      isRest: false,
-      duration: '70 min',
-      exercises: [
-        { name: 'Barbell Bench Press', sets: 5, reps: '5–8', rest: '2–3 min', weight: 'Heavy', muscleGroup: 'Chest' },
-        { name: 'Pull-Ups / Lat Pulldown', sets: 4, reps: '8–12', rest: '2 min', muscleGroup: 'Back' },
-        { name: 'Overhead Barbell Press', sets: 4, reps: '6–8', rest: '2 min', muscleGroup: 'Shoulders' },
-        { name: 'Barbell Row', sets: 4, reps: '8–10', rest: '2 min', muscleGroup: 'Back' },
-        { name: 'Plank Hold', sets: 3, reps: '60 sec', rest: '60s', muscleGroup: 'Core' },
-      ],
-    },
-    {
-      dayNumber: 2,
-      dayName: 'Tuesday',
-      focus: 'Lower Body – Strength',
-      isRest: false,
-      duration: '70 min',
-      exercises: [
-        { name: 'Back Squat', sets: 5, reps: '5–8', rest: '3 min', weight: 'Heavy', muscleGroup: 'Legs' },
-        { name: 'Romanian Deadlift', sets: 4, reps: '8–10', rest: '2–3 min', muscleGroup: 'Hamstrings' },
-        { name: 'Walking Lunges', sets: 3, reps: '20 steps', rest: '90s', muscleGroup: 'Legs' },
-        { name: 'Standing Calf Raises', sets: 4, reps: '15–20', rest: '60s', muscleGroup: 'Calves' },
-      ],
-    },
-    {
-      dayNumber: 3,
-      dayName: 'Wednesday',
-      focus: 'Conditioning + Core',
-      isRest: false,
-      duration: '45 min',
-      exercises: [
-        { name: 'Incline Treadmill Walk', sets: 1, reps: '25 min', muscleGroup: 'Cardio' },
-        { name: 'Burpees', sets: 4, reps: '12', rest: '60s', muscleGroup: 'Full Body' },
-        { name: 'Hanging Leg Raises', sets: 4, reps: '10–12', rest: '60s', muscleGroup: 'Core' },
-        { name: 'Mountain Climbers', sets: 3, reps: '40 sec', rest: '30s', muscleGroup: 'Core' },
-      ],
-    },
-    {
-      dayNumber: 4,
-      dayName: 'Thursday',
-      focus: 'Upper Body – Volume',
-      isRest: false,
-      duration: '65 min',
-      exercises: [
-        { name: 'Incline Barbell Press', sets: 4, reps: '8–10', rest: '90s', muscleGroup: 'Chest' },
-        { name: 'Seated Cable Row', sets: 4, reps: '10–12', rest: '90s', muscleGroup: 'Back' },
-        { name: 'Dumbbell Shoulder Press', sets: 3, reps: '10', rest: '90s', muscleGroup: 'Shoulders' },
-        { name: 'Barbell Curl', sets: 3, reps: '10–12', rest: '60s', muscleGroup: 'Biceps' },
-        { name: 'Close-Grip Push-Ups', sets: 3, reps: 'AMRAP', rest: '60s', muscleGroup: 'Triceps' },
-      ],
-    },
-    {
-      dayNumber: 5,
-      dayName: 'Friday',
-      focus: 'Lower Body + Burn',
-      isRest: false,
-      duration: '65 min',
-      exercises: [
-        { name: 'Deadlift', sets: 5, reps: '3–5', rest: '3 min', weight: 'Heavy', muscleGroup: 'Posterior Chain' },
-        { name: 'Leg Press', sets: 4, reps: '12–15', rest: '90s', muscleGroup: 'Legs' },
-        { name: 'Bodyweight Squats', sets: 3, reps: '25', rest: '60s', muscleGroup: 'Legs' },
-        { name: 'Farmer Walk', sets: 3, reps: '40 sec', rest: '60s', muscleGroup: 'Full Body' },
-      ],
-    },
-    {
-      dayNumber: 6,
-      dayName: 'Saturday',
-      focus: 'Active Recovery',
-      isRest: true,
-      exercises: [],
-    },
-    {
-      dayNumber: 7,
-      dayName: 'Sunday',
-      focus: 'Rest',
-      isRest: true,
-      exercises: [],
-    },
-  ],
-},
 
   {
     id: 'ppl',
