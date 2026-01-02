@@ -552,37 +552,60 @@ if (loadingProfile) {
                   
 
         {/* ================================== */}
-        {/* PART 2: TODAY FOCUS BUTTON */}
-        {/* ================================== */}
+      // ============================
+// PART 2: TODAY FOCUS BUTTON
+// ============================
 
-        <Link href="/app/plans">
-          <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all h-full">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">
-                  Today's Focus
-                </p>
-                <h3 className="text-2xl font-display font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
-                  {user?.nextSession || "Rest Day"}
-                  <ChevronRight className="w-5 h-5 text-primary" />
-                </h3>
-                <p className="text-xs mt-1 text-primary opacity-80">
-                  Week {programInfo.currentWeek} • Day {programInfo.currentDay}
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
-                <Activity className="w-6 h-6" />
-              </div>
-            </div>
-            <p className="text-muted-foreground text-sm mb-4">
-              45–60 min session ready
-            </p>
-            <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold">
-              VIEW WORKOUT PLANS
-            </Button>
-          </Card>
-        </Link>
+// Universal day-based focus (no user dependency)
+const DAY_FOCUS_MAP: Record<number, string> = {
+  1: "Upper Body Workout",
+  2: "Lower Body Workout",
+  3: "Fat Burn & Conditioning",
+  4: "Upper Body Workout",
+  5: "Lower Body Workout",
+  6: "Active Recovery",
+  7: "Rest Day",
+};
+
+<Link href="/app/plans">
+  <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all h-full">
+    
+    {/* Glow effect */}
+    <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
+
+    <div className="flex justify-between items-start mb-4">
+      <div>
+        <p className="text-muted-foreground text-xs uppercase tracking-widest mb-1">
+          Today's Focus
+        </p>
+
+        <h3 className="text-2xl font-display font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
+          {DAY_FOCUS_MAP[programInfo.currentDay] || "Rest Day"}
+          <ChevronRight className="w-5 h-5 text-primary" />
+        </h3>
+
+        <p className="text-xs mt-1 text-primary opacity-80">
+          Week {programInfo.currentWeek} • Day {programInfo.currentDay}
+        </p>
+      </div>
+
+      <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+        <Activity className="w-6 h-6" />
+      </div>
+    </div>
+
+    <p className="text-muted-foreground text-sm mb-4">
+      {programInfo.currentDay === 7
+        ? "Recovery & mobility recommended"
+        : "45–60 min session ready"}
+    </p>
+
+    <Button className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-black border border-primary/20 font-bold">
+      VIEW WORKOUT PLANS
+    </Button>
+  </Card>
+</Link>
+
 
         {/* ================================== */}
         {/* PART 3: ACTION BUTTONS (NUTRITION) */}
