@@ -754,7 +754,7 @@ const SHIVA_BALA_CUSTOM_PLAN: PlanGroup = {
       day_number: 6,
       day_name: "Saturday",
       focus: "Active Recovery",
-      is_rest_day: true,
+      is_rest_day: false,
       exercises: [
         {
       name: "Brisk Walk",
