@@ -20,6 +20,31 @@ import { cn } from "@/lib/utils";
 import { getMacroData, NutritionData } from "@/lib/nutritionSync";
 
 
+// ============================
+// TODAY FOCUS RESOLVER (SAFE)
+// ============================
+function getTodayFocus(day: number) {
+  switch (day) {
+    case 1:
+      return "Upper Body Workout";
+    case 2:
+      return "Lower Body Workout";
+    case 3:
+      return "Fat Burn & Conditioning";
+    case 4:
+      return "Upper Body Workout";
+    case 5:
+      return "Lower Body Workout";
+    case 6:
+      return "Active Recovery";
+    case 7:
+      return "Rest Day";
+    default:
+      return "Workout Day";
+  }
+}
+
+
 // Body type images
 import maleObeseImg from "@/assets/body-types/male_obese_body_type.png";
 import maleSkinnyImg from "@/assets/body-types/male_skinny_body_type.png";
@@ -553,24 +578,12 @@ if (loadingProfile) {
 
         {/* ================================== */}
       // ============================
-// PART 2: TODAY FOCUS BUTTON
-// ============================
-
-// Universal day-based focus (no user dependency)
-const DAY_FOCUS_MAP: Record<number, string> = {
-  1: "Upper Body Workout",
-  2: "Lower Body Workout",
-  3: "Fat Burn & Conditioning",
-  4: "Upper Body Workout",
-  5: "Lower Body Workout",
-  6: "Active Recovery",
-  7: "Rest Day",
-};
+{/* ================================== */}
+{/* PART 2: TODAY FOCUS BUTTON */}
+{/* ================================== */}
 
 <Link href="/app/plans">
   <Card className="bg-card/40 border-white/5 p-6 relative overflow-hidden group cursor-pointer hover:border-primary/50 transition-all h-full">
-    
-    {/* Glow effect */}
     <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-primary/20 transition-all" />
 
     <div className="flex justify-between items-start mb-4">
@@ -580,7 +593,7 @@ const DAY_FOCUS_MAP: Record<number, string> = {
         </p>
 
         <h3 className="text-2xl font-display font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
-          {DAY_FOCUS_MAP[programInfo.currentDay] || "Rest Day"}
+          {getTodayFocus(programInfo.currentDay)}
           <ChevronRight className="w-5 h-5 text-primary" />
         </h3>
 
@@ -605,6 +618,7 @@ const DAY_FOCUS_MAP: Record<number, string> = {
     </Button>
   </Card>
 </Link>
+
 
 
         {/* ================================== */}
