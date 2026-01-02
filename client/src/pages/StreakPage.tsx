@@ -23,10 +23,21 @@ interface StreakState {
   lastLogDate: string;
 }
 
+const normalizeDate = (raw: string) => {
+  if (!raw) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  if (/^\d{2}-\d{2}-\d{4}$/.test(raw)) {
+    const [dd, mm, yyyy] = raw.split("-");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return raw;
+};
+
+
 const STREAK_HISTORY_KEY = 'capsfitness_streak_history';
 
 export default function StreakPage() {
-  const { user, updateStreak } = useAuth();
+  const { user, updateStreak: updateStreakLocal } = useAuth();
   
   const loadHistoryFromStorage = (): DayLog[] => {
     const stored = localStorage.getItem(STREAK_HISTORY_KEY);
@@ -61,12 +72,28 @@ export default function StreakPage() {
         setLoading(true);
         const streaks = await getUserStreaks(user.id);
         if (streaks && streaks.length > 0) {
-          const history: DayLog[] = streaks.map(s => ({
-            date: s.date,
-            workoutDone: s.workout_done,
-            dietDone: s.diet_done,
-            isRestDay: s.rest_day
-          }));
+         const map = new Map<string, DayLog>();
+
+streaks.forEach(s => {
+  if (
+    s.workout_done === undefined &&
+    s.diet_done === undefined &&
+    s.rest_day === undefined
+  ) return;
+
+  const date = normalizeDate(s.date);
+  if (!date) return;
+
+  map.set(date, {
+    date,
+    workoutDone: Boolean(s.workout_done),
+    dietDone: Boolean(s.diet_done),
+    isRestDay: Boolean(s.rest_day)
+  });
+});
+
+const history = Array.from(map.values());
+
           
           const { current, longest } = calculateStreak(history);
           setStreakData({
