@@ -63,7 +63,7 @@ export default function ChatBot({
       label: "Any offers or flexibility?",
       response: "We offer flexibility for genuine cases. All special offers and custom arrangements are discussed personally.",
       linkText: "Contact Coach Cap",
-      linkAction: () => window.open("https://wa.me/your-number", "_blank"),
+      linkAction: () => window.open("https://wa.me/+919136331206", "_blank"),
     },
   ];
 
