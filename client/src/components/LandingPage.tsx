@@ -3,9 +3,17 @@ import { motion } from "framer-motion";
 import { ArrowRight, Calculator, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageWrapper from "./PageWrapper";
+import ChatBot from "./ChatBot";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   return (
     <PageWrapper>
@@ -39,6 +47,12 @@ export default function LandingPage() {
           </motion.div>
         </motion.div>
       </motion.div>
+
+      {/* CHATBOT */}
+      <ChatBot 
+        onNavigateToSection={scrollToSection}
+        onNavigateToRoute={setLocation}
+      />
 
       {/* HERO SECTION */}
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20">
@@ -108,7 +122,7 @@ export default function LandingPage() {
       </section>
 
       {/* HOW IT WORKS SECTION */}
-      <section className="py-24 bg-black/20">
+      <section id="how-it-works" className="py-24 bg-black/20 scroll-mt-20">
         <div className="max-w-4xl mx-auto px-6">
           <div className="space-y-12">
             {[
@@ -133,7 +147,7 @@ export default function LandingPage() {
       </section>
 
       {/* ONE-TO-ONE COACHING EMPHASIS */}
-      <section className="py-32 border-y border-white/5">
+      <section id="coaching-emphasis" className="py-32 border-y border-white/5 scroll-mt-20">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
