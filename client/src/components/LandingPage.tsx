@@ -1,277 +1,173 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { 
-  ClipboardList, 
-  DollarSign, 
-  Users, 
-  Newspaper,
-  Calculator,
-  BookOpen,
-  HelpCircle,
-  ArrowRight,
-  Zap,
-  Target,
-  Award
-} from "lucide-react";
+import { ArrowRight, Calculator, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PageWrapper from "./PageWrapper";
-import NeonCard from "./NeonCard";
-import capLogo from "@/assets/cap-logo.png";
-
-const mainSections = [
-  {
-    title: "Client Assessment",
-    description: "Complete your personalized fitness assessment in minutes",
-    icon: ClipboardList,
-    path: "/intake",
-    variant: "green" as const,
-  },
-  {
-    title: "Fitness Calculators",
-    description: "BMI, Body Fat, TDEE, and more - all in one place",
-    icon: Calculator,
-    path: "/calculators",
-    variant: "blue" as const,
-  },
-  {
-    title: "Knowledge Hub",
-    description: "Learn the science behind effective fitness",
-    icon: BookOpen,
-    path: "/knowledge",
-    variant: "purple" as const,
-  },
-  {
-    title: "Fitness Quiz",
-    description: "Discover your ideal fitness approach",
-    icon: HelpCircle,
-    path: "/quiz",
-    variant: "gradient" as const,
-  },
-  {
-    title: "Fitness Blog",
-    description: "Tips and inspiration from our coaches",
-    icon: Newspaper,
-    path: "/blog",
-    variant: "gradient" as const,
-  },
-];
-
-const quickLinks = [
-  {
-    title: "Pricing",
-    description: "Explore our coaching packages",
-    icon: DollarSign,
-    path: "/pricing",
-  },
-  {
-    title: "About Us",
-    description: "Meet the Cap's FITNESS team",
-    icon: Users,
-    path: "/about",
-  },
-  {
-    title: "Fitness Blog",
-    description: "Tips and inspiration from our coaches",
-    icon: Newspaper,
-    path: "/blog",
-  },
-];
-
-const features = [
-  {
-    icon: Zap,
-    title: "Science-Based",
-    description: "Programs backed by research and proven results",
-  },
-  {
-    icon: Target,
-    title: "Personalized",
-    description: "Custom plans tailored to your unique goals",
-  },
-  {
-    icon: Award,
-    title: "Expert Coaching",
-    description: "9+ years of dedicated training experience",
-  },
-];
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
 
-  const scrollToTools = () => {
-    const toolsSection = document.getElementById("explore-tools");
-    if (toolsSection) {
-      toolsSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
   return (
     <PageWrapper>
-      <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-    <div className="absolute inset-0 pointer-events-none">
-  {/* Primary green glow */}
-  <div className="absolute -top-48 left-1/2 -translate-x-1/2 
-    w-[900px] h-[900px] rounded-full
-    bg-[radial-gradient(circle,hsla(150,100%,50%,0.22),transparent_60%)]
-    blur-[160px]" />
-
-  {/* Subtle purple depth (background only) */}
-  <div className="absolute bottom-0 right-0 
-    w-[700px] h-[700px] rounded-full
-    bg-[radial-gradient(circle,hsla(270,85%,55%,0.12),transparent_65%)]
-    blur-[160px]" />
-</div>
-
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-6"
+      {/* FLOATING ROBOT COACH */}
+      <motion.div
+        className="fixed left-6 bottom-32 z-50 flex flex-col items-center gap-2 group"
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 1 }}
+      >
+        <motion.div
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="relative"
+        >
+          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 animate-pulse" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/calculators")}
+            className="w-16 h-16 rounded-full border border-white/10 bg-black/40 backdrop-blur-md hover:bg-white/10 group-hover:border-primary/50 transition-all flex items-center justify-center relative z-10"
           >
-            <motion.div 
-              className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-primary/10 border border-primary/30"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-            >
-              <img src={capLogo} alt="Cap's Fitness" className="w-5 h-5 object-contain" />
-              <span className="text-sm font-medium text-primary">Transform Your Life</span>
-            </motion.div>
+            <Bot className="w-8 h-8 text-primary group-hover:scale-110 transition-transform" />
+          </Button>
+          
+          <motion.div 
+            className="absolute left-20 top-1/2 -translate-y-1/2 bg-black/80 border border-white/10 backdrop-blur-md px-4 py-2 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+          >
+            <p className="text-xs text-primary font-bold uppercase tracking-wider mb-1">Coach Bot</p>
+            <p className="text-sm text-white font-medium">Click me to calculate your stats!</p>
+          </motion.div>
+        </motion.div>
+      </motion.div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold">
+      {/* HERO SECTION */}
+      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-48 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,hsla(150,100%,50%,0.15),transparent_60%)] blur-[160px]" />
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8"
+          >
+            <h1 className="text-6xl md:text-8xl font-display font-bold tracking-tight">
               <span className="text-foreground">Cap's </span>
-              <span className="text-primary neon-text-hero">FITNESS</span>
+              <span className="text-primary uppercase">Fitness</span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              Transform your body, elevate your mind, <br className="hidden md:block" />
-              <span className="text-foreground font-medium">achieve your goals</span>
+            <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
+              One-to-one online fitness coaching, not templates but built around you.
             </p>
 
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center pt-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
+            <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
               <Button 
                 size="lg" 
-                onClick={scrollToTools}
-                className="neon-glow bg-primary hover:bg-primary/90 text-lg px-8 py-6"
+                onClick={() => setLocation("/intake")}
+                className="neon-glow bg-primary hover:bg-primary/90 text-lg px-10 py-7 font-bold text-black rounded-full transition-all hover:scale-105"
               >
-                Explore
-                <ArrowRight className="w-5 h-5 ml-2" />
+                Enroll Now
               </Button>
 
-           <p className="neon-glow bg-primary hover:bg-primary/90 text-black/90 text-lg px-8 py-6">
-  One-to-One Online Coaching
-</p>
-
-
-              
-            </motion.div>
-          </motion.div>
-
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20"
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  className="p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4 mx-auto">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-display font-semibold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
-                </motion.div>
-              );
-            })}
+              <Button 
+                variant="outline"
+                size="lg" 
+                onClick={() => setLocation("/quiz")}
+                className="border-white/10 text-lg px-10 py-7 hover:bg-white/5 rounded-full transition-all"
+              >
+                Take Fitness Assessment
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8" id="explore-tools">
-        <div className="max-w-6xl mx-auto">
-          <motion.div 
-            className="text-center mb-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+      {/* CURIOSITY TEXT */}
+      <section className="py-12 border-t border-white/5">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-4">
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
+            className="text-xl md:text-2xl text-white font-light italic"
           >
-            <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">
-              Explore Our <span className="text-primary">Tools</span>
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-sm">
-              Comprehensive resources to guide your fitness transformation
-            </p>
-          </motion.div>
+            “Most people don’t fail. They’re just following the wrong plan.”
+          </motion.p>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-xl md:text-2xl text-primary font-medium"
+          >
+            “Clarity creates consistency.”
+          </motion.p>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {mainSections.map((section, index) => (
-              <motion.div
-                key={section.path}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+      {/* HOW IT WORKS SECTION */}
+      <section className="py-24 bg-black/20">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="space-y-12">
+            {[
+              "Explore the program and approach",
+              "Get a personalised workout & diet plan",
+              "Train with guidance and track progress"
+            ].map((step, index) => (
+              <motion.div 
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                className="flex items-center gap-8 group"
               >
-                <NeonCard
-                  title={section.title}
-                  description={section.description}
-                  icon={section.icon}
-                  variant={section.variant}
-                  onClick={() => setLocation(section.path)}
-                  glowing
-                >
-                  <div className="flex items-center text-sm text-primary">
-                    <span>Explore</span>
-                    <ArrowRight className="w-4 h-4 ml-1" />
-                  </div>
-                </NeonCard>
+                <span className="text-4xl md:text-6xl font-display font-bold text-white/10 group-hover:text-primary/20 transition-colors">0{index + 1}</span>
+                <p className="text-xl md:text-2xl text-white/80 font-light">{step}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
+      {/* ONE-TO-ONE COACHING EMPHASIS */}
+      <section className="py-32 border-y border-white/5">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="p-8 rounded-2xl bg-gradient-to-br from-primary/20 via-accent/10 to-neon-purple/10 border border-primary/30 neon-border"
+            className="text-2xl md:text-4xl font-display font-bold text-white leading-tight"
           >
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">
-              Ready to Transform?
-            </h2>
-            <p className="text-base text-muted-foreground mb-6 max-w-xl mx-auto">
-              Take the first step towards your fitness goals. 
-              Complete your assessment and let's build your personalized plan.
-            </p>
+            This is not a library of workouts.<br />
+            Every plan is custom-built, trained individually, and guided personally.
+          </motion.h2>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-32">
+        <div className="max-w-4xl mx-auto px-6 text-center space-y-12">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Button 
               size="lg" 
               onClick={() => setLocation("/intake")}
-              className="neon-glow bg-primary hover:bg-primary/90 text-lg px-8 py-6"
+              className="neon-glow bg-primary hover:bg-primary/90 text-lg px-10 py-7 font-bold text-black rounded-full transition-all hover:scale-105"
             >
-              <ClipboardList className="w-5 h-5 mr-2" />
-              Start Your Assessment
-              <ArrowRight className="w-5 h-5 ml-2" />
+              Enroll Now
             </Button>
-          </motion.div>
+
+            <Button 
+              variant="outline"
+              size="lg" 
+              onClick={() => setLocation("/quiz")}
+              className="border-white/10 text-lg px-10 py-7 hover:bg-white/5 rounded-full transition-all"
+            >
+              Take Fitness Assessment
+            </Button>
+          </div>
         </div>
       </section>
     </PageWrapper>
