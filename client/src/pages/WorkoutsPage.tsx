@@ -22,8 +22,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Position the barbell on your upper back, not your neck. Stand with feet shoulder-width apart. Brace your core and descend by breaking at the hips and knees simultaneously. Go below parallel, then drive through your heels to stand.',
     cues: ['Bar on upper traps, not neck', 'Break at hips and knees together', 'Knees track over toes', 'Drive through heels', 'Keep chest up throughout'],
     video_url: 'https://www.youtube.com/watch?v=ultWZbUMPL8',
-    gif_url: 'https://media.tenor.com/KMNYVDBh50gAAAAM/squat-gym.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1534368959876-26bf04f2c947?w=400'
+    gif_url: 'https://www.menshealth.com/fitness/a21207664/how-to-do-squat-workouts/',
+    thumbnail_url: 'https://steelsupplements.com/blogs/steel-blog/how-to-do-barbell-squats-form-muscles-worked?srsltid=AfmBOoqr3MCFfAY-c5i94SmlpreCmbljW09x6wLJZgBrWgIRMv6FkAGf'
   },
   {
     exercise_id: 'leg-2',
@@ -52,8 +52,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Position your feet shoulder-width apart on the platform. Lower the weight by bending your knees, keeping them tracking over your toes. Push through your entire foot to extend your legs without locking your knees.',
     cues: ['Feet shoulder-width apart', 'Lower back stays flat on pad', 'Full range of motion', 'Dont lock knees at top', 'Control the negative'],
     video_url: 'https://www.youtube.com/watch?v=IZxyjW7MPJQ',
-    gif_url: 'https://media.tenor.com/YM9qXXTK4B4AAAAM/leg-press-gym.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400'
+    gif_url: 'https://i.pinimg.com/originals/1c/2b/8e/1c2b8ebbeb29f6c474bed7b5287c5937.gif',
+    thumbnail_url: 'https://www.asphaltgreen.org/wp-content/uploads/2025/01/Leg_Press_Lowered-1-scaled.webp'
   },
   {
     exercise_id: 'leg-4',
@@ -67,8 +67,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Take a large step forward and lower your body until both knees form 90-degree angles. Push off your front foot and bring your back leg forward into the next lunge. Continue walking forward.',
     cues: ['Long stride forward', 'Back knee almost touches ground', 'Torso stays upright', 'Push through front heel', 'Alternate legs continuously'],
     video_url: 'https://www.youtube.com/watch?v=L8fvypPrzzs',
-    gif_url: 'https://media.tenor.com/sF3KFPX_E2MAAAAM/lunges-workout.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=400'
+    gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1222.gif',
+    thumbnail_url: 'https://www.skimble.com/exercises/222-walking-lunges-how-to-do-exercise'
   },
   {
     exercise_id: 'leg-5',
@@ -82,8 +82,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Lie face down on the leg curl machine with the pad just above your heels. Curl the weight up by bending your knees, squeezing your hamstrings at the top. Lower with control.',
     cues: ['Hips stay pressed down', 'Curl all the way up', 'Squeeze hamstrings at top', 'Slow eccentric (3 seconds)', 'Dont use momentum'],
     video_url: 'https://www.youtube.com/watch?v=1Tq3QdYUuHs',
-    gif_url: 'https://media.tenor.com/jR8qhJpXJwEAAAAM/leg-curl.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=400'
+    gif_url: 'https://www.verywellfit.com/thmb/YaCp-c94GSAsJMNnZz3JGd67MDg=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/45-3498304-Leg-Curls-GIF-e49547387c954595a694b833ee40cda7.gif',
+    thumbnail_url: 'https://repfitness.com/cdn/shop/articles/lying-leg-curl.jpg?v=1758554408'
   },
   {
     exercise_id: 'leg-6',
@@ -97,8 +97,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Sit on the machine with the pad on your shins just above your ankles. Extend your legs fully, squeezing your quads at the top. Lower with control.',
     cues: ['Sit back in the seat', 'Full extension at top', 'Pause and squeeze quads', 'Control the descent', 'Dont swing the weight'],
     video_url: 'https://www.youtube.com/watch?v=YyvSfVjQeL0',
-    gif_url: 'https://media.tenor.com/4QJGrEDR0ZUAAAAM/leg-extension.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'
+    gif_url: 'https://www.strengthlog.com/wp-content/uploads/2020/03/leg-extension-seated.gif',
+    thumbnail_url: 'https://cdn.muscleandstrength.com/sites/default/files/leg-extension.jpg'
   },
   {
     exercise_id: 'leg-7',
@@ -113,7 +113,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Rear foot laces down on bench', 'Front shin stays vertical', 'Torso upright', 'Lower until back knee almost touches', 'Drive through front heel'],
     video_url: 'https://www.youtube.com/watch?v=2C-uNgKwPLE',
     gif_url: 'https://media.tenor.com/ZPuCBE0vGBsAAAAM/bulgarian-split-squat.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1598971639058-999e0b7c2e79?w=400'
+    thumbnail_url: 'https://image-tc.galaxy.tf/wijpeg-3z4q664j4hp77n464taxm3j3m/how-to-do-a-bulgarian-split-squat_standard.jpg?crop=182%2C0%2C837%2C628'
   },
   {
     exercise_id: 'leg-8',
@@ -128,7 +128,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Upper back on bench edge', 'Feet flat, hip-width apart', 'Drive through heels', 'Full hip extension', 'Squeeze glutes 2 seconds at top'],
     video_url: 'https://www.youtube.com/watch?v=SEdqd1n0cvg',
     gif_url: 'https://media.tenor.com/S_0K7hLV_fQAAAAM/hip-thrust.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400'
+    thumbnail_url: 'https://www.soletreadmills.com/cdn/shop/articles/A_woman_doing_hip_thrusts_with_a_barbell.png?v=1750356453&width=1200'
   },
   {
     exercise_id: 'leg-9',
@@ -143,7 +143,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Hold weight at chest level', 'Elbows inside knees', 'Sit deep between legs', 'Chest stays up', 'Great for learning squat form'],
     video_url: 'https://www.youtube.com/watch?v=MeIiIdhvXT4',
     gif_url: 'https://media.tenor.com/3C4FO64ERYUAAAAM/goblet-squat.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=400'
+    thumbnail_url: 'https://cdn.mos.cms.futurecdn.net/jfUxnk4k7HjwmhSGud7NQP.jpg'
   },
   {
     exercise_id: 'leg-10',
@@ -158,7 +158,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Full stretch at bottom', 'Rise as high as possible', 'Pause at top', 'Control the descent', 'Dont bounce'],
     video_url: 'https://www.youtube.com/watch?v=-M4-G8p8fmc',
     gif_url: 'https://media.tenor.com/IpA5CfXu-QUAAAAM/calf-raise.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'
+    thumbnail_url: 'https://hips.hearstapps.com/hmg-prod/images/screen-shot-2023-12-21-at-5-01-33-pm-1-658c5e29e9c01.png?crop=0.748xw:1.00xh;0.175xw,0&resize=1200:*'
   },
   {
     exercise_id: 'leg-11',
@@ -173,7 +173,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Feet shoulder-width on platform', 'Keep back flat on pad', 'Lower to parallel or below', 'Push through whole foot', 'Control the weight'],
     video_url: 'https://www.youtube.com/watch?v=0tn5K9NlCfo',
     gif_url: 'https://media.tenor.com/EzJhNxC1WJUAAAAM/hack-squat.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400'
+    thumbnail_url: 'https://images.ctfassets.net/ipjoepkmtnha/2rIzLe2NS5ewNmQFK5lgVq/012babea783e264d0e10e0a5aa85c2aa/pure_hack_squat_mainfeature01.jpg'
   },
   {
     exercise_id: 'leg-12',
@@ -186,9 +186,9 @@ const fallbackExercises: GlobalWorkout[] = [
     reps: '6-8',
     instructions: 'Stand with feet wide apart, toes pointing out. Grip the bar inside your legs. Push through your heels and drive your hips forward to stand. Keep the bar close to your body.',
     cues: ['Wide stance, toes out', 'Grip inside legs', 'Chest up, back straight', 'Drive through heels', 'Hips and shoulders rise together'],
-    video_url: 'https://www.youtube.com/watch?v=lDt8HwxVST0',
+    video_url: 'https://www.youtube.com/watch?v=YMmy-PgCPVc',
     gif_url: 'https://media.tenor.com/FXFExaK6VwYAAAAM/sumo-deadlift.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=400'
+    thumbnail_url: 'https://cdn.muscleandstrength.com/sites/default/files/sumo-deadlift-1.jpg'
   },
 
   // ARMS - 12 exercises
@@ -205,7 +205,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Keep elbows pinned to sides', 'No swinging or momentum', 'Full contraction at top', 'Control the negative', 'Wrists stay neutral'],
     video_url: 'https://www.youtube.com/watch?v=kwG2ipFRgfo',
     gif_url: 'https://media.tenor.com/RE3JW0jJhEQAAAAM/barbell-curl.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=400'
+    thumbnail_url: 'https://www.newbodyplan.co.uk/wp-content/uploads/2021/08/barbell-curl-best-move-for-bigger-biceps.jpg'
   },
   {
     exercise_id: 'arm-2',
@@ -220,7 +220,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Neutral grip throughout', 'Targets brachialis and forearms', 'Elbows stay stationary', 'Can alternate or together', 'No swinging'],
     video_url: 'https://www.youtube.com/watch?v=zC3nLlEvin4',
     gif_url: 'https://media.tenor.com/B8S4M6g2XXYAAAAM/hammer-curl.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400'
+    thumbnail_url: 'https://steelsupplements.com/cdn/shop/articles/shutterstock_1197050494_12cc6090-56ad-4d56-95aa-eed9d08b34d3_1000x.jpg?v=1754462049'
   },
   {
     exercise_id: 'arm-3',
@@ -235,7 +235,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Elbows stay pinned', 'Full extension at bottom', 'Squeeze triceps hard', 'Dont lean forward excessively', 'Control the return'],
     video_url: 'https://www.youtube.com/watch?v=2-LAMcpzODU',
     gif_url: 'https://media.tenor.com/I1qs9mAPXdEAAAAM/tricep-pushdown.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400'
+    thumbnail_url: 'https://imagely.mirafit.co.uk/wp/wp-content/uploads/2022/11/tricep-pushdown-with-Mirafit-Cable-Machine.jpg'
   },
   {
     exercise_id: 'arm-4',
@@ -250,7 +250,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Upper arms stay vertical', 'Lower to forehead or behind head', 'Elbows dont flare', 'Full extension at top', 'Control is key'],
     video_url: 'https://www.youtube.com/watch?v=d_KZxkY_0cM',
     gif_url: 'https://media.tenor.com/YF_nIPbXssgAAAAM/skull-crusher.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400'
+    thumbnail_url: 'https://imagely.mirafit.co.uk/wp/wp-content/uploads/2023/12/skull-crusher-using-Mirafit-EZ-Curl-Bar.jpg'
   },
   {
     exercise_id: 'arm-5',
@@ -265,7 +265,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Arms fully on pad', 'Isolates biceps completely', 'Full stretch at bottom', 'Squeeze at top', 'Slow negative (3 seconds)'],
     video_url: 'https://www.youtube.com/watch?v=fIWP-FRFNU0',
     gif_url: 'https://media.tenor.com/RpvZZ8HNKSEAAAAM/preacher-curl.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=400'
+    thumbnail_url: 'https://cdn.shopify.com/s/files/1/0618/9462/3460/articles/pc_d32d967a-ee41-4b98-87ec-700ff079b0f0.jpg?v=1753097583'
   },
   {
     exercise_id: 'arm-6',
@@ -280,7 +280,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Hands shoulder-width or closer', 'Elbows tucked to sides', 'Touch lower chest', 'Press with triceps focus', 'Great for tricep mass'],
     video_url: 'https://www.youtube.com/watch?v=nEF0bv2FW94',
     gif_url: 'https://media.tenor.com/OZ8HJnFQNRoAAAAM/close-grip-bench.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'
+    thumbnail_url: 'https://steelsupplements.com/cdn/shop/articles/shutterstock_69079681_1600x.jpg?v=1599316230'
   },
   {
     exercise_id: 'arm-7',
@@ -293,9 +293,9 @@ const fallbackExercises: GlobalWorkout[] = [
     reps: '12 each arm',
     instructions: 'Sit on a bench with your elbow resting on your inner thigh. Curl the dumbbell up, keeping your upper arm stationary. Squeeze at the top and lower slowly.',
     cues: ['Elbow braced on inner thigh', 'Complete isolation', 'Full range of motion', 'No cheating possible', 'Great for peak contraction'],
-    video_url: 'https://www.youtube.com/watch?v=Jvj2wV0vOYs',
+    video_url: 'https://www.youtube.com/watch?v=VMbDQ8PZazY',
     gif_url: 'https://media.tenor.com/nzqbOH1L2s0AAAAM/concentration-curl.gif',
-    thumbnail_url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400'
+    thumbnail_url: 'https://cdn.muscleandstrength.com/sites/default/files/seated-concentration-curl.jpg'
   },
   {
     exercise_id: 'arm-8',
