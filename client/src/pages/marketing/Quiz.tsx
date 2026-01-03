@@ -28,122 +28,82 @@ interface Question {
 const questions: Question[] = [
   {
     id: 1,
-    question: "What is your primary fitness goal?",
+    question: "Do you feel like you're working hard but the scale just won't budge?",
     options: [
-      { text: "Lose body fat", value: "fatloss" },
-      { text: "Build muscle mass", value: "muscle" },
-      { text: "Get stronger", value: "strength" },
-      { text: "Improve overall health", value: "health" },
+      { text: "Yes, it's incredibly frustrating", value: "q1_frustrating" },
+      { text: "I see some changes, but they're slow", value: "q1_slow" },
+      { text: "I'm actually looking to gain size", value: "q1_muscle" },
+      { text: "I'm just starting out", value: "q1_health" },
     ],
   },
   {
     id: 2,
-    question: "How would you describe your current fitness level?",
+    question: "How many times have you started a 'new routine' only to lose steam in 3 weeks?",
     options: [
-      { text: "Complete beginner (never exercised regularly)", value: "beginner" },
-      { text: "Some experience (exercised occasionally)", value: "intermediate" },
-      { text: "Experienced (regular gym-goer)", value: "advanced" },
-      { text: "Very experienced (years of training)", value: "expert" },
+      { text: "More times than I can count", value: "q2_many" },
+      { text: "A few times, I need better structure", value: "q2_some" },
+      { text: "I'm consistent, but plateaued", value: "q2_plateau" },
+      { text: "I've never really tried a real plan", value: "q2_never" },
     ],
   },
   {
     id: 3,
-    question: "How many days per week can you commit to training?",
+    question: "If you had a coach guiding your every move, how much faster would you reach your goal?",
     options: [
-      { text: "1-2 days", value: "1-2" },
-      { text: "3-4 days", value: "3-4" },
-      { text: "5-6 days", value: "5-6" },
-      { text: "Every day", value: "7" },
+      { text: "10x faster, I need that accountability", value: "q3_10x" },
+      { text: "Significantly, I'm tired of guessing", value: "q3_significant" },
+      { text: "I just need a clear roadmap", value: "q3_roadmap" },
+      { text: "I'm curious to see the difference", value: "q3_curious" },
     ],
   },
   {
     id: 4,
-    question: "What's your current relationship with food?",
+    question: "What's the #1 thing holding you back from the body you want?",
     options: [
-      { text: "I eat whatever I want, not tracking anything", value: "untracked" },
-      { text: "I try to eat healthy but struggle with consistency", value: "trying" },
-      { text: "I'm somewhat aware of my nutrition", value: "aware" },
-      { text: "I track my food and macros regularly", value: "tracking" },
+      { text: "Confusing nutrition/dieting", value: "q4_nutrition" },
+      { text: "Lack of a proven workout system", value: "q4_system" },
+      { text: "Life is too busy/stressful", value: "q4_busy" },
+      { text: "Not knowing where to start", value: "q4_start" },
     ],
   },
   {
     id: 5,
-    question: "How much sleep do you typically get?",
+    question: "Does your current lifestyle actually support the results you're chasing?",
     options: [
-      { text: "Less than 5 hours", value: "poor" },
-      { text: "5-6 hours", value: "low" },
-      { text: "7-8 hours", value: "good" },
-      { text: "More than 8 hours", value: "excellent" },
+      { text: "Honestly? No, I need a total reset", value: "q5_reset" },
+      { text: "Somewhat, but it's a mess", value: "q5_mess" },
+      { text: "I try, but I'm always exhausted", value: "q5_exhausted" },
+      { text: "I'm ready to make it work", value: "q5_ready" },
     ],
   },
   {
     id: 6,
-    question: "What's your biggest challenge with fitness?",
+    question: "When you look in the mirror 6 months from now, what do you want to see?",
     options: [
-      { text: "Staying consistent", value: "consistency" },
-      { text: "Knowing what to do", value: "knowledge" },
-      { text: "Finding time", value: "time" },
-      { text: "Seeing results", value: "results" },
+      { text: "A lean, toned, confident version of me", value: "q6_lean" },
+      { text: "Clear muscle definition and strength", value: "q6_muscle" },
+      { text: "Someone who finally took control", value: "q6_control" },
+      { text: "Improved health and energy levels", value: "q6_health" },
     ],
   },
   {
     id: 7,
-    question: "How do you prefer to exercise?",
+    question: "Are you ready to stop 'trying' and start 'training' with a real plan?",
     options: [
-      { text: "At home with minimal equipment", value: "home" },
-      { text: "At a gym with full equipment", value: "gym" },
-      { text: "Outdoor activities (running, sports)", value: "outdoor" },
-      { text: "Mix of everything", value: "mixed" },
+      { text: "I'm 100% ready, let's do this", value: "q7_100" },
+      { text: "I'm cautious but interested", value: "q7_interested" },
+      { text: "I need to know it's built for me", value: "q7_built" },
+      { text: "I've waited long enough", value: "q7_waited" },
     ],
   },
   {
     id: 8,
-    question: "What's your body type tendency?",
+    question: "If we built your exact roadmap today, would you follow it?",
     options: [
-      { text: "Naturally thin, hard to gain weight (Ectomorph)", value: "ecto" },
-      { text: "Naturally athletic, gain muscle easily (Mesomorph)", value: "meso" },
-      { text: "Naturally larger, gain weight easily (Endomorph)", value: "endo" },
-      { text: "Not sure", value: "unsure" },
-    ],
-  },
-  {
-    id: 9,
-    question: "How patient are you with results?",
-    options: [
-      { text: "I want results as fast as possible", value: "impatient" },
-      { text: "I can wait a few weeks", value: "moderate" },
-      { text: "I understand it takes months", value: "patient" },
-      { text: "I'm in this for the long haul (years)", value: "committed" },
-    ],
-  },
-  {
-    id: 10,
-    question: "Have you tried fitness programs before?",
-    options: [
-      { text: "No, this is my first time", value: "first" },
-      { text: "Yes, but I quit after a short time", value: "quit" },
-      { text: "Yes, with some success but want better results", value: "some_success" },
-      { text: "Yes, I've achieved my goals before", value: "success" },
-    ],
-  },
-  {
-    id: 11,
-    question: "What motivates you most?",
-    options: [
-      { text: "Looking good", value: "appearance" },
-      { text: "Feeling strong and capable", value: "strength" },
-      { text: "Health and longevity", value: "health" },
-      { text: "Performance and athletic ability", value: "performance" },
-    ],
-  },
-  {
-    id: 12,
-    question: "How do you handle setbacks?",
-    options: [
-      { text: "I tend to give up easily", value: "give_up" },
-      { text: "I take breaks but eventually come back", value: "break" },
-      { text: "I adjust my approach and keep going", value: "adjust" },
-      { text: "Setbacks motivate me to work harder", value: "motivated" },
+      { text: "Show me the path, I'm in", value: "q8_in" },
+      { text: "Yes, I need the structure", value: "q8_structure" },
+      { text: "I'm ready to commit to myself", value: "q8_commit" },
+      { text: "Let's see what you've got", value: "q8_see" },
     ],
   },
 ];
@@ -161,77 +121,67 @@ interface ResultType {
 const resultTypes: Record<string, ResultType> = {
   "fat_loss_beginner": {
     type: "fat_loss_beginner",
-    title: "Fat Loss Beginner",
-    description: "You're starting your fat loss journey! Focus on building habits and learning the basics of nutrition and exercise.",
+    title: "The Fat Loss Plateau",
+    description: "Your results suggest you're stuck in a common cycle where effort doesn't match the scale. This isn't your fault—it's a roadmap issue.",
     icon: Flame,
     color: "text-pink-400",
     bgColor: "bg-pink-500/20",
     tips: [
-      "Start with a moderate calorie deficit (300-500 calories below maintenance)",
-      "Focus on protein intake (1.6g per kg of body weight)",
-      "Begin with 3 strength training sessions per week",
-      "Walk 8,000-10,000 steps daily",
-      "Track your food for awareness, even if not perfectly",
+      "We've identified 3 major gaps in your current calorie-to-activity ratio.",
+      "Your profile shows a high potential for transformation once the 'guessing' is removed.",
+      "A specifically structured Indian diet plan would likely trigger the metabolic shift you've been missing.",
     ],
   },
   "fat_loss_intermediate": {
     type: "fat_loss_intermediate",
-    title: "Fat Loss Intermediate",
-    description: "You have some experience and understand the basics. Time to dial in your approach for better results!",
+    title: "The Consistency Gap",
+    description: "You have the foundation, but your data shows a 'plateau risk'. You're doing the work, but without precise calibration, you're spinning your wheels.",
     icon: Flame,
     color: "text-pink-400",
     bgColor: "bg-pink-500/20",
     tips: [
-      "Consider carb cycling or strategic refeeds",
-      "Increase training intensity with progressive overload",
-      "Add 2-3 HIIT sessions per week",
-      "Focus on sleep and stress management",
-      "Be patient - the last pounds are the hardest",
+      "Your experience level requires advanced 'Progressive Overload' that most apps can't provide.",
+      "There's a specific way to align your nutrition with your training intensity that we need to fix.",
+      "One-to-one guidance would likely shave 4 months off your current timeline.",
     ],
   },
   "muscle_gain_beginner": {
     type: "muscle_gain_beginner",
-    title: "Muscle Gain Beginner",
-    description: "You're ready to build muscle! Focus on learning proper form and establishing a solid training foundation.",
+    title: "The Growth Barrier",
+    description: "You're ready to grow, but your current approach likely lacks the 'Skeletal Loading' required for real muscle hypertrophy.",
     icon: Dumbbell,
     color: "text-accent",
     bgColor: "bg-accent/20",
     tips: [
-      "Start with a full-body program 3x per week",
-      "Focus on compound movements (squat, deadlift, bench, row)",
-      "Eat in a slight calorie surplus (200-300 calories)",
-      "Prioritize protein (2g per kg of body weight)",
-      "Master form before increasing weight",
+      "Your body type requires a very specific surplus-to-stimulus ratio.",
+      "Random gym workouts are likely wasting your 'newbie gains' window.",
+      "A custom-built roadmap will ensure every rep you do actually counts towards your goal.",
     ],
   },
   "muscle_gain_intermediate": {
     type: "muscle_gain_intermediate",
-    title: "Muscle Gain Intermediate",
-    description: "You've built a foundation and are ready for more advanced techniques to maximize muscle growth!",
+    title: "The Performance Peak",
+    description: "You've hit the limit of what 'general advice' can do. To reach the next level of definition and strength, you need surgical precision in your programming.",
     icon: Dumbbell,
     color: "text-accent",
     bgColor: "bg-accent/20",
     tips: [
-      "Consider a push/pull/legs or upper/lower split",
-      "Implement progressive overload systematically",
-      "Add isolation exercises for lagging body parts",
-      "Periodize your training (deload weeks)",
-      "Optimize sleep for recovery and growth hormone",
+      "We've identified opportunities to optimize your recovery-to-output ratio.",
+      "Your current split is likely leaving 'gains' on the table due to lack of personalization.",
+      "Professional coaching is the missing link between 'looking fit' and 'looking elite'.",
     ],
   },
   "balanced_fitness": {
     type: "balanced_fitness",
-    title: "Balanced Fitness Type",
-    description: "You're looking for overall health and fitness rather than extreme transformation. A sustainable, balanced approach is perfect for you!",
+    title: "The Clarity Search",
+    description: "You're looking for health, but the 'noise' of the fitness industry is making it harder than it needs to be. You need a path that fits your life, not the other way around.",
     icon: Target,
     color: "text-primary",
     bgColor: "bg-primary/20",
     tips: [
-      "Combine strength training with cardio/activities you enjoy",
-      "Focus on eating whole, nutritious foods without strict tracking",
-      "Prioritize consistency over intensity",
-      "Include flexibility and mobility work",
-      "Make fitness a lifestyle, not a phase",
+      "A sustainable approach exists, but it requires a plan built around your actual schedule.",
+      "We can remove the 'analysis paralysis' by giving you exactly what to do each day.",
+      "Your journey starts with a single, clear, professionally-guided roadmap.",
     ],
   },
 };
@@ -242,35 +192,29 @@ function calculateResult(answers: Record<number, string>): ResultType {
   let beginnerScore = 0;
   let advancedScore = 0;
 
-  if (answers[1] === "fatloss") fatLossScore += 3;
-  if (answers[1] === "muscle" || answers[1] === "strength") muscleScore += 3;
+  // Question 1: Goal
+  if (answers[1] === "q1_frustrating" || answers[1] === "q1_slow") fatLossScore += 3;
+  if (answers[1] === "q1_muscle") muscleScore += 3;
 
-  if (answers[2] === "beginner") beginnerScore += 3;
-  if (answers[2] === "intermediate") beginnerScore += 1;
-  if (answers[2] === "advanced" || answers[2] === "expert") advancedScore += 2;
+  // Question 2: Experience
+  if (answers[2] === "q2_many" || answers[2] === "q2_never") beginnerScore += 3;
+  if (answers[2] === "q2_some") beginnerScore += 1;
+  if (answers[2] === "q2_plateau") advancedScore += 2;
 
-  if (answers[3] === "1-2") beginnerScore += 1;
-  if (answers[3] === "5-6" || answers[3] === "7") advancedScore += 1;
+  // Question 3: Commitment
+  if (answers[3] === "q3_10x" || answers[3] === "q3_significant") advancedScore += 1;
+  if (answers[3] === "q3_roadmap") beginnerScore += 1;
 
-  if (answers[4] === "untracked" || answers[4] === "trying") beginnerScore += 1;
-  if (answers[4] === "tracking") advancedScore += 1;
+  // Question 4: Barrier
+  if (answers[4] === "q4_nutrition" || answers[4] === "q4_start") beginnerScore += 1;
 
-  if (answers[8] === "ecto") muscleScore += 1;
-  if (answers[8] === "endo") fatLossScore += 1;
-
-  if (answers[9] === "impatient") beginnerScore += 1;
-  if (answers[9] === "committed" || answers[9] === "patient") advancedScore += 1;
-
-  if (answers[10] === "first" || answers[10] === "quit") beginnerScore += 2;
-  if (answers[10] === "success" || answers[10] === "some_success") advancedScore += 1;
-
-  if (answers[12] === "give_up") beginnerScore += 1;
-  if (answers[12] === "motivated" || answers[12] === "adjust") advancedScore += 1;
+  // Question 8: Commitment to follow
+  if (answers[8] === "q8_in" || answers[8] === "q8_structure") advancedScore += 1;
 
   const isBeginner = beginnerScore > advancedScore;
   const isFatLoss = fatLossScore >= muscleScore;
 
-  if (fatLossScore <= 1 && muscleScore <= 1) {
+  if (fatLossScore === 0 && muscleScore === 0) {
     return resultTypes["balanced_fitness"];
   }
 
@@ -345,13 +289,13 @@ export default function Quiz() {
                     </motion.div>
                     <CardTitle className="text-3xl font-display">Fitness Quiz</CardTitle>
                     <CardDescription className="text-base">
-                      Answer 12 quick questions to discover your ideal fitness approach
+                      Answer 8 quick questions to discover your ideal fitness approach
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="relative space-y-6">
                     <div className="grid grid-cols-2 gap-4 text-center">
                       <div className="p-4 rounded-xl bg-background/50 border border-border/30">
-                        <div className="text-2xl font-display font-bold text-primary">12</div>
+                        <div className="text-2xl font-display font-bold text-primary">8</div>
                         <div className="text-sm text-muted-foreground">Questions</div>
                       </div>
                       <div className="p-4 rounded-xl bg-background/50 border border-border/30">
@@ -417,7 +361,7 @@ export default function Quiz() {
                   </CardHeader>
                   <CardContent className="relative space-y-6">
                     <div className="space-y-3">
-                      <h3 className="font-display font-semibold text-lg">Personalized Tips For You:</h3>
+                      <h3 className="font-display font-semibold text-lg">What we've discovered:</h3>
                       <ul className="space-y-2">
                         {result.tips.map((tip, index) => (
                           <motion.li
@@ -432,20 +376,25 @@ export default function Quiz() {
                           </motion.li>
                         ))}
                       </ul>
+                      <p className="text-sm text-muted-foreground mt-4 italic">
+                        These aren't full stops—they're the exact gaps we fix in your custom program.
+                      </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                      <Button variant="outline" onClick={handleRestart} className="hover:bg-muted/50">
-                        <RotateCcw className="w-4 h-4 mr-2" />
-                        Retake Quiz
-                      </Button>
+                    <div className="pt-4">
                       <Button 
                         onClick={() => setLocation("/intake")} 
-                        className="neon-glow bg-primary hover:bg-primary/90"
+                        className="w-full neon-glow bg-primary hover:bg-primary/90 py-7 text-xl font-bold text-black rounded-xl shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)]"
                       >
-                        Get Started
-                        <ChevronRight className="w-4 h-4 ml-2" />
+                        Enroll Now to Fix This
+                        <ChevronRight className="w-6 h-6 ml-2" />
                       </Button>
+                      <button 
+                        onClick={handleRestart}
+                        className="w-full text-center text-xs text-muted-foreground hover:text-white mt-4 uppercase tracking-widest"
+                      >
+                        Restart Assessment
+                      </button>
                     </div>
                   </CardContent>
                 </Card>
