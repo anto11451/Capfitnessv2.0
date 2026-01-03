@@ -22,8 +22,8 @@ const fallbackExercises: GlobalWorkout[] = [
     instructions: 'Position the barbell on your upper back, not your neck. Stand with feet shoulder-width apart. Brace your core and descend by breaking at the hips and knees simultaneously. Go below parallel, then drive through your heels to stand.',
     cues: ['Bar on upper traps, not neck', 'Break at hips and knees together', 'Knees track over toes', 'Drive through heels', 'Keep chest up throughout'],
     video_url: 'https://www.youtube.com/watch?v=ultWZbUMPL8',
-    gif_url: 'https://www.menshealth.com/fitness/a21207664/how-to-do-squat-workouts/',
-    thumbnail_url: 'https://steelsupplements.com/blogs/steel-blog/how-to-do-barbell-squats-form-muscles-worked?srsltid=AfmBOoqr3MCFfAY-c5i94SmlpreCmbljW09x6wLJZgBrWgIRMv6FkAGf'
+    gif_url: 'https://hips.hearstapps.com/hmg-prod/images/workouts/2017/04/barbellsquat-1491916408.gif',
+    thumbnail_url: 'https://res.cloudinary.com/peloton-cycle/image/fetch/f_auto,c_limit,w_3840,q_90/https://images.ctfassets.net/6ilvqec50fal/6lT79Sfo7hKjflDAKIzr1b/24fbeff3939debb65cf443c34a461d5a/front-squat-vs-back-squat.jpg'
   },
   {
     exercise_id: 'leg-2',
@@ -68,7 +68,7 @@ const fallbackExercises: GlobalWorkout[] = [
     cues: ['Long stride forward', 'Back knee almost touches ground', 'Torso stays upright', 'Push through front heel', 'Alternate legs continuously'],
     video_url: 'https://www.youtube.com/watch?v=L8fvypPrzzs',
     gif_url: 'https://cdn.jefit.com/assets/img/exercises/gifs/1222.gif',
-    thumbnail_url: 'https://www.skimble.com/exercises/222-walking-lunges-how-to-do-exercise'
+    thumbnail_url: 'https://cdn.muscleandstrength.com/sites/default/files/barbell-walking-lunge.jpg'
   },
   {
     exercise_id: 'leg-5',
