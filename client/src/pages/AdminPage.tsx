@@ -105,7 +105,7 @@ export default function AdminPage() {
     setLoading(true);
     setError('');
     
-    if (username === 'iamcap' && password === 'Sunshine@123') {
+    if (username === 'Iamcap' && password === 'Sunshine@123') {
       setIsAuthenticated(true);
       setError('');
       toast({ title: 'Welcome Admin', description: 'Successfully logged in.' });
