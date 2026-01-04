@@ -1,3 +1,4 @@
+import { RotateCcw } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader, AlertCircle, CheckCircle, Pause, Play } from "lucide-react";
@@ -17,6 +18,8 @@ export default function PostureTrackingPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isPaused, setIsPaused] = useState(false);
+  const postureRef = useRef("neutral");
+
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -50,6 +53,16 @@ export default function PostureTrackingPage() {
       loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"),
     ])
       .then(() => {
+        // Correctly capture MediaPipe globals from window
+        const drawingUtils = (window as any).drawing_utils;
+        const pose = (window as any).pose;
+
+        if (drawingUtils && pose) {
+          (window as any).drawConnectors = drawingUtils.drawConnectors;
+          (window as any).drawLandmarks = drawingUtils.drawLandmarks;
+          (window as any).POSE_CONNECTIONS = pose.POSE_CONNECTIONS;
+        }
+        
         setScriptsLoaded(true);
         setIsLoading(false);
       })
@@ -75,7 +88,8 @@ export default function PostureTrackingPage() {
       if (isPaused) return;
 
       const now = Date.now();
-      if (now - lastRepTimeRef.current < 500) return;
+      // Adjust debounce for better responsiveness across all exercises
+      if (now - lastRepTimeRef.current < 600) return;
 
       let angle = 0;
       let isDown = false;
@@ -83,7 +97,7 @@ export default function PostureTrackingPage() {
       let feedbackMsg = "";
 
       const workout = workoutName.toLowerCase();
-
+      
       if (workout.includes("push-up")) {
         const shoulder = landmarks[11];
         const elbow = landmarks[13];
@@ -108,9 +122,10 @@ export default function PostureTrackingPage() {
           feedbackMsg = "Go lower for full rep";
         }
 
-        if (knee.x < ankle.x - 0.1 || knee.x > ankle.x + 0.1) {
+        const footDist = Math.abs(landmarks[27].x - landmarks[28].x);
+        if (footDist < 0.2) {
           postureGood = false;
-          feedbackMsg = "Keep knees aligned with toes";
+          feedbackMsg = "Widen your stance";
         }
       } else if (workout.includes("lunge")) {
         const hip = landmarks[23];
@@ -131,6 +146,23 @@ export default function PostureTrackingPage() {
 
         if (!isDown && angle < 60) {
           feedbackMsg = "Curl up higher";
+        }
+      } else if (workout.includes("jumping jack")) {
+        const leftWrist = landmarks[15];
+        const rightWrist = landmarks[16];
+        const head = landmarks[0];
+        isDown = leftWrist.y < head.y && rightWrist.y < head.y;
+        
+        if (isDown && Math.abs(leftWrist.x - rightWrist.x) < 0.5) {
+          feedbackMsg = "Clap your hands above head";
+        }
+      } else if (workout.includes("burpee")) {
+        const shoulder = landmarks[11];
+        const hip = landmarks[23];
+        isDown = hip.y > 0.7; // Squatting or prone
+        
+        if (isDown && shoulder.y > 0.8) {
+           feedbackMsg = "Get low for the push-up";
         }
       } else {
         const shoulder = landmarks[11];
@@ -166,40 +198,56 @@ export default function PostureTrackingPage() {
 
   const onResults = useCallback(
     (results: any) => {
-      if (!canvasRef.current || !videoRef.current) return;
+      if (!canvasRef.current || !videoRef.current || isPaused) return;
 
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
+      // Match canvas dimensions to video
+      if (canvas.width !== videoRef.current.videoWidth || canvas.height !== videoRef.current.videoHeight) {
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+      }
 
+      ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
       if (results.poseLandmarks) {
-        const drawingUtils = (window as any).drawingUtils;
-        const pose = (window as any).pose;
+        const drawConnectors = (window as any).drawConnectors;
+        const drawLandmarks = (window as any).drawLandmarks;
+        const POSE_CONNECTIONS = (window as any).POSE_CONNECTIONS;
 
-        if (drawingUtils && pose) {
-          drawingUtils.drawConnectors(
-            ctx,
-            results.poseLandmarks,
-            pose.POSE_CONNECTIONS,
-            { color: "#00FF00", lineWidth: 4 }
-          );
-          drawingUtils.drawLandmarks(ctx, results.poseLandmarks, {
-            color: "#FF0000",
-            lineWidth: 2,
-            radius: 6,
-          });
+        if (drawConnectors && POSE_CONNECTIONS) {
+          // Use the live posture state for color feedback
+          const postureColor = posture === "good" ? "#00FF00" : (posture === "warning" ? "#FFFF00" : "#FF0000");
+          
+          try {
+            drawConnectors(
+              ctx,
+              results.poseLandmarks,
+              POSE_CONNECTIONS,
+              { color: postureColor, lineWidth: 5 }
+            );
+
+            if (drawLandmarks) {
+              drawLandmarks(ctx, results.poseLandmarks, {
+                color: "#FFFFFF",
+                lineWidth: 2,
+                radius: 4,
+              });
+            }
+          } catch (e) {
+            console.error("Drawing error:", e);
+          }
         }
 
         processRepCount(results.poseLandmarks);
       }
+      ctx.restore();
     },
-    [processRepCount]
+    [processRepCount, posture, isPaused]
   );
 
   const startTracking = useCallback(async () => {
@@ -260,11 +308,22 @@ export default function PostureTrackingPage() {
     }
 
     return () => {
-      if (isActive === false && cameraRef.current) {
-        cameraRef.current.stop();
+      // Clean up MediaPipe instances correctly to prevent memory leaks and runtime errors
+      if (cameraRef.current) {
+        try {
+          cameraRef.current.stop();
+        } catch (e) {
+          console.error("Camera stop error:", e);
+        }
+        cameraRef.current = null;
       }
-      if (!isActive && poseRef.current) {
-        poseRef.current.close();
+      if (poseRef.current) {
+        try {
+          poseRef.current.close();
+        } catch (e) {
+          console.error("Pose close error:", e);
+        }
+        poseRef.current = null;
       }
     };
   }, [isActive, scriptsLoaded, startTracking]);
@@ -279,192 +338,171 @@ export default function PostureTrackingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background p-4">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto space-y-6"
-      >
-        <Button
-          variant="ghost"
-          onClick={() => setLocation("/app")}
-          className="mb-4 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Dashboard
-        </Button>
+    <div className="fixed inset-0 bg-black z-50 overflow-hidden flex flex-col">
+      {/* FULL SCREEN CAMERA VIEW */}
+      <div className="relative flex-1 bg-black">
+        <video
+          ref={videoRef}
+          className="absolute inset-0 w-full h-full object-cover hidden"
+          playsInline
+        />
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
 
-        <Card className="bg-card/80 backdrop-blur-lg border-primary/20">
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-display">
-              <span className="text-foreground">Posture </span>
-              <span className="text-primary neon-text">TRACKING</span>
-            </CardTitle>
-            <p className="text-muted-foreground mt-2">
-              Real-time posture and rep counting using AI
+        {/* TOP NAVIGATION OVERLAY */}
+        <div className="absolute top-6 left-6 z-20">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/app")}
+            className="bg-black/40 backdrop-blur-md text-white border border-white/10 hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Exit
+          </Button>
+        </div>
+
+        {/* WORKOUT SELECTION OVERLAY */}
+        <div className="absolute top-6 right-6 z-20 w-64">
+          <select
+            value={workoutName}
+            onChange={(e) => {
+              setWorkoutName(e.target.value);
+              setRepCount(0);
+              setFeedback("");
+            }}
+            disabled={isActive}
+            className="w-full px-4 py-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl text-white focus:border-primary focus:ring-1 focus:ring-primary/50 disabled:opacity-50"
+          >
+            {workoutOptions.map((workout) => (
+              <option key={workout} value={workout} className="bg-zinc-900">
+                {workout}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* REFERENCE IMAGE OVERLAY (LEFT) */}
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 space-y-4">
+          <div className="w-48 aspect-square bg-black/60 backdrop-blur-md border border-primary/30 rounded-2xl overflow-hidden p-2">
+            <div className="w-full h-full rounded-xl bg-zinc-800 flex items-center justify-center relative overflow-hidden">
+               <img 
+                 src={workoutName === "Push-ups" ? "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=400" : "https://images.unsplash.com/photo-1574680096145-d05b474e2158?auto=format&fit=crop&q=80&w=400"} 
+                 alt={workoutName}
+                 className="w-full h-full object-cover opacity-80"
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-3">
+                 <p className="text-[10px] text-white font-bold uppercase tracking-widest">Target Form</p>
+               </div>
+            </div>
+          </div>
+          <div className="w-48 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Instructions</p>
+            <p className="text-xs text-white leading-relaxed">
+              {workoutName === "Push-ups" 
+                ? "Keep core tight and back flat. Lower chest until elbows are at 90 degrees."
+                : "Keep chest up and heels flat. Drop hips below knee level."}
             </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-                <p className="text-sm text-red-100">{error}</p>
-              </div>
-            )}
+          </div>
+        </div>
 
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-foreground">
-                Select Workout Type
-              </label>
-              <select
-                value={workoutName}
-                onChange={(e) => {
-                  setWorkoutName(e.target.value);
-                  setRepCount(0);
-                  setFeedback("");
-                }}
-                disabled={isActive}
-                className="w-full px-4 py-3 bg-background/50 border border-border/50 rounded-lg text-foreground focus:border-primary focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
-              >
-                {workoutOptions.map((workout) => (
-                  <option key={workout} value={workout}>
-                    {workout}
-                  </option>
-                ))}
-              </select>
+        {/* STATS OVERLAY (BOTTOM) - FACETIME STYLE */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 w-full max-w-xl px-6">
+          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex items-center justify-between gap-8">
+            <div className="flex-1 space-y-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Reps</p>
+              <p className="text-5xl font-display font-bold text-primary tabular-nums">{repCount}</p>
             </div>
 
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="flex flex-col items-center gap-3">
-                  <Loader className="w-8 h-8 text-primary animate-spin" />
-                  <p className="text-muted-foreground">Loading MediaPipe pose detection...</p>
-                </div>
+            <div className="h-16 w-px bg-white/10" />
+
+            <div className="flex-1 space-y-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Form Status</p>
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full animate-pulse ${
+                  posture === "good" ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" : 
+                  posture === "warning" ? "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" : 
+                  "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                }`} />
+                <p className={`text-xl font-bold uppercase tracking-tight ${
+                  posture === "good" ? "text-green-400" : 
+                  posture === "warning" ? "text-yellow-400" : 
+                  "text-red-400"
+                }`}>
+                  {posture === "neutral" ? "Ready" : posture}
+                </p>
               </div>
-            ) : (
-              <>
-                <div className="w-full bg-black rounded-lg overflow-hidden border border-primary/30">
-                  <div className="relative aspect-video bg-black">
-                    <video
-                      ref={videoRef}
-                      className="absolute inset-0 w-full h-full object-cover hidden"
-                      playsInline
-                    />
-                    <canvas
-                      ref={canvasRef}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    {!isActive && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                        <div className="text-center space-y-3">
-                          <AlertCircle className="w-12 h-12 text-primary mx-auto" />
-                          <p className="text-muted-foreground text-sm">
-                            Click "Start Tracking" to begin
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <p className="text-xs text-white/60 truncate">{feedback || "Scan active..."}</p>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted/30 rounded-lg border border-border/30">
-                    <p className="text-xs text-muted-foreground mb-1">Rep Count</p>
-                    <p className="text-3xl font-bold text-primary">{repCount}</p>
-                  </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setIsActive(!isActive)}
+                className={`h-16 w-16 rounded-2xl transition-all active:scale-95 ${
+                  isActive 
+                  ? "bg-red-500 hover:bg-red-600 text-white shadow-lg" 
+                  : "bg-primary hover:bg-primary/90 text-black shadow-lg shadow-primary/20"
+                }`}
+              >
+                {isActive ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+              </Button>
+              <Button
+                onClick={() => {
+                  setRepCount(0);
+                  setFeedback("");
+                  setPosture("neutral");
+                }}
+                variant="outline"
+                className="h-16 w-16 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
 
-                  <div className="p-4 bg-muted/30 rounded-lg border border-border/30">
-                    <p className="text-xs text-muted-foreground mb-1">Posture Status</p>
-                    <div className="flex items-center gap-2">
-                      {posture === "good" ? (
-                        <CheckCircle className="w-5 h-5 text-green-500" />
-                      ) : posture === "warning" ? (
-                        <AlertCircle className="w-5 h-5 text-yellow-500" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                      )}
-                      <span className="capitalize text-sm font-medium">
-                        {posture === "neutral" ? "Neutral" : posture}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+        {/* LOADING & ERROR STATES */}
+        {isLoading && (
+          <div className="absolute inset-0 z-30 bg-black flex items-center justify-center">
+             <div className="text-center space-y-4">
+               <Loader className="w-10 h-10 text-primary animate-spin mx-auto" />
+               <p className="text-muted-foreground font-display tracking-widest">Initializing AI Vision...</p>
+             </div>
+          </div>
+        )}
 
-                {feedback && (
-                  <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                    <p className="text-sm text-yellow-100">{feedback}</p>
-                  </div>
-                )}
+        {error && (
+          <div className="absolute inset-0 z-30 bg-black/90 backdrop-blur-sm flex items-center justify-center p-6">
+             <Card className="max-w-md bg-zinc-900 border-red-500/30">
+               <CardHeader className="text-center">
+                 <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                 <CardTitle className="text-white">Camera Access Error</CardTitle>
+               </CardHeader>
+               <CardContent className="space-y-6 text-center">
+                 <p className="text-muted-foreground">{error}</p>
+                 <Button onClick={() => window.location.reload()} className="w-full bg-red-500 hover:bg-red-600">Retry Camera</Button>
+               </CardContent>
+             </Card>
+          </div>
+        )}
 
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setIsActive(!isActive);
-                      if (!isActive) {
-                        toast({
-                          title: "Tracking Started",
-                          description: `Started tracking ${workoutName}`,
-                        });
-                      }
-                    }}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-3 neon-glow"
-                  >
-                    {isActive ? (
-                      <>
-                        <Pause className="w-4 h-4 mr-2" />
-                        Pause
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4 mr-2" />
-                        Start Tracking
-                      </>
-                    )}
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      setRepCount(0);
-                      setFeedback("");
-                      setPosture("neutral");
-                    }}
-                    variant="outline"
-                    className="px-6 py-3"
-                  >
-                    Reset
-                  </Button>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card/80 backdrop-blur-lg border-primary/20">
-          <CardHeader>
-            <CardTitle className="text-lg">Tips for Best Results</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Ensure good lighting and camera visibility of your full body</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Keep the camera steady and at a good distance</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Move slowly and deliberately for accurate tracking</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span>Follow the posture feedback to maintain proper form</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </motion.div>
+        {!isActive && !isLoading && !error && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9 }}
+               animate={{ opacity: 1, scale: 1 }}
+               className="text-center space-y-6"
+             >
+               <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto border border-primary/30">
+                  <Play className="w-10 h-10 text-primary" />
+               </div>
+               <h2 className="text-3xl font-display text-white">READY TO TRACK?</h2>
+               <p className="text-muted-foreground max-w-xs mx-auto">Position yourself in full view of the camera and press play.</p>
+             </motion.div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
