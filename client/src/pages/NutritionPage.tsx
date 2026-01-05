@@ -915,10 +915,10 @@ export default function NutritionPage() {
   }, []);
 
   const targets = {
-    calories: user?.calorieTarget || 2000,
-    protein: user?.proteinTarget || 150,
-    carbs: user?.carbsTarget || 200,
-    fats: user?.fatsTarget || 65,
+    calories: (user as any)?.calorie_target || 2000,
+    protein: (user as any)?.protein_target || 150,
+    carbs: (user as any)?.carbs_target || 200,
+    fats: (user as any)?.fats_target || 65,
   };
 
   const indianPresets = [
@@ -1070,9 +1070,9 @@ export default function NutritionPage() {
     setPortionUnit("serving");
 
     let syncSuccess = false;
-    if (user?.userId) {
+    if ((user as any)?.user_id) {
       try {
-        const result = await submitNutrition(user.userId, getTodayKey(), [
+        const result = await submitNutrition((user as any).user_id, getTodayKey(), [
           {
             name: newEntry.name,
             calories: newEntry.calories,
