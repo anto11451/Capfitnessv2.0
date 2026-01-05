@@ -195,7 +195,6 @@ export default function BodyMapPage() {
                 <p className="text-sm font-bold text-white uppercase tracking-tight">Ready to optimize?</p>
                 <p className="text-xs text-muted-foreground">Adjust your workout plan based on this analysis.</p>
               </div>
-              <ChevronRight className="ml-auto w-5 h-5 text-primary" />
             </div>
           </div>
         </div>
