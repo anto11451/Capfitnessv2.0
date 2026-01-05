@@ -15,6 +15,7 @@ import ProgressPage from "@/pages/ProgressPage";
 import ProfilePage from "@/pages/ProfilePage";
 import AdminPage from "@/pages/AdminPage";
 import BodyMapPage from "@/pages/BodyMapPage";
+import GuidePage from "@/pages/GuidePage";
 import StreakPage from "@/pages/StreakPage";
 import WorkoutPartnerPage from "@/pages/WorkoutPartnerPage";
 import PostureTrackingPage from "@/pages/PostureTrackingPage";
@@ -112,6 +113,7 @@ function Router() {
           <Route path="/app/progress" component={ProgressPage} />
           <Route path="/app/profile" component={ProfilePage} />
           <Route path="/app/bodymap" component={BodyMapPage} />
+          <Route path="/app/guide" component={GuidePage} />
           <Route path="/app/streak" component={StreakPage} />
           <Route path="/app/workout-partner" component={WorkoutPartnerPage} />
           <Route path="/app/posture" component={PostureTrackingPage} />
