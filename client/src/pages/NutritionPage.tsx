@@ -43,7 +43,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/App";
 import { useToast } from "@/hooks/use-toast";
-import { submitNutrition } from "@/lib/googleSheetsApi";
+import { getMacroData, syncFuelTrackerWithMacros, NutritionData } from "@/lib/nutritionSync";
 
 const DAILY_LOG_KEY = "capsfitness_daily_log";
 
@@ -964,9 +964,87 @@ export default function NutritionPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const checkAndResetLog = () => {
+      const stored = localStorage.getItem(DAILY_LOG_KEY);
+      if (!stored) return;
+
+      try {
+        const log: DailyLog = JSON.parse(stored);
+        const logDate = new Date(log.date);
+        const now = new Date();
+        
+        // 9 AM Reset Logic
+        const resetTimeToday = new Date(now);
+        resetTimeToday.setHours(9, 0, 0, 0);
+
+        const lastLogDate = new Date(log.date);
+        const isDifferentDay = lastLogDate.toDateString() !== now.toDateString();
+        
+        // If the log is from before 9am today and it's now past 9am
+        // OR if it's a completely different day and we've passed 9am
+        if ((isDifferentDay && now.getHours() >= 9) || (logDate < resetTimeToday && now >= resetTimeToday)) {
+          console.log("Refreshing nutrition log (9:00 AM Daily Reset)");
+          const newLog: DailyLog = {
+            date: now.toISOString(),
+            entries: [],
+            caloriesConsumed: 0,
+            proteinConsumed: 0,
+            carbsConsumed: 0,
+            fatsConsumed: 0,
+          };
+          localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(newLog));
+          setDailyLog(newLog);
+          window.dispatchEvent(new CustomEvent("nutrition-data-updated", { detail: null }));
+        }
+      } catch (e) {
+        console.error("Error parsing nutrition log for reset:", e);
+      }
+    };
+
+    checkAndResetLog();
+    const interval = setInterval(checkAndResetLog, 1000 * 60 * 5); // Check every 5 mins
+    return () => clearInterval(interval);
+  }, []);
+
   const saveDailyLog = (log: DailyLog) => {
     localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(log));
     setDailyLog(log);
+    
+    // Get latest targets from the nutrition calculator sync
+    const syncedMacros = getMacroData();
+    const targetCalories = syncedMacros?.caloriesGoal || user?.calorie_target || 2000;
+    const targetProtein = syncedMacros?.proteinGoal || user?.protein_target || 150;
+    const targetCarbs = syncedMacros?.carbsGoal || user?.carbs_target || 200;
+    const targetFats = syncedMacros?.fatsGoal || user?.fats_target || 60;
+
+    // Save merged data to ensure persistence
+    syncFuelTrackerWithMacros({
+      protein: log.proteinConsumed,
+      carbs: log.carbsConsumed,
+      fats: log.fatsConsumed,
+      calories: log.caloriesConsumed,
+    }, {
+      calories: targetCalories,
+      protein: targetProtein,
+      carbs: targetCarbs,
+      fats: targetFats
+    });
+
+    // Broadcast update for Dashboard with correctly calculated consumed values
+    window.dispatchEvent(new CustomEvent("nutrition-data-updated", { 
+      detail: {
+        ...syncedMacros, 
+        calories: log.caloriesConsumed,
+        protein: log.proteinConsumed,
+        carbs: log.carbsConsumed,
+        fats: log.fatsConsumed,
+        caloriesGoal: targetCalories,
+        proteinGoal: targetProtein,
+        carbsGoal: targetCarbs,
+        fatsGoal: targetFats
+      }
+    }));
   };
 
   const calculateFromInput = (
