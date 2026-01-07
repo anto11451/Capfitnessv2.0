@@ -284,6 +284,19 @@ export default function Dashboard() {
   const [liveProfile, setLiveProfile] = useState<UserProfile | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null);
+  const [streakData, setStreakData] = useState<any>(null);
+
+  useEffect(() => {
+    // Load initial streak data
+    const localStreak = localStorage.getItem('capsfitness_streak_v1');
+    if (localStreak) {
+      setStreakData(JSON.parse(localStreak));
+    }
+    
+    const handleStreakUpdate = (e: any) => setStreakData(e.detail);
+    window.addEventListener("streak-data-updated", handleStreakUpdate);
+    return () => window.removeEventListener("streak-data-updated", handleStreakUpdate);
+  }, []);
 
   useEffect(() => {
     // Check user_id from the user object
@@ -327,16 +340,33 @@ export default function Dashboard() {
   const userWeight = liveProfile?.current_weight ?? 70;
   const userGender = liveProfile?.gender ?? "male";
   const userMuscleMass = (liveProfile as any)?.muscle_mass ?? "average";
-  const userTargets = useMemo(() => ({
-    calories: liveProfile?.calorie_target ?? 2000,
-    protein: (liveProfile as any)?.protein_target ?? 150,
-  }), [liveProfile]);
+  const userTargets = useMemo(() => {
+    // Priority: 1. Synced macro data (real-time calculator results), 2. Profile from Sheets
+    const syncedMacros = getMacroData();
+    if (syncedMacros) {
+      return {
+        calories: syncedMacros.caloriesGoal || liveProfile?.calorie_target || 2000,
+        protein: syncedMacros.proteinGoal || (liveProfile as any)?.protein_target || 150,
+      };
+    }
+    return {
+      calories: liveProfile?.calorie_target || 2000,
+      protein: (liveProfile as any)?.protein_target || 150,
+    };
+  }, [liveProfile, nutritionData]);
 
   const bmi = userWeight / Math.pow(userHeight / 100, 2);
   const bodyType = determineBodyType(bmi, userMuscleMass);
   const idealWeight = calculateIdealWeight(userHeight, userGender);
-  const currentStreak = (user as any)?.current_streak || (liveProfile as any)?.current_streak || 0;
+  
+  // Use synced streak data or profile fallback
+  const currentStreak = streakData?.currentStreak || (user as any)?.current_streak || (liveProfile as any)?.current_streak || 0;
   const nextSession = (user as any)?.next_session_date || (liveProfile as any)?.next_session_date;
+
+  // Plan Start Date from Google Sheets (liveProfile)
+  const planStartDateDisplay = liveProfile?.plan_start_date ? 
+    new Date(liveProfile.plan_start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 
+    "NOT SET";
 
   // Debug logs to verify user object
   console.log("Dashboard User Object:", user);
@@ -359,7 +389,10 @@ export default function Dashboard() {
         <header className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-primary text-xs uppercase tracking-[0.2em] font-bold">Your Command Center</p>
-            <p className="text-muted-foreground/60 text-[10px] font-medium tracking-widest uppercase">Logged in as {firstName}</p>
+            <div className="flex flex-col items-end">
+              <p className="text-muted-foreground/60 text-[10px] font-medium tracking-widest uppercase">Logged in as {firstName}</p>
+              <p className="text-primary/60 text-[10px] font-bold tracking-widest uppercase mt-1">Plan Start: {planStartDateDisplay}</p>
+            </div>
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white leading-tight uppercase">
@@ -416,9 +449,19 @@ export default function Dashboard() {
                   <Utensils className="w-4 h-4" />
                   <span className="text-[10px] uppercase tracking-widest font-bold">Fuel</span>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{(nutritionData?.calories || userTargets.calories)}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining kcal</p>
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-2xl font-bold text-white">
+                      {Math.max(0, userTargets.calories - (nutritionData?.calories || 0))}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining kcal</p>
+                  </div>
+                  <div className="pt-2 border-t border-white/5">
+                    <p className="text-sm font-bold text-white">
+                      {Math.max(0, userTargets.protein - (nutritionData?.protein || 0))}g
+                    </p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining Protein</p>
+                  </div>
                 </div>
                 <Button 
                   variant="ghost" 
@@ -438,9 +481,13 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold text-white">{currentStreak}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Day Streak</p>
                 </div>
-                <p className="text-[10px] text-orange-500/80 font-medium">
-                  {currentStreak === 0 ? "Start your journey today!" : "Keep the fire burning!"}
-                </p>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setLocation('/app/streak')}
+                  className="w-full text-xs text-orange-500 hover:bg-orange-500/10 border border-orange-500/20 rounded-xl"
+                >
+                  View Streak
+                </Button>
               </Card>
             </div>
           </div>
