@@ -12,45 +12,56 @@ import { getUserProgress, submitProgress } from '@/lib/googleSheetsApi';
 
 const WEIGHT_HISTORY_KEY_PREFIX = 'capsfitness_weight_history_';
 
-interface WeightEntry {
-  date: string;
-  weight: number;
-}
-
 export default function ProgressPage() {
   const { user } = useAuth();
+  const userId = user?.user_id || user?.id;
   
   const programStart = useMemo(() => {
-    if (user?.programStartDate) {
+    const startDate = user?.plan_start_date || user?.programStartDate;
+    if (startDate) {
       try {
-        const parsed = parseISO(user.programStartDate);
+        const parsed = parseISO(startDate);
         if (!isNaN(parsed.getTime())) return parsed;
       } catch { /* fallback */ }
     }
     return new Date();
-  }, [user?.programStartDate]);
+  }, [user?.plan_start_date, user?.programStartDate]);
   
   const programEnd = useMemo(() => {
-    if (user?.programEndDate) {
+    const endDate = user?.plan_end_date || user?.programEndDate;
+    if (endDate) {
       try {
-        const parsed = parseISO(user.programEndDate);
+        const parsed = parseISO(endDate);
         if (!isNaN(parsed.getTime())) return parsed;
       } catch { /* fallback */ }
     }
-    return addWeeks(new Date(), 12);
-  }, [user?.programEndDate]);
+    return addWeeks(programStart, 12);
+  }, [user?.plan_end_date, user?.programEndDate, programStart]);
   
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [newWeight, setNewWeight] = useState('');
 
-  // Load data from Google Sheets
+  // Load data from Google Sheets and LocalStorage
   useEffect(() => {
     async function loadData() {
-      if (!user?.id) return;
+      if (!userId) return;
+      
+      // Try cookies/local storage first
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift();
+      };
+
+      const localHistory = getCookie(`${WEIGHT_HISTORY_KEY_PREFIX}${userId}`) || localStorage.getItem(`${WEIGHT_HISTORY_KEY_PREFIX}${userId}`);
+      if (localHistory) {
+        setWeightHistory(JSON.parse(localHistory));
+      }
+
       try {
         setLoading(true);
-        const progress = await getUserProgress(user.id);
+        const progress = await getUserProgress(userId);
         if (progress) {
           const history: WeightEntry[] = progress
             .filter(p => p.weight_kg !== undefined)
@@ -59,12 +70,17 @@ export default function ProgressPage() {
               weight: p.weight_kg!
             }));
           
-          if (history.length === 0 && user.startingWeight) {
-             history.push({ date: format(programStart, 'yyyy-MM-dd'), weight: user.startingWeight });
+          if (history.length === 0 && (user?.starting_weight || user?.startingWeight)) {
+             history.push({ 
+               date: format(programStart, 'yyyy-MM-dd'), 
+               weight: user?.starting_weight || user?.startingWeight || 80 
+             });
           }
           
           history.sort((a, b) => a.date.localeCompare(b.date));
           setWeightHistory(history);
+          localStorage.setItem(`${WEIGHT_HISTORY_KEY_PREFIX}${userId}`, JSON.stringify(history));
+          document.cookie = `${WEIGHT_HISTORY_KEY_PREFIX}${userId}=${JSON.stringify(history)}; path=/; max-age=31536000`;
         }
       } catch (error) {
         console.error("Failed to load progress data:", error);
@@ -73,42 +89,41 @@ export default function ProgressPage() {
       }
     }
     loadData();
-  }, [user?.id, programStart]);
+  }, [userId, programStart, user?.starting_weight, user?.startingWeight]);
 
   const handleAddWeight = async () => {
-    if (!user?.id) return;
+    if (!userId) return;
     
     const weight = parseFloat(newWeight);
     if (!isNaN(weight) && weight > 0) {
       const today = format(new Date(), 'yyyy-MM-dd');
       
+      const updatedHistory = [...weightHistory];
+      const existingIndex = updatedHistory.findIndex(e => e.date === today);
+      if (existingIndex >= 0) {
+        updatedHistory[existingIndex].weight = weight;
+      } else {
+        updatedHistory.push({ date: today, weight });
+      }
+      updatedHistory.sort((a, b) => a.date.localeCompare(b.date));
+      
+      // Update local storage and set state
+      setWeightHistory(updatedHistory);
+      localStorage.setItem(`${WEIGHT_HISTORY_KEY_PREFIX}${userId}`, JSON.stringify(updatedHistory));
+      
+      // Also update in cookies as requested
+      document.cookie = `${WEIGHT_HISTORY_KEY_PREFIX}${userId}=${JSON.stringify(updatedHistory)}; path=/; max-age=31536000`;
+      
+      setNewWeight('');
+
       try {
-        const result = await submitProgress(user.id, today, { weight });
-        if (result?.ok) {
-          setWeightHistory(prev => {
-            const updated = [...prev];
-            const existingIndex = updated.findIndex(e => e.date === today);
-            if (existingIndex >= 0) {
-              updated[existingIndex].weight = weight;
-            } else {
-              updated.push({ date: today, weight });
-            }
-            return updated.sort((a, b) => a.date.localeCompare(b.date));
-          });
-          
-          // Also update user object in context if needed, but local state should be enough for now
-          // If you want to sync back to profile:
-          // updateUserProfile(user.id, { current_weight: weight });
-          
-          setNewWeight('');
-        }
+        await submitProgress(userId, today, { weight });
       } catch (error) {
         console.error("Failed to submit progress:", error);
       }
     }
   };
 
-  
   const chartData = useMemo(() => {
     return weightHistory.map((entry, index) => ({
       name: `Week ${index + 1}`,
@@ -117,9 +132,9 @@ export default function ProgressPage() {
     }));
   }, [weightHistory]);
   
-  const startingWeight = user?.startingWeight || 80;
-  const currentWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : (user?.currentWeight || 80);
-  const goalWeight = user?.goalWeight || 75;
+  const startingWeight = user?.starting_weight || user?.startingWeight || 80;
+  const currentWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : (user?.current_weight || user?.currentWeight || 80);
+  const goalWeight = user?.goal_weight || user?.goalWeight || 75;
   
   const totalWeightToLose = startingWeight - goalWeight;
   const weightLost = startingWeight - currentWeight;
@@ -194,10 +209,12 @@ export default function ProgressPage() {
             </div>
             <div className="h-3 bg-black/40 rounded-full overflow-hidden relative">
               <div 
-                className="h-full bg-gradient-to-r from-accent/80 to-accent shadow-[0_0_10px_rgba(0,243,255,0.5)] transition-all duration-500"
+                className="h-full bg-gradient-to-r from-accent/80 to-accent shadow-[0_0_15px_rgba(0,243,255,0.6)] transition-all duration-1000 ease-out relative"
                 style={{ width: `${timeProgressPercent}%` }}
-              />
-              <div className="absolute inset-0 flex justify-between px-1">
+              >
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.2)_50%,transparent_75%)] bg-[length:200%_100%] animate-[shimmer_2s_infinite]" />
+              </div>
+              <div className="absolute inset-0 flex justify-between px-1 pointer-events-none">
                 {[0, 25, 50, 75, 100].map((mark) => (
                   <div key={mark} className="w-0.5 h-full bg-white/10" />
                 ))}
