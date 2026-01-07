@@ -1,12 +1,14 @@
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
-import { ArrowRight, Calculator, Bot } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Calculator, Bot, LogIn, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import PageWrapper from "./PageWrapper";
 import ChatBot from "./ChatBot";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+  const [showLoginPopup, setShowLoginPopup] = useState(true);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -17,6 +19,50 @@ export default function LandingPage() {
 
   return (
     <PageWrapper>
+      {/* MEMBERS LOGIN POPUP */}
+      <AnimatePresence>
+        {showLoginPopup && (
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            className="fixed left-6 top-32 z-[60] max-w-[280px]"
+          >
+            <div className="relative bg-black/90 backdrop-blur-xl border border-primary/30 rounded-2xl p-6 shadow-[0_0_30px_rgba(0,255,157,0.2)]">
+              <button 
+                onClick={() => setShowLoginPopup(false)}
+                className="absolute top-3 right-3 text-muted-foreground hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-primary">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <LogIn className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-white">Member Access</h3>
+                    <p className="text-[10px] text-primary font-medium uppercase tracking-tighter">Already a Champ?</p>
+                  </div>
+                </div>
+                
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Log in to access your custom dashboard, track your macros, and check your progress.
+                </p>
+                
+                <Button 
+                  onClick={() => setLocation("/login")}
+                  className="w-full bg-primary text-black hover:bg-white transition-all font-bold text-xs h-9 rounded-full"
+                >
+                  LOG IN NOW
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* FLOATING ROBOT COACH */}
       <motion.div
         className="fixed left-6 bottom-32 z-50 flex flex-col items-center gap-2 group"
