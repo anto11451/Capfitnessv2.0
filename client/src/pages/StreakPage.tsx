@@ -147,6 +147,8 @@ export default function StreakPage() {
     if (typeof window === 'undefined') return;
     try {
       window.localStorage.setItem(LOCAL_STREAK_KEY, JSON.stringify(streakData));
+      // Dispatch custom event for dashboard sync
+      window.dispatchEvent(new CustomEvent('streak-data-updated', { detail: streakData }));
     } catch (e) {
       console.error('Failed to save streak to localStorage:', e);
     }
