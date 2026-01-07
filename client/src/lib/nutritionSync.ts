@@ -17,7 +17,7 @@ export function saveMacroData(data: NutritionData) {
   localStorage.setItem(NUTRITION_SYNC_KEY, JSON.stringify(data));
   // Trigger custom event for real-time sync
   window.dispatchEvent(
-    new CustomEvent("nutrition-data-updated", { detail: data })
+    new CustomEvent("nutrition-data-updated", { detail: data }),
   );
 }
 
@@ -28,7 +28,9 @@ export function getMacroData(): NutritionData | null {
 
 export function clearMacroData() {
   localStorage.removeItem(NUTRITION_SYNC_KEY);
-  window.dispatchEvent(new CustomEvent("nutrition-data-updated", { detail: null }));
+  window.dispatchEvent(
+    new CustomEvent("nutrition-data-updated", { detail: null }),
+  );
 }
 
 export function syncFuelTrackerWithMacros(
@@ -38,7 +40,7 @@ export function syncFuelTrackerWithMacros(
     protein: number;
     carbs: number;
     fats: number;
-  }
+  },
 ) {
   const merged: NutritionData = {
     date: new Date().toISOString().split("T")[0],
