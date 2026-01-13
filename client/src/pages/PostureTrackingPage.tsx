@@ -352,19 +352,19 @@ export default function PostureTrackingPage() {
         />
 
         {/* TOP NAVIGATION OVERLAY */}
-        <div className="absolute top-6 left-6 z-20">
+        <div className="absolute top-4 left-4 z-20">
           <Button
             variant="ghost"
             onClick={() => setLocation("/app")}
-            className="bg-black/40 backdrop-blur-md text-white border border-white/10 hover:bg-white/10"
+            className="bg-black/40 backdrop-blur-md text-white border border-white/10 hover:bg-white/10 h-10 px-3"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Exit
+            <span className="hidden sm:inline">Exit</span>
           </Button>
         </div>
 
         {/* WORKOUT SELECTION OVERLAY */}
-        <div className="absolute top-6 right-6 z-20 w-64">
+        <div className="absolute top-4 right-4 z-20 w-40 sm:w-64">
           <select
             value={workoutName}
             onChange={(e) => {
@@ -373,7 +373,7 @@ export default function PostureTrackingPage() {
               setFeedback("");
             }}
             disabled={isActive}
-            className="w-full px-4 py-3 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl text-white focus:border-primary focus:ring-1 focus:ring-primary/50 disabled:opacity-50"
+            className="w-full px-3 py-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl text-white text-sm focus:border-primary focus:ring-1 focus:ring-primary/50 disabled:opacity-50"
           >
             {workoutOptions.map((workout) => (
               <option key={workout} value={workout} className="bg-zinc-900">
@@ -383,49 +383,49 @@ export default function PostureTrackingPage() {
           </select>
         </div>
 
-        {/* REFERENCE IMAGE OVERLAY (LEFT) */}
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 z-20 space-y-4">
-          <div className="w-48 aspect-square bg-black/60 backdrop-blur-md border border-primary/30 rounded-2xl overflow-hidden p-2">
+        {/* REFERENCE IMAGE OVERLAY (LEFT) - HIDDEN ON SMALL MOBILE OR MINIMIZED */}
+        <div className="absolute left-4 top-20 z-20 space-y-3 max-w-[120px] sm:max-w-[192px]">
+          <div className="w-full aspect-square bg-black/60 backdrop-blur-md border border-primary/30 rounded-2xl overflow-hidden p-1 sm:p-2 hidden xs:block">
             <div className="w-full h-full rounded-xl bg-zinc-800 flex items-center justify-center relative overflow-hidden">
                <img 
                  src={workoutName === "Push-ups" ? "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&q=80&w=400" : "https://images.unsplash.com/photo-1574680096145-d05b474e2158?auto=format&fit=crop&q=80&w=400"} 
                  alt={workoutName}
                  className="w-full h-full object-cover opacity-80"
                />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-3">
-                 <p className="text-[10px] text-white font-bold uppercase tracking-widest">Target Form</p>
+               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2 sm:p-3">
+                 <p className="text-[8px] sm:text-[10px] text-white font-bold uppercase tracking-widest">Form</p>
                </div>
             </div>
           </div>
-          <div className="w-48 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">Instructions</p>
-            <p className="text-xs text-white leading-relaxed">
+          <div className="w-full p-2 sm:p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl hidden md:block">
+            <p className="text-[8px] sm:text-[10px] text-muted-foreground uppercase tracking-widest mb-1 sm:mb-2">Info</p>
+            <p className="text-[10px] sm:text-xs text-white leading-tight sm:leading-relaxed">
               {workoutName === "Push-ups" 
-                ? "Keep core tight and back flat. Lower chest until elbows are at 90 degrees."
-                : "Keep chest up and heels flat. Drop hips below knee level."}
+                ? "Keep core tight and back flat."
+                : "Keep chest up and heels flat."}
             </p>
           </div>
         </div>
 
-        {/* STATS OVERLAY (BOTTOM) - FACETIME STYLE */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 w-full max-w-xl px-6">
-          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl flex items-center justify-between gap-8">
-            <div className="flex-1 space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Reps</p>
-              <p className="text-5xl font-display font-bold text-primary tabular-nums">{repCount}</p>
+        {/* STATS OVERLAY (BOTTOM) - ADAPTED FOR MOBILE */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 w-full max-w-lg px-4">
+          <div className="bg-black/70 backdrop-blur-xl border border-white/10 rounded-[2rem] p-4 sm:p-6 shadow-2xl flex items-center justify-between gap-4 sm:gap-8">
+            <div className="flex-1 space-y-0.5 sm:space-y-1">
+              <p className="text-[8px] sm:text-[10px] text-muted-foreground uppercase tracking-widest">Reps</p>
+              <p className="text-3xl sm:text-5xl font-display font-bold text-primary tabular-nums">{repCount}</p>
             </div>
 
-            <div className="h-16 w-px bg-white/10" />
+            <div className="h-10 sm:h-16 w-px bg-white/10" />
 
-            <div className="flex-1 space-y-1">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Form Status</p>
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full animate-pulse ${
+            <div className="flex-[2] space-y-0.5 sm:space-y-1">
+              <p className="text-[8px] sm:text-[10px] text-muted-foreground uppercase tracking-widest">Form Status</p>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full animate-pulse ${
                   posture === "good" ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]" : 
                   posture === "warning" ? "bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)]" : 
                   "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                 }`} />
-                <p className={`text-xl font-bold uppercase tracking-tight ${
+                <p className={`text-sm sm:text-xl font-bold uppercase tracking-tight ${
                   posture === "good" ? "text-green-400" : 
                   posture === "warning" ? "text-yellow-400" : 
                   "text-red-400"
@@ -433,19 +433,19 @@ export default function PostureTrackingPage() {
                   {posture === "neutral" ? "Ready" : posture}
                 </p>
               </div>
-              <p className="text-xs text-white/60 truncate">{feedback || "Scan active..."}</p>
+              <p className="text-[10px] sm:text-xs text-white/60 truncate max-w-[100px] sm:max-w-none">{feedback || "Scanning..."}</p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 sm:gap-2">
               <Button
                 onClick={() => setIsActive(!isActive)}
-                className={`h-16 w-16 rounded-2xl transition-all active:scale-95 ${
+                className={`h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl transition-all active:scale-95 ${
                   isActive 
                   ? "bg-red-500 hover:bg-red-600 text-white shadow-lg" 
                   : "bg-primary hover:bg-primary/90 text-black shadow-lg shadow-primary/20"
                 }`}
               >
-                {isActive ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                {isActive ? <Pause className="w-5 h-5 sm:w-6 sm:h-6" /> : <Play className="w-5 h-5 sm:w-6 sm:h-6" />}
               </Button>
               <Button
                 onClick={() => {
@@ -454,9 +454,9 @@ export default function PostureTrackingPage() {
                   setPosture("neutral");
                 }}
                 variant="outline"
-                className="h-16 w-16 rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white"
+                className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl border-white/10 bg-white/5 hover:bg-white/10 text-white p-0"
               >
-                <RotateCcw className="w-5 h-5" />
+                <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </div>
           </div>
