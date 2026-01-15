@@ -520,7 +520,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Current Goal</p>
-                  <p className="text-sm font-medium text-white">Reaching {idealWeight.max}kg Body Weight</p>
+                  <p className="text-sm font-medium text-white">Reaching {liveProfile?.goal_weight || idealWeight.max}kg Body Weight</p>
                 </div>
               </div>
             </div>
