@@ -5,29 +5,43 @@ import { Button } from '@/components/ui/button';
 import {
   Flame,
   CheckCircle,
-  XCircle,
-  Coffee,
   CheckSquare,
   Square,
-  Dumbbell as DumbbellIcon,
-  Utensils as UtensilsIcon,
+  Trophy,
+  Lock,
+  Gift,
+  Map as MapIcon,
+  Info,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   format,
-  subDays,
   parseISO,
+  eachDayOfInterval,
+  startOfDay,
+  subDays,
   isToday,
-  differenceInDays,
+  isWithinInterval,
+  differenceInDays
 } from 'date-fns';
+import { useAuth } from '@/App';
+import { getUserById, UserProfile } from '@/lib/googleSheetsApi';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
-import { useAuth } from '@/App';
+
+const LOCAL_STREAK_KEY = 'capsfitness_streak_v1';
+
+const REWARDS = [
+  { id: 1, trophiesNeeded: 3, label: "Bronze Badge", description: "You've shown early consistency!" },
+  { id: 2, trophiesNeeded: 6, label: "Silver Badge", description: "Halfway through the first phase." },
+  { id: 3, trophiesNeeded: 9, label: "Gold Badge", description: "You are becoming unstoppable." },
+  { id: 4, trophiesNeeded: 12, label: "Diamond Badge", description: "Legendary status achieved." },
+];
 
 interface DayLog {
   date: string;
@@ -36,127 +50,90 @@ interface DayLog {
   isRestDay?: boolean;
 }
 
-interface StreakState {
-  currentStreak: number;
-  longestStreak: number;
-  history: DayLog[];
-  lastLogDate: string;
-}
-
-const LOCAL_STREAK_KEY = 'capsfitness_streak_v1';
-
-const calculateStreak = (history: DayLog[]) => {
-  if (!history || history.length === 0) return { current: 0, longest: 0 };
-
-  // Current streak from today / yesterday backwards
-  const sortedDesc = [...history].sort((a, b) => b.date.localeCompare(a.date));
-
-  let current = 0;
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
-
-  const hasToday = sortedDesc.some(
-    (h) => h.date === today && (h.workoutDone || h.dietDone || h.isRestDay),
-  );
-  const hasYesterday = sortedDesc.some(
-    (h) =>
-      h.date === yesterday && (h.workoutDone || h.dietDone || h.isRestDay),
-  );
-
-  if (hasToday || hasYesterday) {
-    let checkDate = hasToday ? new Date() : subDays(new Date(), 1);
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const dateStr = format(checkDate, 'yyyy-MM-dd');
-      const log = sortedDesc.find((h) => h.date === dateStr);
-      if (log && (log.workoutDone || log.dietDone || log.isRestDay)) {
-        current++;
-        checkDate = subDays(checkDate, 1);
-      } else {
-        break;
-      }
-    }
-  }
-
-  // Longest streak
-  const sortedAsc = [...history].sort((a, b) => a.date.localeCompare(b.date));
-  let max = 0;
-  let currentMax = 0;
-  let lastDate: Date | null = null;
-
-  sortedAsc.forEach((log) => {
-    if (log.workoutDone || log.dietDone || log.isRestDay) {
-      const currentDate = parseISO(log.date);
-      if (lastDate) {
-        const diff = differenceInDays(currentDate, lastDate);
-        if (diff === 1) {
-          currentMax++;
-        } else if (diff > 1) {
-          currentMax = 1;
-        }
-      } else {
-        currentMax = 1;
-      }
-      lastDate = currentDate;
-      if (currentMax > max) max = currentMax;
-    }
-  });
-
-  return { current, longest: max };
-};
-
 export default function StreakPage() {
   const { user } = useAuth();
-
-  const [streakData, setStreakData] = useState<StreakState>({
-    currentStreak: 0,
-    longestStreak: 0,
-    history: [],
-    lastLogDate: new Date().toISOString(),
-  });
+  const [liveProfile, setLiveProfile] = useState<UserProfile | null>(null);
+  const [history, setHistory] = useState<DayLog[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState<{
-    date: Date;
-    log: DayLog | undefined;
-  } | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  
+  // UI States
   const [isBulkMode, setIsBulkMode] = useState(false);
   const [selectedDays, setSelectedDays] = useState<Set<string>>(new Set());
   const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<{date: Date, log?: DayLog} | null>(null);
 
-  // Load from localStorage once on mount
+  const userId = (user as any)?.user_id || localStorage.getItem('user_id');
+
+  // Load Data
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const raw = window.localStorage.getItem(LOCAL_STREAK_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as StreakState;
-        if (parsed && Array.isArray(parsed.history)) {
-          setStreakData(parsed);
+    async function loadData() {
+      if (!userId) return;
+      try {
+        const profile = await getUserById(userId);
+        if (profile) setLiveProfile(profile);
+        
+        const saved = localStorage.getItem(LOCAL_STREAK_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed.history)) setHistory(parsed.history);
         }
+      } catch (e) {
+        console.error("Failed to load streak data", e);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error('Failed to read streak from localStorage:', e);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+    loadData();
+  }, [userId]);
 
-  // Save to localStorage whenever streakData changes
+  // Save Data
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem(LOCAL_STREAK_KEY, JSON.stringify(streakData));
-      // Dispatch custom event for dashboard sync
-      window.dispatchEvent(new CustomEvent('streak-data-updated', { detail: streakData }));
-    } catch (e) {
-      console.error('Failed to save streak to localStorage:', e);
+    if (history.length > 0) {
+      localStorage.setItem(LOCAL_STREAK_KEY, JSON.stringify({ history }));
+      window.dispatchEvent(new CustomEvent('streak-data-updated', { detail: { history } }));
     }
-  }, [streakData]);
+  }, [history]);
 
-  // Bulk select toggle
+  const planDates = useMemo(() => {
+    if (!liveProfile?.plan_start_date || !liveProfile?.plan_end_date) return null;
+    try {
+      return {
+        start: startOfDay(parseISO(liveProfile.plan_start_date)),
+        end: startOfDay(parseISO(liveProfile.plan_end_date))
+      };
+    } catch (e) {
+      return null;
+    }
+  }, [liveProfile]);
+
+  // Generate calendar days based on plan dates
+  const calendarDays = useMemo(() => {
+    if (!planDates) return [];
+    
+    // Show the entire plan duration
+    const days = eachDayOfInterval({ start: planDates.start, end: planDates.end });
+    
+    return days.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd');
+      const log = history.find(h => h.date === dateStr);
+      return { date: day, log };
+    });
+  }, [planDates, history]);
+
+  const streakDays = useMemo(() => {
+    if (!planDates) return [];
+    return history.filter(h => {
+      const d = parseISO(h.date);
+      return d >= planDates.start && d <= planDates.end && (h.workoutDone || h.dietDone || h.isRestDay);
+    }).map(h => h.date);
+  }, [planDates, history]);
+
+  const totalStreakCount = streakDays.length;
+  const trophyCount = Math.floor(totalStreakCount / 3);
+
   const handleBulkToggle = (dateStr: string) => {
-    setSelectedDays((prev) => {
+    setSelectedDays(prev => {
       const next = new Set(prev);
       if (next.has(dateStr)) next.delete(dateStr);
       else next.add(dateStr);
@@ -164,588 +141,273 @@ export default function StreakPage() {
     });
   };
 
-  const handleEditDay = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const log = streakData.history.find((h) => h.date === dateStr);
-    setSelectedDay({ date, log });
-    setIsDialogOpen(true);
-  };
-
-  const handleBulkUpdate = async (
-    type: 'workout' | 'diet' | 'rest' | 'perfect' | 'clear',
-  ) => {
-    if (selectedDays.size === 0) return;
-
-    setLoading(true);
-
-    setStreakData((prev) => {
-      const newHistory = [...prev.history];
-
-      Array.from(selectedDays).forEach((dateStr) => {
+  const handleBulkUpdate = (type: 'perfect' | 'rest' | 'clear') => {
+    setHistory(prev => {
+      const next = [...prev];
+      selectedDays.forEach(dateStr => {
+        const idx = next.findIndex(h => h.date === dateStr);
         if (type === 'clear') {
-          const index = newHistory.findIndex((h) => h.date === dateStr);
-          if (index >= 0) newHistory.splice(index, 1);
-          return;
+          if (idx >= 0) next.splice(idx, 1);
+        } else {
+          const log = {
+            date: dateStr,
+            workoutDone: type === 'perfect',
+            dietDone: type === 'perfect',
+            isRestDay: type === 'rest'
+          };
+          if (idx >= 0) next[idx] = log;
+          else next.push(log);
         }
-
-        let updatedLog: DayLog = {
-          date: dateStr,
-          workoutDone: type === 'perfect' || type === 'workout',
-          dietDone: type === 'perfect' || type === 'diet',
-          isRestDay: type === 'rest',
-        };
-
-        if (type === 'rest') {
-          updatedLog.workoutDone = false;
-          updatedLog.dietDone = false;
-        }
-
-        const index = newHistory.findIndex((h) => h.date === dateStr);
-        if (index >= 0) newHistory[index] = updatedLog;
-        else newHistory.push(updatedLog);
       });
-
-      const { current, longest } = calculateStreak(newHistory);
-
-      return {
-        ...prev,
-        history: newHistory,
-        currentStreak: current,
-        longestStreak: longest,
-        lastLogDate: new Date().toISOString(),
-      };
+      return next;
     });
-
     setSelectedDays(new Set());
     setIsBulkMode(false);
     setIsBulkDialogOpen(false);
-    setLoading(false);
-  };
-
-  const handleLog = (type: 'workout' | 'diet' | 'rest') => {
-    const today = format(new Date(), 'yyyy-MM-dd');
-
-    const existingLog =
-      streakData.history.find((h) => h.date === today) || {
-        date: today,
-        workoutDone: false,
-        dietDone: false,
-        isRestDay: false,
-      };
-
-    let updatedLog = { ...existingLog };
-
-    if (type === 'rest') {
-      updatedLog.isRestDay = !updatedLog.isRestDay;
-      if (updatedLog.isRestDay) {
-        updatedLog.workoutDone = false;
-        updatedLog.dietDone = false;
-      }
-    } else if (type === 'workout') {
-      updatedLog.workoutDone = !updatedLog.workoutDone;
-      updatedLog.isRestDay = false;
-    } else if (type === 'diet') {
-      updatedLog.dietDone = !updatedLog.dietDone;
-      updatedLog.isRestDay = false;
-    }
-
-    setStreakData((prev) => {
-      const newHistory = [...prev.history];
-      const index = newHistory.findIndex((h) => h.date === today);
-      if (index >= 0) newHistory[index] = updatedLog;
-      else newHistory.push(updatedLog);
-
-      const { current, longest } = calculateStreak(newHistory);
-
-      return {
-        ...prev,
-        history: newHistory,
-        currentStreak: current,
-        longestStreak: longest,
-        lastLogDate: new Date().toISOString(),
-      };
-    });
   };
 
   const updateDayLog = (type: 'workout' | 'diet' | 'rest') => {
     if (!selectedDay) return;
     const dateStr = format(selectedDay.date, 'yyyy-MM-dd');
-
-    const existingLog =
-      streakData.history.find((h) => h.date === dateStr) || {
-        date: dateStr,
-        workoutDone: false,
-        dietDone: false,
-        isRestDay: false,
-      };
-
-    let updatedLog = { ...existingLog };
-
-    if (type === 'rest') {
-      updatedLog.isRestDay = !updatedLog.isRestDay;
-      if (updatedLog.isRestDay) {
-        updatedLog.workoutDone = false;
-        updatedLog.dietDone = false;
+    setHistory(prev => {
+      const next = [...prev];
+      const idx = next.findIndex(h => h.date === dateStr);
+      const current = idx >= 0 ? next[idx] : { date: dateStr, workoutDone: false, dietDone: false, isRestDay: false };
+      
+      const updated = { ...current };
+      if (type === 'rest') {
+        updated.isRestDay = !updated.isRestDay;
+        if (updated.isRestDay) { updated.workoutDone = false; updated.dietDone = false; }
+      } else if (type === 'workout') {
+        updated.workoutDone = !updated.workoutDone;
+        updated.isRestDay = false;
+      } else if (type === 'diet') {
+        updated.dietDone = !updated.dietDone;
+        updated.isRestDay = false;
       }
-    } else if (type === 'workout') {
-      updatedLog.workoutDone = !updatedLog.workoutDone;
-      updatedLog.isRestDay = false;
-    } else if (type === 'diet') {
-      updatedLog.dietDone = !updatedLog.dietDone;
-      updatedLog.isRestDay = false;
-    }
 
-    setStreakData((prev) => {
-      const newHistory = [...prev.history];
-      const index = newHistory.findIndex((h) => h.date === dateStr);
-      if (index >= 0) newHistory[index] = updatedLog;
-      else newHistory.push(updatedLog);
-
-      const { current, longest } = calculateStreak(newHistory);
-
-      return {
-        ...prev,
-        history: newHistory,
-        currentStreak: current,
-        longestStreak: longest,
-        lastLogDate: new Date().toISOString(),
-      };
+      if (idx >= 0) next[idx] = updated;
+      else next.push(updated);
+      return next;
     });
-
-    setSelectedDay((prev) => (prev ? { ...prev, log: updatedLog } : null));
   };
 
-  // Generate last 30 days for calendar
-  const calendarDays = useMemo(() => {
-    return Array.from({ length: 30 }, (_, i) => {
-      const date = subDays(new Date(), 29 - i);
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const log = streakData.history.find((h) => h.date === dateStr);
-      return { date, log };
-    });
-  }, [streakData.history]);
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </Layout>
+    );
+  }
 
-  const daysRecorded = streakData.history.length;
-  const missedDays =
-    30 -
-    calendarDays.filter(
-      (d) =>
-        d.log &&
-        (d.log.workoutDone || d.log.dietDone || d.log.isRestDay),
-    ).length;
-
-  const todayStr = format(new Date(), 'yyyy-MM-dd');
-  const todayLog = streakData.history.find((h) => h.date === todayStr);
+  if (!planDates) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto py-12">
+          <Card className="p-12 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center text-center space-y-6">
+            <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center">
+              <Lock className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold text-white uppercase">Program Not Started</h2>
+              <p className="text-muted-foreground max-w-md">
+                Streak tracking begins once your plan start and end dates are set in Google Sheets.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-4xl font-display font-bold text-white">
-              STREAK <span className="text-orange-500">ZONE</span>
+      <div className="max-w-6xl mx-auto space-y-12 pb-24">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              <span className="text-xs font-bold uppercase tracking-widest text-primary">Reliable Progress</span>
+            </div>
+            <h1 className="text-5xl font-display font-bold text-white uppercase leading-none">
+              CONSISTENCY <span className="text-orange-500">MAP</span>
             </h1>
-            <p className="text-muted-foreground">
-              Consistency is the key to greatness.
+            <p className="text-muted-foreground font-medium">
+              Logging from {format(planDates.start, 'MMM do')} to {format(planDates.end, 'MMM do')}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground uppercase tracking-widest">
-              Current Streak
-            </p>
-            <p className="text-6xl font-display font-bold text-orange-500 flex items-center gap-2 justify-end">
-              {streakData.currentStreak}{' '}
-              <Flame className="w-12 h-12 fill-orange-500" />
-            </p>
+          <div className="flex gap-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 min-w-[120px] text-center">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Logs</p>
+              <p className="text-3xl font-display font-bold text-white">{totalStreakCount}</p>
+            </div>
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-2xl p-4 min-w-[120px] text-center">
+              <p className="text-[10px] text-orange-500 uppercase tracking-widest mb-1">Trophies</p>
+              <p className="text-3xl font-display font-bold text-orange-500">{trophyCount}</p>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Daily Log Card */}
-          <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col justify-center">
-            <h3 className="text-2xl font-bold text-white mb-6 text-center">
-              DAILY CHECK-IN
-            </h3>
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                className={cn(
-                  'w-full mb-4 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 hover:text-blue-300',
-                  todayLog?.isRestDay &&
-                    'bg-blue-500/20 text-blue-300 border-blue-500',
-                )}
-                onClick={() => handleLog('rest')}
-              >
-                <Coffee className="w-4 h-4 mr-2" />
-                {todayLog?.isRestDay
-                  ? 'REST DAY ACTIVE'
-                  : 'MARK AS REST DAY'}
-              </Button>
-
-              <div
-                className={cn(
-                  'flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10',
-                  todayLog?.workoutDone &&
-                    'border-green-500/50 bg-green-500/5',
-                )}
-              >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="lg:col-span-7 space-y-8">
+            {/* Quick Log & History */}
+            <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl">
+              <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-3">
-                  <DumbbellIcon
-                    className={cn(
-                      'w-6 h-6',
-                      todayLog?.workoutDone
-                        ? 'text-green-500'
-                        : 'text-primary',
-                    )}
-                  />
-                  <span className="font-bold">Did you workout today?</span>
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                  <h3 className="text-xl font-bold text-white uppercase tracking-tight">Plan Schedule</h3>
                 </div>
                 <div className="flex gap-2">
                   <Button
+                    variant="outline"
                     size="sm"
-                    className={cn(
-                      todayLog?.workoutDone
-                        ? 'bg-green-500 text-black hover:bg-green-600'
-                        : 'bg-green-500/20 text-green-500 hover:bg-green-500/40',
-                    )}
-                    onClick={() => handleLog('workout')}
+                    className={cn("border-white/10", isBulkMode && "bg-primary/20 border-primary text-primary")}
+                    onClick={() => { setIsBulkMode(!isBulkMode); setSelectedDays(new Set()); }}
                   >
-                    {todayLog?.workoutDone ? 'DONE' : 'YES'}
+                    {isBulkMode ? <CheckSquare className="w-4 h-4 mr-2" /> : <Square className="w-4 h-4 mr-2" />}
+                    {isBulkMode ? "Exit Bulk" : "Bulk Select"}
                   </Button>
-                </div>
-              </div>
-
-              <div
-                className={cn(
-                  'flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10',
-                  todayLog?.dietDone &&
-                    'border-green-500/50 bg-green-500/5',
-                )}
-              >
-                <div className="flex items-center gap-3">
-                  <UtensilsIcon
-                    className={cn(
-                      'w-6 h-6',
-                      todayLog?.dietDone
-                        ? 'text-green-500'
-                        : 'text-primary',
-                    )}
-                  />
-                  <span className="font-bold">Did you follow your diet?</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className={cn(
-                      todayLog?.dietDone
-                        ? 'bg-green-500 text-black hover:bg-green-600'
-                        : 'bg-green-500/20 text-green-500 hover:bg-green-500/40',
-                    )}
-                    onClick={() => handleLog('diet')}
-                  >
-                    {todayLog?.dietDone ? 'DONE' : 'YES'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Longest Streak
-              </p>
-              <p className="text-4xl font-display font-bold text-white">
-                {streakData.longestStreak}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Days Logged
-              </p>
-              <p className="text-4xl font-display font-bold text-white">
-                {daysRecorded}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Missed (30d)
-              </p>
-              <p className="text-4xl font-display font-bold text-red-500">
-                {missedDays}
-              </p>
-            </Card>
-            <Card className="p-6 bg-card/40 border-white/5 backdrop-blur-xl flex flex-col items-center justify-center">
-              <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                Completion
-              </p>
-              <p className="text-4xl font-display font-bold text-green-500">
-                {Math.round((daysRecorded / 30) * 100)}%
-              </p>
-            </Card>
-          </div>
-        </div>
-
-        {/* Calendar Heatmap */}
-        <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-white">Activity History</h3>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  'border-white/10 text-muted-foreground hover:text-white',
-                  isBulkMode &&
-                    'bg-primary/20 text-primary border-primary',
-                )}
-                onClick={() => {
-                  setIsBulkMode(!isBulkMode);
-                  setSelectedDays(new Set());
-                }}
-              >
-                {isBulkMode ? (
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                ) : (
-                  <Square className="w-4 h-4 mr-2" />
-                )}
-                {isBulkMode ? 'Exit Bulk Mode' : 'Bulk Select'}
-              </Button>
-              {isBulkMode && selectedDays.size > 0 && (
-                <Button
-                  size="sm"
-                  className="bg-primary text-black hover:bg-primary/80"
-                  onClick={() => setIsBulkDialogOpen(true)}
-                >
-                  Update {selectedDays.size} Days
-                </Button>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-7 md:grid-cols-10 lg:grid-cols-15 gap-3">
-            {calendarDays.map((day, i) => {
-              const dateStr = format(day.date, 'yyyy-MM-dd');
-              const isSelected = selectedDays.has(dateStr);
-              const dayOfWeek = format(day.date, 'EEE');
-              const dayNum = format(day.date, 'd');
-              const isTodayDate = isToday(day.date);
-
-              let status: 'missed' | 'rest' | 'perfect' | 'partial' = 'missed';
-              if (day.log) {
-                if (day.log.isRestDay) status = 'rest';
-                else if (day.log.workoutDone && day.log.dietDone)
-                  status = 'perfect';
-                else if (day.log.workoutDone || day.log.dietDone)
-                  status = 'partial';
-              }
-
-              return (
-                <div
-                  key={i}
-                  className={cn(
-                    'flex flex-col items-center gap-1 cursor-pointer transition-all',
-                    isBulkMode &&
-                      isSelected &&
-                      'ring-2 ring-primary ring-offset-2 ring-offset-black rounded-lg',
+                  {isBulkMode && selectedDays.size > 0 && (
+                    <Button size="sm" className="bg-primary text-black" onClick={() => setIsBulkDialogOpen(true)}>
+                      Update {selectedDays.size}
+                    </Button>
                   )}
-                  onClick={() => {
-                    if (isBulkMode) {
-                      handleBulkToggle(dateStr);
-                    } else {
-                      handleEditDay(day.date);
-                    }
-                  }}
-                >
-                  <span
-                    className={cn(
-                      'text-[10px] uppercase tracking-wider',
-                      isTodayDate
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {dayOfWeek}
-                  </span>
-                  <div
-                    className={cn(
-                      'w-full aspect-square rounded-md border transition-all hover:scale-105 flex items-center justify-center relative',
-                      status === 'perfect'
-                        ? 'bg-green-500 border-green-400 shadow-[0_0_10px_rgba(34,197,94,0.4)]'
-                        : status === 'rest'
-                        ? 'bg-blue-500/50 border-blue-400'
-                        : status === 'partial'
-                        ? 'bg-yellow-500 border-yellow-400'
-                        : 'bg-white/5 border-white/10 hover:border-white/30',
-                      isTodayDate && 'ring-2 ring-primary',
-                    )}
-                  >
-                    {isBulkMode && isSelected && (
-                      <CheckSquare className="w-4 h-4 text-white absolute" />
-                    )}
-                  </div>
-                  <span
-                    className={cn(
-                      'text-xs font-medium',
-                      isTodayDate
-                        ? 'text-primary font-bold'
-                        : 'text-muted-foreground',
-                    )}
-                  >
-                    {dayNum}
-                  </span>
                 </div>
-              );
-            })}
+              </div>
+
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-3">
+                {calendarDays.map((day, i) => {
+                  const dateStr = format(day.date, 'yyyy-MM-dd');
+                  const isSelected = selectedDays.has(dateStr);
+                  const isTodayDate = isToday(day.date);
+                  const hasLog = day.log && (day.log.workoutDone || day.log.dietDone || day.log.isRestDay);
+
+                  return (
+                    <div 
+                      key={i} 
+                      onClick={() => isBulkMode ? handleBulkToggle(dateStr) : (setSelectedDay({date: day.date, log: day.log}), setIsDayDialogOpen(true))}
+                      className={cn(
+                        "aspect-square rounded-xl border flex flex-col items-center justify-center cursor-pointer transition-all hover:scale-105 relative",
+                        hasLog ? "bg-primary border-primary shadow-[0_0_10px_rgba(0,255,157,0.3)]" : "bg-white/5 border-white/10",
+                        isTodayDate && "ring-2 ring-primary ring-offset-2 ring-offset-black",
+                        isBulkMode && isSelected && "ring-2 ring-white"
+                      )}
+                    >
+                      <span className="text-[10px] text-white/40 font-bold">{format(day.date, 'd')}</span>
+                      {hasLog && <CheckCircle className="w-4 h-4 text-black mt-1" />}
+                      {isBulkMode && isSelected && <div className="absolute inset-0 bg-primary/20 rounded-xl" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+
+            {/* Journey Map */}
+            <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl relative overflow-hidden">
+              <div className="flex items-center gap-3 mb-10">
+                <MapIcon className="w-5 h-5 text-primary" />
+                <h3 className="text-xl font-bold text-white uppercase tracking-tight">The Transformation Journey</h3>
+              </div>
+
+              <div className="relative space-y-12">
+                <div className="absolute left-[23px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary via-orange-500/50 to-white/5" />
+                {[...Array(15)].map((_, i) => {
+                  const dayNum = (i + 1) * 3;
+                  const isCompleted = trophyCount > i;
+                  const isCurrent = trophyCount === i;
+                  const isReward = (i + 1) % 3 === 0;
+
+                  return (
+                    <div key={i} className="flex items-center gap-6 relative z-10">
+                      <div className={cn(
+                        "w-12 h-12 rounded-full flex items-center justify-center border-2",
+                        isCompleted ? "bg-primary border-primary text-black shadow-[0_0_15px_rgba(0,255,157,0.4)]" :
+                        isCurrent ? "bg-black border-orange-500 text-orange-500 animate-pulse" :
+                        "bg-black border-white/10 text-white/20"
+                      )}>
+                        {isReward ? <Gift className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className={cn("text-sm font-bold uppercase", isCompleted ? "text-white" : "text-muted-foreground/40")}>
+                          {isReward ? `REWARD UNLOCK` : `TROPHY ${i + 1}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground/60">{dayNum} Consistency Days</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
           </div>
-          <div className="flex flex-wrap gap-4 mt-6 text-xs text-muted-foreground justify-end">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-green-500" /> Perfect Day
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-yellow-500" /> Partial
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-blue-500/50" /> Rest Day
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded bg-white/5 border border-white/10" />{' '}
-              Missed
-            </div>
+
+          <div className="lg:col-span-5 space-y-8">
+             <Card className="p-1 bg-card/40 border-white/5 backdrop-blur-xl aspect-square relative overflow-hidden rounded-[2.5rem]">
+               <img 
+                 src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop"
+                 className="w-full h-full object-cover grayscale transition-all duration-1000"
+                 style={{ 
+                   filter: `grayscale(1) brightness(${0.2 + (trophyCount * 0.1)})`,
+                   clipPath: `inset(${Math.max(0, 100 - (trophyCount * 10))}% 0 0 0)` 
+                 }}
+               />
+               <div className="absolute bottom-6 left-6 right-6">
+                  <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
+                    <p className="text-[10px] text-primary uppercase tracking-widest font-bold mb-1">Visual Completion</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${Math.min(100, trophyCount * 10)}%` }} />
+                      </div>
+                      <span className="text-xs font-bold text-white">{Math.min(100, trophyCount * 10)}%</span>
+                    </div>
+                  </div>
+               </div>
+             </Card>
+
+             <div className="space-y-4">
+                {REWARDS.map(reward => {
+                  const isUnlocked = trophyCount >= reward.trophiesNeeded;
+                  return (
+                    <Card key={reward.id} className={cn("p-5 transition-all duration-500", isUnlocked ? "bg-primary/10 border-primary/20" : "opacity-50")}>
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", isUnlocked ? "bg-primary text-black shadow-[0_0_10px_rgba(0,255,157,0.2)]" : "bg-white/5")}>
+                          <Trophy className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold uppercase text-sm">{reward.label}</h4>
+                          <p className="text-xs text-muted-foreground">{reward.description}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+             </div>
           </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Single Day Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      {/* Dialogs */}
+      <Dialog open={isDayDialogOpen} onOpenChange={setIsDayDialogOpen}>
         <DialogContent className="bg-card border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>
-              Edit Log:{' '}
-              {selectedDay && format(selectedDay.date, 'MMM do, yyyy')}
-            </DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Edit Log: {selectedDay && format(selectedDay.date, 'MMM do')}</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="flex items-center justify-between">
-              <span>Rest Day</span>
-              <Button
-                variant={
-                  selectedDay?.log?.isRestDay ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.isRestDay
-                    ? 'bg-blue-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('rest')}
-              >
-                {selectedDay?.log?.isRestDay ? 'Active' : 'Set'}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Workout Completed</span>
-              <Button
-                variant={
-                  selectedDay?.log?.workoutDone ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.workoutDone
-                    ? 'bg-green-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('workout')}
-                disabled={selectedDay?.log?.isRestDay}
-              >
-                {selectedDay?.log?.workoutDone ? 'Yes' : 'No'}
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Diet Followed</span>
-              <Button
-                variant={
-                  selectedDay?.log?.dietDone ? 'default' : 'outline'
-                }
-                className={
-                  selectedDay?.log?.dietDone
-                    ? 'bg-green-600'
-                    : 'border-white/10'
-                }
-                onClick={() => updateDayLog('diet')}
-                disabled={selectedDay?.log?.isRestDay}
-              >
-                {selectedDay?.log?.dietDone ? 'Yes' : 'No'}
-              </Button>
-            </div>
+            <Button className={cn("w-full justify-start h-12 font-bold", selectedDay?.log?.workoutDone && "bg-primary text-black")} variant="outline" onClick={() => updateDayLog('workout')}>Workout Done</Button>
+            <Button className={cn("w-full justify-start h-12 font-bold", selectedDay?.log?.dietDone && "bg-primary text-black")} variant="outline" onClick={() => updateDayLog('diet')}>Diet Followed</Button>
+            <Button className={cn("w-full justify-start h-12 font-bold", selectedDay?.log?.isRestDay && "bg-blue-600 text-white")} variant="outline" onClick={() => updateDayLog('rest')}>Rest Day</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Bulk Update Dialog */}
       <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
         <DialogContent className="bg-card border-white/10 text-white">
-          <DialogHeader>
-            <DialogTitle>
-              Bulk Update: {selectedDays.size} Days Selected
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              Apply the same action to all selected days at once.
-            </p>
-            <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => handleBulkUpdate('perfect')}
-              disabled={loading}
-            >
-              <CheckCircle className="w-4 h-4 mr-2" /> Mark All as Perfect
-              Day
-            </Button>
-            <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
-              onClick={() => handleBulkUpdate('rest')}
-              disabled={loading}
-            >
-              <Coffee className="w-4 h-4 mr-2" />
-              {loading
-                ? 'Updating...'
-                : `Mark All as Rest Day`}
-            </Button>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                className="border-green-500/50 text-green-400 hover:bg-green-500/20"
-                onClick={() => handleBulkUpdate('workout')}
-                disabled={loading}
-              >
-                Workout Done
-              </Button>
-              <Button
-                variant="outline"
-                className="border-green-500/50 text-green-400 hover:bg-green-500/20"
-                onClick={() => handleBulkUpdate('diet')}
-                disabled={loading}
-              >
-                Diet Done
-              </Button>
-            </div>
-            <Button
-              variant="outline"
-              className="w-full border-red-500/50 text-red-400 hover:bg-red-500/20"
-              onClick={() => handleBulkUpdate('clear')}
-              disabled={loading}
-            >
-              <XCircle className="w-4 h-4 mr-2" /> Clear All Logs
-            </Button>
+          <DialogHeader><DialogTitle>Bulk Update {selectedDays.size} Days</DialogTitle></DialogHeader>
+          <div className="grid grid-cols-1 gap-3 py-4">
+            <Button className="bg-primary text-black h-12 font-bold" onClick={() => handleBulkUpdate('perfect')}>Mark as Perfect Days</Button>
+            <Button className="bg-blue-600 h-12 font-bold text-white" onClick={() => handleBulkUpdate('rest')}>Mark as Rest Days</Button>
+            <Button variant="destructive" className="h-12 font-bold" onClick={() => handleBulkUpdate('clear')}>Clear All Logs</Button>
           </div>
-          <DialogFooter>
-            <Button
-              variant="ghost"
-              className="text-muted-foreground"
-              onClick={() => setIsBulkDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Layout>
