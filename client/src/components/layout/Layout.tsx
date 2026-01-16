@@ -10,12 +10,15 @@ import {
   Settings, 
   Menu, 
   HeartPulse,
-  Zap
+  Zap,
+  Flame,
+  Layout as SidebarIcon
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import capLogo from '@/assets/cap-logo.png';
+import { motion } from "framer-motion";
 
 const NavItem = ({ href, icon: Icon, label, active }: { href: string; icon: any; label: string; active: boolean }) => (
   <Link href={href}>
@@ -44,8 +47,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { href: "/app/plans", icon: Calendar, label: "Plans" },
     { href: "/app/nutrition", icon: Utensils, label: "Nutrition" },
     { href: "/app/progress", icon: TrendingUp, label: "Progress" },
+    { href: "/app/streak", icon: Flame, label: "Streak" },
     { href: "/app/profile", icon: User, label: "Profile" },
-    { href: "/app/streak", icon: Calendar, label: "Streak" },
   ];
 
   const SidebarContent = () => (
@@ -53,7 +56,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="p-6 border-b border-white/5">
         <div className="flex items-center gap-3">
           <img src={capLogo} alt="Cap's Fitness" className="w-10 h-10 object-contain" />
-          <h1 className="text-lg font-display font-bold text-white tracking-widest">
+          <h1 className="text-lg font-display font-bold text-white tracking-widest uppercase">
             CAP'S<span className="text-primary">FITNESS</span>
           </h1>
         </div>
@@ -68,7 +71,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           />
         ))}
       </nav>
-
     </div>
   );
 
@@ -104,19 +106,39 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
       
-      {/* Mobile Bottom Nav (Optional, for app-like feel) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-lg border-t border-white/10 h-16 flex items-center justify-around z-40 px-2 pb-safe">
-        {navItems.slice(0, 5).map((item) => (
-           <Link key={item.href} href={item.href}>
-             <a className={cn(
-               "flex flex-col items-center justify-center p-2 rounded-lg transition-colors",
-               location === item.href ? "text-primary" : "text-muted-foreground"
-             )}>
-               <item.icon className="w-5 h-5 mb-1" />
-               <span className="text-[10px] uppercase tracking-wider">{item.label}</span>
-             </a>
-           </Link>
-        ))}
+      {/* Mobile Bottom Nav */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-white/10 h-20 flex items-center justify-around z-40 px-4 pb-safe">
+        {navItems.filter(item => ["Dashboard", "Plans", "Streak", "Progress", "Profile"].includes(item.label)).map((item) => {
+          const isActive = location === item.href;
+          return (
+            <Link key={item.href} href={item.href}>
+              <a className={cn(
+                "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 relative group",
+                isActive ? "text-primary scale-110" : "text-muted-foreground/60 hover:text-white"
+              )}>
+                {isActive && (
+                  <motion.div 
+                    layoutId="nav-glow"
+                    className="absolute -inset-1 bg-primary/20 rounded-xl blur-md"
+                  />
+                )}
+                <item.icon className={cn(
+                  "w-6 h-6 mb-1 transition-all duration-300",
+                  isActive ? "drop-shadow-[0_0_8px_rgba(0,255,157,0.6)]" : "group-hover:scale-110"
+                )} />
+                <span className={cn(
+                  "text-[9px] font-bold uppercase tracking-tighter transition-all duration-300",
+                  isActive ? "opacity-100 translate-y-0" : "opacity-60"
+                )}>
+                  {item.label}
+                </span>
+                {isActive && (
+                  <div className="absolute -bottom-2 w-1 h-1 bg-primary rounded-full shadow-[0_0_10px_rgba(0,255,157,1)]" />
+                )}
+              </a>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
