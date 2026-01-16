@@ -659,6 +659,122 @@ interface PlanGroup {
   description?: string;
 }
 // ============================
+//Darel Raj – Fat losss plan
+// ============================
+const customDetailedPlans: DetailedPlan[] = [
+  {
+    id: 'darel-raj-fatloss',
+    name: 'Darel Raj Fat Loss Plan',
+    shortName: 'Darel Raj',
+    description:
+      'Coach-designed structured fat loss program focused on belly fat reduction, muscle retention, and long-term health.',
+    level: 'Coach Assigned',
+    daysPerWeek: 6,
+    duration: '45–60 min',
+    goal: 'Fat Loss',
+    targetAudience: 'Client Specific',
+    weeks: 12,
+    icon: <Flame className="w-6 h-6" />,
+    color: 'from-amber-500 to-red-600',
+    tips: [
+      'Focus on clean reps and controlled tempo',
+      'Avoid ego lifting',
+      'Daily steps: 7–10k',
+      'Sleep minimum 7 hours',
+    ],
+    days: [
+      {
+        day_number: 1,
+        day_name: 'Monday',
+        focus: 'Chest',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Flat Barbell Bench Press', sets: 4, reps: '8–10' },
+          { name: 'Incline Dumbbell Press', sets: 3, reps: '10–12' },
+          { name: 'Chest Fly (Machine/Dumbbell)', sets: 3, reps: '12–15' },
+          { name: 'Push-Ups', sets: 3, reps: 'AMRAP' },
+        ],
+      },
+
+      {
+        day_number: 2,
+        day_name: 'Tuesday',
+        focus: 'Back',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Lat Pulldown', sets: 4, reps: '10–12' },
+          { name: 'Seated Cable Row', sets: 3, reps: '10–12' },
+          { name: 'One-Arm Dumbbell Row', sets: 3, reps: '10 each side' },
+          { name: 'Straight Arm Pulldown', sets: 3, reps: '12–15' },
+        ],
+      },
+
+      {
+        day_number: 3,
+        day_name: 'Wednesday',
+        focus: 'Shoulders',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Dumbbell Shoulder Press', sets: 4, reps: '10–12' },
+          { name: 'Lateral Raises', sets: 4, reps: '12–15' },
+          { name: 'Front Raises', sets: 3, reps: '12' },
+          { name: 'Rear Delt Fly', sets: 3, reps: '15' },
+        ],
+      },
+
+      {
+        day_number: 4,
+        day_name: 'Thursday',
+        focus: 'Legs',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Squats / Leg Press', sets: 4, reps: '10–12' },
+          { name: 'Romanian Deadlift', sets: 3, reps: '10–12' },
+          { name: 'Walking Lunges', sets: 3, reps: '20 steps' },
+          { name: 'Standing Calf Raises', sets: 4, reps: '15–20' },
+        ],
+      },
+
+      {
+        day_number: 5,
+        day_name: 'Friday',
+        focus: 'Arms',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Barbell Bicep Curls', sets: 3, reps: '10–12' },
+          { name: 'Dumbbell Hammer Curls', sets: 3, reps: '12' },
+          { name: 'Triceps Pushdowns', sets: 3, reps: '12–15' },
+          { name: 'Overhead Triceps Extension', sets: 3, reps: '12' },
+        ],
+      },
+
+      {
+        day_number: 6,
+        day_name: 'Saturday',
+        focus: 'Cardio + Core',
+        is_rest_day: false,
+        exercises: [
+          { name: 'Brisk Walking / Treadmill', sets: 1, reps: '30–40 min' },
+          { name: 'Plank Hold', sets: 3, reps: '45–60 sec' },
+          { name: 'Leg Raises', sets: 3, reps: '12–15' },
+          { name: 'Russian Twists', sets: 3, reps: '20 reps' },
+        ],
+      },
+
+      {
+        day_number: 7,
+        day_name: 'Sunday',
+        focus: 'Rest',
+        is_rest_day: true,
+        exercises: [],
+      },
+    ],
+  },
+];
+
+
+
+// ============================
 // SHIVA BALA – OLD SCHOOL COMPOUND PLAN
 // ============================
 
