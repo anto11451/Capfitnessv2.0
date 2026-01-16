@@ -37,9 +37,9 @@ import {
 const LOCAL_STREAK_KEY = 'capsfitness_streak_v1';
 
 const REWARDS = [
-  { id: 1, trophiesNeeded: 3, label: "Bronze Badge", description: "You've shown early consistency!" },
-  { id: 2, trophiesNeeded: 6, label: "Silver Badge", description: "Halfway through the first phase." },
-  { id: 3, trophiesNeeded: 9, label: "Gold Badge", description: "You are becoming unstoppable." },
+  { id: 1, trophiesNeeded: 1, label: "Bronze Badge", description: "Full week of consistency!" },
+  { id: 2, trophiesNeeded: 4, label: "Silver Badge", description: "One month elite status." },
+  { id: 3, trophiesNeeded: 8, label: "Gold Badge", description: "Two months transformation master." },
   { id: 4, trophiesNeeded: 12, label: "Diamond Badge", description: "Legendary status achieved." },
 ];
 
@@ -130,7 +130,33 @@ export default function StreakPage() {
   }, [planDates, history]);
 
   const totalStreakCount = streakDays.length;
-  const trophyCount = Math.floor(totalStreakCount / 3);
+  
+  // Plan Duration Calculation
+  const totalPlanDays = useMemo(() => {
+    if (!planDates) return 30;
+    return Math.max(1, differenceInDays(planDates.end, planDates.start) + 1);
+  }, [planDates]);
+
+  // Dynamic trophy logic: 
+  // We want approximately 4 trophies per month (30 days), so 1 trophy every ~7.5 days.
+  // To keep it simple: total trophies = 4, but let's make it scale.
+  // If plan is 30 days, we want 4 trophies.
+  // If plan is 60 days, we want 8 trophies.
+  const daysPerTrophy = 7; 
+  const trophyCount = Math.floor(totalStreakCount / daysPerTrophy);
+  const maxPossibleTrophies = Math.floor(totalPlanDays / daysPerTrophy);
+
+  // Dynamic Rewards/Badges based on percentage of plan completion
+  const dynamicRewards = useMemo(() => {
+    return [
+      { id: 1, percentNeeded: 25, label: "Bronze Medalist", description: "Elite status: First quarter conquered.", icon: "🥉", color: "from-amber-700 to-orange-400" },
+      { id: 2, percentNeeded: 50, label: "Silver Striker", description: "Halfway point: You are now a veteran.", icon: "🥈", color: "from-slate-400 to-blue-200" },
+      { id: 3, percentNeeded: 75, label: "Gold Guardian", description: "Elite status: The finish line is glowing.", icon: "🥇", color: "from-yellow-600 to-amber-200" },
+      { id: 4, percentNeeded: 100, label: "Diamond Legend", description: "Legendary: Ultimate transformation complete.", icon: "💎", color: "from-cyan-400 to-indigo-500" },
+    ];
+  }, []);
+
+  const completionPercentage = Math.min(100, (totalStreakCount / totalPlanDays) * 100);
 
   const handleBulkToggle = (dateStr: string) => {
     setSelectedDays(prev => {
@@ -314,27 +340,49 @@ export default function StreakPage() {
 
               <div className="relative space-y-12">
                 <div className="absolute left-[23px] top-4 bottom-4 w-0.5 bg-gradient-to-b from-primary via-orange-500/50 to-white/5" />
-                {[...Array(15)].map((_, i) => {
-                  const dayNum = (i + 1) * 3;
+                {[...Array(Math.max(4, maxPossibleTrophies))].map((_, i) => {
+                  const dayNum = (i + 1) * daysPerTrophy;
                   const isCompleted = trophyCount > i;
                   const isCurrent = trophyCount === i;
-                  const isReward = (i + 1) % 3 === 0;
+                  const isReward = (i + 1) % 4 === 0 || (i + 1) === maxPossibleTrophies;
+
+                  // Dynamic color based on milestone progress
+                  const colors = [
+                    "from-blue-500 to-cyan-400",    // Early stage
+                    "from-primary to-emerald-400",  // Mid stage
+                    "from-orange-500 to-yellow-400", // Late stage
+                    "from-purple-600 to-pink-500"    // Final stretch
+                  ];
+                  const colorIndex = Math.min(colors.length - 1, Math.floor((i / maxPossibleTrophies) * colors.length));
+                  const activeColor = colors[colorIndex];
 
                   return (
-                    <div key={i} className="flex items-center gap-6 relative z-10">
+                    <div key={i} className="flex items-center gap-6 relative z-10 group/trophy">
                       <div className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center border-2",
-                        isCompleted ? "bg-primary border-primary text-black shadow-[0_0_15px_rgba(0,255,157,0.4)]" :
-                        isCurrent ? "bg-black border-orange-500 text-orange-500 animate-pulse" :
-                        "bg-black border-white/10 text-white/20"
+                        "w-14 h-14 rounded-2xl flex items-center justify-center border-2 transition-all duration-500",
+                        isCompleted ? `bg-gradient-to-br ${activeColor} border-white/20 text-white shadow-[0_0_20px_rgba(0,0,0,0.5)] scale-110` :
+                        isCurrent ? "bg-black border-orange-500 text-orange-500 animate-pulse scale-105" :
+                        "bg-white/5 border-white/10 text-white/10 group-hover/trophy:border-white/20 group-hover/trophy:bg-white/10"
                       )}>
-                        {isReward ? <Gift className="w-5 h-5" /> : <Trophy className="w-5 h-5" />}
+                        {isReward ? (
+                          <div className="relative">
+                            <Gift className={cn("w-6 h-6", isCompleted && "animate-bounce")} />
+                            {isCompleted && <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-ping" />}
+                          </div>
+                        ) : (
+                          <Trophy className={cn("w-6 h-6", isCompleted && "drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]")} />
+                        )}
                       </div>
                       <div className="flex-1">
-                        <p className={cn("text-sm font-bold uppercase", isCompleted ? "text-white" : "text-muted-foreground/40")}>
-                          {isReward ? `REWARD UNLOCK` : `TROPHY ${i + 1}`}
+                        <div className="flex items-center gap-2">
+                          <p className={cn("text-sm font-bold uppercase tracking-tight", isCompleted ? "text-white" : "text-muted-foreground/30")}>
+                            {isReward ? `MILESTONE REACHED` : `STAGE ${i + 1}`}
+                          </p>
+                          {isCompleted && <CheckCircle className="w-3 h-3 text-primary" />}
+                        </div>
+                        <p className={cn("text-[10px] font-bold uppercase tracking-widest", isCompleted ? "text-primary/80" : "text-muted-foreground/20")}>
+                          {dayNum} Days of Excellence
                         </p>
-                        <p className="text-xs text-muted-foreground/60">{dayNum} Consistency Days</p>
                       </div>
                     </div>
                   );
@@ -349,8 +397,8 @@ export default function StreakPage() {
                  src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop"
                  className="w-full h-full object-cover grayscale transition-all duration-1000"
                  style={{ 
-                   filter: `grayscale(1) brightness(${0.2 + (trophyCount * 0.1)})`,
-                   clipPath: `inset(${Math.max(0, 100 - (trophyCount * 10))}% 0 0 0)` 
+                   filter: `grayscale(1) brightness(${0.2 + (completionPercentage * 0.008)})`,
+                   clipPath: `inset(${Math.max(0, 100 - completionPercentage)}% 0 0 0)` 
                  }}
                />
                <div className="absolute bottom-6 left-6 right-6">
@@ -358,28 +406,60 @@ export default function StreakPage() {
                     <p className="text-[10px] text-primary uppercase tracking-widest font-bold mb-1">Visual Completion</p>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary" style={{ width: `${Math.min(100, trophyCount * 10)}%` }} />
+                        <div className="h-full bg-primary" style={{ width: `${completionPercentage}%` }} />
                       </div>
-                      <span className="text-xs font-bold text-white">{Math.min(100, trophyCount * 10)}%</span>
+                      <span className="text-xs font-bold text-white">{Math.round(completionPercentage)}%</span>
                     </div>
                   </div>
                </div>
              </Card>
 
              <div className="space-y-4">
-                {REWARDS.map(reward => {
-                  const isUnlocked = trophyCount >= reward.trophiesNeeded;
+                {dynamicRewards.map(reward => {
+                  const isUnlocked = completionPercentage >= reward.percentNeeded;
                   return (
-                    <Card key={reward.id} className={cn("p-5 transition-all duration-500", isUnlocked ? "bg-primary/10 border-primary/20" : "opacity-50")}>
-                      <div className="flex items-center gap-4">
-                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", isUnlocked ? "bg-primary text-black shadow-[0_0_10px_rgba(0,255,157,0.2)]" : "bg-white/5")}>
-                          <Trophy className="w-6 h-6" />
+                    <Card 
+                      key={reward.id} 
+                      className={cn(
+                        "p-5 transition-all duration-700 relative overflow-hidden group/badge", 
+                        isUnlocked ? "bg-white/[0.03] border-white/10 shadow-2xl scale-100" : "opacity-30 scale-95 grayscale"
+                      )}
+                    >
+                      {isUnlocked && (
+                        <div className={cn("absolute inset-0 opacity-10 bg-gradient-to-r", reward.color)} />
+                      )}
+                      
+                      <div className="flex items-center gap-5 relative z-10">
+                        <div className={cn(
+                          "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-transform duration-500 group-hover/badge:rotate-12",
+                          isUnlocked ? `bg-gradient-to-br ${reward.color} shadow-[0_0_20px_rgba(0,0,0,0.3)]` : "bg-white/5"
+                        )}>
+                          {reward.icon}
                         </div>
-                        <div>
-                          <h4 className="font-bold uppercase text-sm">{reward.label}</h4>
-                          <p className="text-xs text-muted-foreground">{reward.description}</p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className={cn("font-display font-bold uppercase tracking-tight", isUnlocked ? "text-white" : "text-white/40")}>
+                              {reward.label}
+                            </h4>
+                            {isUnlocked && (
+                              <div className="px-2 py-0.5 rounded-full bg-primary/20 border border-primary/30 text-[8px] font-bold text-primary uppercase tracking-widest">
+                                UNLOCKED
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground/80 leading-tight">{reward.description}</p>
                         </div>
                       </div>
+
+                      {/* Progress Bar for Locked Badges */}
+                      {!isUnlocked && (
+                        <div className="mt-4 h-1 bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-white/20 transition-all duration-1000" 
+                            style={ { width: `${(completionPercentage / reward.percentNeeded) * 100}%` } }
+                          />
+                        </div>
+                      )}
                     </Card>
                   );
                 })}
