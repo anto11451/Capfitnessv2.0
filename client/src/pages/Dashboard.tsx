@@ -17,13 +17,17 @@ import {
   Target,
   Dumbbell,
   Coffee,
-  Info
+  Info,
+  CheckCircle,
+  Calendar as CalendarIcon,
+  HeartPulse
 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/App";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getMacroData, NutritionData } from "@/lib/nutritionSync";
+import { format, parseISO, startOfDay } from "date-fns";
 
 // Body type images
 import maleObeseImg from "@/assets/body-types/male_obese_body_type.png";
@@ -116,12 +120,12 @@ function ImageBodyMap({
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Target</p>
-                  <p className="text-white font-medium">{idealWeight.max}kg</p>
+                  <p className="text-white font-medium">{idealWeight.max || 70}kg</p>
                 </div>
               </div>
               <div className="pt-2 border-t border-white/10">
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Daily Protein</p>
-                <p className="text-white font-medium">{protein}g</p>
+                <p className="text-white font-medium">{protein || 150}g</p>
               </div>
               <div className="pt-2">
                 <Button 
@@ -204,77 +208,83 @@ function AIGuideOrb() {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl min-w-[200px] overflow-hidden"
-          >
-            {isListening ? (
-              <div className="p-4 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-primary/20 animate-ping mx-auto" />
-                <p className="text-sm font-medium text-white">{transcript}</p>
-              </div>
-            ) : showConfirmation ? (
-              <div className="p-4 space-y-4">
-                <p className="text-sm text-white font-medium text-center">{showConfirmation.label}?</p>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="flex-1 text-[10px]"
-                    onClick={() => setShowConfirmation(null)}
-                  >CANCEL</Button>
-                  <Button 
-                    size="sm" 
-                    className="flex-1 bg-primary text-black text-[10px] font-bold"
-                    onClick={() => {
-                      setLocation(showConfirmation.path);
-                      setShowConfirmation(null);
-                      setIsOpen(false);
-                    }}
-                  >YES</Button>
+    <motion.div 
+      drag
+      dragConstraints={{ left: -500, right: 0, top: -500, bottom: 0 }}
+      whileDrag={{ scale: 1.1 }}
+      className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 pointer-events-none"
+    >
+      <div className="pointer-events-auto flex flex-col items-end gap-4">
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-2xl min-w-[200px] overflow-hidden"
+            >
+              {isListening ? (
+                <div className="p-4 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 animate-ping mx-auto" />
+                  <p className="text-sm font-medium text-white">{transcript}</p>
                 </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-1">
-                {actions[stage].map((action: any, i: number) => (
-                  <button
-                    key={i}
-                    onClick={action.onClick}
-                    className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors group text-left"
-                  >
-                    <action.icon className={cn("w-4 h-4", action.color || "text-white/80")} />
-                    <span className="text-sm font-medium text-white/90 group-hover:text-white">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      <button 
-        onMouseDown={(e) => {
-          const timer = setTimeout(startListening, 500);
-          (e.currentTarget as any)._voiceTimer = timer;
-        }}
-        onMouseUp={(e) => clearTimeout((e.currentTarget as any)._voiceTimer)}
-        onClick={() => { setIsOpen(!isOpen); setStage('main'); setShowConfirmation(null); }}
-        className="relative group"
-      >
-        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-all animate-pulse" />
-        <div className="relative w-16 h-16 bg-black border border-primary/40 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,255,157,0.3)] transition-all active:scale-90 group-hover:border-primary group-hover:scale-105 overflow-hidden">
-          {/* Inner 3D Sphere Effect */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(0,255,157,0.4),transparent)]" />
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary via-accent to-primary animate-[spin_3s_linear_infinite] shadow-[0_0_20px_rgba(0,255,157,0.6)] relative z-10" />
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_45%,rgba(0,255,157,0.1)_50%,transparent_55%)] animate-[pulse_2s_ease-in-out_infinite]" />
-        </div>
-      </button>
-    </div>
+              ) : showConfirmation ? (
+                <div className="p-4 space-y-4">
+                  <p className="text-sm text-white font-medium text-center">{showConfirmation.label}?</p>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 text-[10px]"
+                      onClick={() => setShowConfirmation(null)}
+                    >CANCEL</Button>
+                    <Button 
+                      size="sm" 
+                      className="flex-1 bg-primary text-black text-[10px] font-bold"
+                      onClick={() => {
+                        setLocation(showConfirmation.path);
+                        setShowConfirmation(null);
+                        setIsOpen(false);
+                      }}
+                    >YES</Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  {actions[stage].map((action: any, i: number) => (
+                    <button
+                      key={i}
+                      onClick={action.onClick}
+                      className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/5 transition-colors group text-left"
+                    >
+                      <action.icon className={cn("w-4 h-4", action.color || "text-white/80")} />
+                      <span className="text-sm font-medium text-white/90 group-hover:text-white">{action.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <button 
+          onMouseDown={(e) => {
+            const timer = setTimeout(startListening, 500);
+            (e.currentTarget as any)._voiceTimer = timer;
+          }}
+          onMouseUp={(e) => clearTimeout((e.currentTarget as any)._voiceTimer)}
+          onClick={() => { setIsOpen(!isOpen); setStage('main'); setShowConfirmation(null); }}
+          className="relative group cursor-grab active:cursor-grabbing"
+        >
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl group-hover:bg-primary/40 transition-all animate-pulse" />
+          <div className="relative w-16 h-16 bg-black border border-primary/40 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,255,157,0.3)] transition-all active:scale-90 group-hover:border-primary group-hover:scale-105 overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(0,255,157,0.4),transparent)]" />
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-primary via-accent to-primary animate-[spin_3s_linear_infinite] shadow-[0_0_20px_rgba(0,255,157,0.6)] relative z-10" />
+            <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_45%,rgba(0,255,157,0.1)_50%,transparent_55%)] animate-[pulse_2s_ease-in-out_infinite]" />
+          </div>
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -297,6 +307,26 @@ export default function Dashboard() {
     window.addEventListener("streak-data-updated", handleStreakUpdate);
     return () => window.removeEventListener("streak-data-updated", handleStreakUpdate);
   }, []);
+
+  const planDates = useMemo(() => {
+    if (!liveProfile?.plan_start_date || !liveProfile?.plan_end_date) return null;
+    try {
+      return {
+        start: startOfDay(parseISO(liveProfile.plan_start_date)),
+        end: startOfDay(parseISO(liveProfile.plan_end_date))
+      };
+    } catch (e) {
+      return null;
+    }
+  }, [liveProfile]);
+
+  const streakDaysCount = useMemo(() => {
+    if (!planDates || !streakData?.history) return 0;
+    return streakData.history.filter((h: any) => {
+      const d = parseISO(h.date);
+      return d >= planDates.start && d <= planDates.end && (h.workoutDone || h.dietDone || h.isRestDay);
+    }).length;
+  }, [planDates, streakData]);
 
   useEffect(() => {
     // Check user_id from the user object
@@ -340,24 +370,27 @@ export default function Dashboard() {
   const userWeight = liveProfile?.current_weight ?? 70;
   const userGender = liveProfile?.gender ?? "male";
   const userMuscleMass = (liveProfile as any)?.muscle_mass ?? "average";
+
+  const bmi = userWeight / Math.pow(userHeight / 100, 2);
+  const idealWeight = calculateIdealWeight(userHeight, userGender);
+  const bodyType = determineBodyType(bmi, userMuscleMass);
+
   const userTargets = useMemo(() => {
     // Priority: 1. Synced macro data (real-time calculator results), 2. Profile from Sheets
     const syncedMacros = getMacroData();
     if (syncedMacros) {
       return {
         calories: syncedMacros.caloriesGoal || liveProfile?.calorie_target || 2000,
-        protein: syncedMacros.proteinGoal || (liveProfile as any)?.protein_target || 150,
+        protein: (liveProfile as any)?.protein_target || syncedMacros.proteinGoal || 150,
+        goalWeight: (liveProfile as any)?.goal_weight || idealWeight.max || 70
       };
     }
     return {
       calories: liveProfile?.calorie_target || 2000,
       protein: (liveProfile as any)?.protein_target || 150,
+      goalWeight: (liveProfile as any)?.goal_weight || idealWeight.max || 70
     };
-  }, [liveProfile, nutritionData]);
-
-  const bmi = userWeight / Math.pow(userHeight / 100, 2);
-  const bodyType = determineBodyType(bmi, userMuscleMass);
-  const idealWeight = calculateIdealWeight(userHeight, userGender);
+  }, [liveProfile, nutritionData, idealWeight]);
   
   // Use synced streak data or profile fallback
   const currentStreak = streakData?.currentStreak || (user as any)?.current_streak || (liveProfile as any)?.current_streak || 0;
@@ -384,146 +417,220 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto space-y-12 pb-24">
-        {/* Minimal Header */}
-        <header className="space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-primary text-xs uppercase tracking-[0.2em] font-bold">Your Command Center</p>
-            <div className="flex flex-col items-end">
-              <p className="text-muted-foreground/60 text-[10px] font-medium tracking-widest uppercase">Logged in as {firstName}</p>
-              <p className="text-primary/60 text-[10px] font-bold tracking-widest uppercase mt-1">Plan Start: {planStartDateDisplay}</p>
+      <div className="max-w-5xl mx-auto space-y-10 pb-32 pt-4 px-4">
+        {/* Premium Header */}
+        <header className="relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/10 to-transparent blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
+          <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="space-y-2">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3"
+              >
+                <div className="w-1 h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(0,255,157,0.5)]" />
+                <p className="text-primary text-[10px] uppercase tracking-[0.4em] font-black">Command Center V2.0</p>
+              </motion.div>
+              <motion.h1 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-5xl md:text-6xl font-display font-black text-white leading-none tracking-tight uppercase"
+              >
+                HELLO, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary bg-[length:200%_auto] animate-gradient-x">{firstName}</span>
+              </motion.h1>
             </div>
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white leading-tight uppercase">
-              Welcome back, <span className="text-primary">{firstName}</span>
-            </h1>
-            <p className="text-muted-foreground text-sm font-medium italic">
-              "Consistency is the playground of excellence. Let's make today count."
-            </p>
+            
+            <div className="flex flex-col items-end gap-2 bg-white/[0.03] backdrop-blur-md border border-white/5 p-4 rounded-3xl min-w-[180px]">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-3 h-3 text-muted-foreground" />
+                <p className="text-primary/80 text-[10px] font-bold tracking-[0.2em] uppercase">Phase: Alpha One</p>
+              </div>
+              <p className="text-white/40 text-[9px] font-medium tracking-widest uppercase">Start: {planStartDateDisplay}</p>
+            </div>
           </div>
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 items-start">
-          {/* Left Column: Focus & Guidance */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-2 px-2">
-              <Compass className="w-3 h-3 text-muted-foreground" />
-              <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Today's Focus</span>
-            </div>
-            {/* Today's Focus - Coach Tone */}
-            <Card className="bg-white/[0.02] border-white/5 p-8 rounded-[2rem] relative overflow-hidden group">
-              <div className="relative z-10 space-y-6">
-                <div className="flex items-center gap-2 text-primary/80">
-                  <Activity className="w-4 h-4" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold">Coach's Guidance</span>
-                </div>
-                
-                <div className="space-y-3">
-                  <h3 className="text-2xl font-bold text-white leading-snug">
-                    {nextSession ? `Time to crush your session.` : "Today is for recovery, Champ."}
-                  </h3>
-                  <p className="text-muted-foreground/80 text-sm leading-relaxed">
-                    {nextSession 
-                      ? "You've been consistent. Let's keep that momentum going and hit those targets today." 
-                      : "Rest is just as important as the work. Focus on hydration and mobility today."}
-                  </p>
-                </div>
-
-                <Button 
-                  onClick={() => setLocation('/app/plans')}
-                  className="bg-primary text-black hover:bg-white hover:text-black transition-all rounded-full px-8 py-6 h-auto font-bold tracking-tight shadow-[0_0_20px_rgba(0,255,157,0.3)]"
-                >
-                  START SESSION
-                </Button>
-              </div>
-              <div className="absolute top-0 right-0 p-8 text-white/5 group-hover:text-primary/10 transition-colors">
-                <Zap className="w-24 h-24 rotate-12" />
-              </div>
-            </Card>
-
-            {/* Calories & Streak Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="bg-white/[0.02] border-white/5 p-6 rounded-3xl space-y-4">
-                <div className="flex items-center gap-2 text-accent">
-                  <Utensils className="w-4 h-4" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold">Fuel</span>
-                </div>
-                <div className="space-y-4">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Main Action Section */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Primary Focus Card */}
+            <motion.div
+              whileHover={{ y: -5 }}
+              className="relative rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5 group"
+            >
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,157,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="p-10 relative z-10 space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Zap className="w-6 h-6 text-primary animate-pulse" />
+                  </div>
                   <div>
-                    <p className="text-2xl font-bold text-white">
-                      {Math.max(0, userTargets.calories - (nutritionData?.calories || 0))}
+                    <h3 className="text-3xl font-bold text-white tracking-tight">
+                      {nextSession ? `READY FOR TAKEOFF?` : "RECOVERY PROTOCOL ACTIVE"}
+                    </h3>
+                    <p className="text-muted-foreground text-sm font-medium">
+                      {nextSession ? "Your next milestone is waiting. Let's push boundaries today." : "Optimal recovery leads to peak performance. Stay hydrated."}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining kcal</p>
-                  </div>
-                  <div className="pt-2 border-t border-white/5">
-                    <p className="text-sm font-bold text-white">
-                      {Math.max(0, userTargets.protein - (nutritionData?.protein || 0))}g
-                    </p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Remaining Protein</p>
                   </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setLocation('/app/nutrition')}
-                  className="w-full text-xs text-accent hover:bg-accent/10 border border-accent/20 rounded-xl"
-                >
-                  Log Food
-                </Button>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setLocation('/app/plans')}
+                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 text-black shadow-[0_10px_30px_rgba(0,255,157,0.3)] transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center backdrop-blur-md">
+                      <Dumbbell className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-center">Deploy Workout</span>
+                  </motion.button>
+
+                  <motion.button 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setLocation('/app/bodymap')}
+                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-primary/30 hover:bg-white/[0.05] transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                      <Zap className="w-6 h-6 text-primary" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-center text-white/80 group-hover:text-white">Analyse Body</span>
+                  </motion.button>
+
+                  <motion.button 
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setLocation('/app/workout-partner')}
+                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-accent/30 hover:bg-white/[0.05] transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                      <HeartPulse className="w-6 h-6 text-accent" />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-center text-white/80 group-hover:text-white">Workout Partner</span>
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Metrics Grid */}
+            <div className="grid sm:grid-cols-2 gap-6">
+              <Card 
+                onClick={() => setLocation('/app/nutrition')}
+                className="bg-white/[0.02] border-white/5 p-8 rounded-[2rem] space-y-6 hover:border-accent/20 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-accent">
+                    <div className="p-2 bg-accent/10 rounded-xl">
+                      <Utensils className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.2em] font-black">Bio-Fuel</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-4xl font-display font-black text-white leading-none">
+                        {Math.max(0, userTargets.calories - (nutritionData?.calories || 0))}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">KCAL REMAINING</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-display font-bold text-white/80 leading-none">
+                        {Math.max(0, userTargets.protein - (nutritionData?.protein || 0))}G
+                      </p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">PROTEIN</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (nutritionData?.calories || 0) / userTargets.calories * 100)}%` }}
+                      className="h-full bg-accent shadow-[0_0_10px_rgba(255,0,85,0.5)]" 
+                    />
+                  </div>
+                </div>
               </Card>
 
-              <Card className="bg-white/[0.02] border-white/5 p-6 rounded-3xl space-y-4">
-                <div className="flex items-center gap-2 text-orange-500">
-                  <Flame className="w-4 h-4" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold">Momentum</span>
+              <Card 
+                onClick={() => setLocation('/app/streak')}
+                className="bg-white/[0.02] border-white/5 p-8 rounded-[2rem] space-y-6 hover:border-orange-500/20 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-orange-500">
+                    <div className="p-2 bg-orange-500/10 rounded-xl">
+                      <Flame className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.2em] font-black">Momentum</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                 </div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{currentStreak}</p>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Day Streak</p>
+                <div className="flex items-end gap-3">
+                  <p className="text-6xl font-display font-black text-white leading-none">{streakDaysCount}</p>
+                  <div className="pb-1">
+                    <p className="text-xs font-bold text-orange-500 uppercase">Days</p>
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Active Streak</p>
+                  </div>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => setLocation('/app/streak')}
-                  className="w-full text-xs text-orange-500 hover:bg-orange-500/10 border border-orange-500/20 rounded-xl"
-                >
-                  View Streak
-                </Button>
+                <div className="flex gap-2">
+                  {[...Array(7)].map((_, i) => (
+                    <div key={i} className={cn(
+                      "flex-1 h-1 rounded-full transition-all duration-1000",
+                      i < (streakDaysCount % 7) ? "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]" : "bg-white/5"
+                    )} />
+                  ))}
+                </div>
               </Card>
             </div>
           </div>
 
-          {/* Right Column: Body Snapshot */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between px-2">
-              <div className="flex items-center gap-2">
-                <Info className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">Body Snapshot</span>
-              </div>
-              <Link href="/app/bodymap" className="text-[10px] uppercase tracking-widest text-primary font-bold hover:underline">
-                Full Details
-              </Link>
+          {/* Side Content Section */}
+          <div className="lg:col-span-4 space-y-8">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-primary/10 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+              <ImageBodyMap
+                bodyType={bodyType}
+                gender={userGender}
+                bmi={bmi}
+                idealWeight={ { min: 0, max: userTargets.goalWeight } }
+                protein={userTargets.protein}
+                onAnalysisClick={() => setLocation("/app/bodymap")}
+              />
             </div>
-            
-            <ImageBodyMap
-              bodyType={bodyType}
-              gender={userGender}
-              bmi={bmi}
-              idealWeight={idealWeight}
-              protein={userTargets.protein}
-              onAnalysisClick={() => setLocation("/app/bodymap")}
-            />
 
-            <div className="bg-white/[0.01] border border-white/5 rounded-3xl p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                  <Target className="w-5 h-5" />
+            {/* Goal Progress Card */}
+            <Card className="bg-gradient-to-br from-white/[0.03] to-transparent border-white/5 p-8 rounded-[2rem] relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 opacity-5">
+                <Target className="w-20 h-20" />
+              </div>
+              <div className="space-y-6 relative z-10">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <Target className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">MISSION TARGET</p>
+                    <p className="text-xl font-black text-white">{userTargets.goalWeight} KG</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Current Goal</p>
-                  <p className="text-sm font-medium text-white">Reaching {liveProfile?.goal_weight || idealWeight.max}kg Body Weight</p>
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                    <span className="text-muted-foreground">Current Progress</span>
+                    <span className="text-primary">{Math.round((userWeight / userTargets.goalWeight) * 100)}%</span>
+                  </div>
+                  <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(100, (userWeight / userTargets.goalWeight) * 100)}%` }}
+                      className="h-full bg-gradient-to-r from-primary to-accent" 
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
         </div>
       </div>
