@@ -969,7 +969,7 @@ useEffect(() => {
       }
 
       // ✅ ALWAYS show Shiva Bala custom plan
-      setPrograms([SHIVA_BALA_CUSTOM_PLAN, ...planGroups]);
+      setPrograms([DAREL_CUSTOM_PLAN,SHIVA_BALA_CUSTOM_PLAN, ...planGroups]);
 
     } catch (error) {
       console.error('Failed to fetch programs:', error);
