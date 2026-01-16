@@ -661,7 +661,7 @@ interface PlanGroup {
 // ============================
 //Darel Raj – Fat losss plan
 // ============================
-const customDetailedPlans: DetailedPlan[] = [
+const darel_customDetailedPlans: DetailedPlan[] = [
   {
     id: 'darel-raj-fatloss',
     name: 'Darel Raj Fat Loss Plan',
