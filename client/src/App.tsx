@@ -136,8 +136,23 @@ function App() {
   useEffect(() => {
     const storedUser = localStorage.getItem("capsfitness_user");
     const storedAdmin = localStorage.getItem("capsfitness_admin");
+
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+
+      // Check for plan expiration on reload
+      if (parsedUser.plan_end_date) {
+        const endDate = new Date(parsedUser.plan_end_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (endDate < today) {
+          localStorage.removeItem("capsfitness_user");
+          return;
+        }
+      }
+
+      setUser(parsedUser);
     }
     if (storedAdmin === "true") {
       setIsAdmin(true);
