@@ -474,74 +474,74 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3 md:gap-4">
                   <motion.button 
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setLocation('/app/plans')}
-                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 text-black shadow-[0_10px_30px_rgba(0,255,157,0.3)] transition-all group"
+                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 text-black shadow-[0_10px_30px_rgba(0,255,157,0.3)] transition-all group min-w-0"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-black/10 flex items-center justify-center backdrop-blur-md">
-                      <Dumbbell className="w-6 h-6 animate-pulse" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-black/10 flex items-center justify-center backdrop-blur-md shrink-0">
+                      <Dumbbell className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-center">Deploy Workout</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center truncate w-full px-1">Deploy</span>
                   </motion.button>
 
                   <motion.button 
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setLocation('/app/bodymap')}
-                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-primary/30 hover:bg-white/[0.05] transition-all group"
+                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-primary/30 hover:bg-white/[0.05] transition-all group min-w-0"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <Zap className="w-6 h-6 text-primary" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                      <Zap className="w-5 h-5 md:w-6 md:h-6 text-primary" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-center text-white/80 group-hover:text-white">Analyse Body</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Analyse</span>
                   </motion.button>
 
                   <motion.button 
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setLocation('/app/workout-partner')}
-                    className="flex flex-col items-center gap-3 p-6 rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-accent/30 hover:bg-white/[0.05] transition-all group"
+                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-accent/30 hover:bg-white/[0.05] transition-all group min-w-0"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                      <HeartPulse className="w-6 h-6 text-accent" />
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+                      <HeartPulse className="w-5 h-5 md:w-6 md:h-6 text-accent" />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-center text-white/80 group-hover:text-white">Workout Partner</span>
+                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Partner</span>
                   </motion.button>
                 </div>
               </div>
             </motion.div>
 
             {/* Metrics Grid */}
-            <div className="grid sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               <Card 
                 onClick={() => setLocation('/app/nutrition')}
-                className="bg-white/[0.02] border-white/5 p-8 rounded-[2rem] space-y-6 hover:border-accent/20 transition-all cursor-pointer group"
+                className="bg-white/[0.02] border-white/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] space-y-4 md:space-y-6 hover:border-accent/20 transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-accent">
                     <div className="p-2 bg-accent/10 rounded-xl">
-                      <Utensils className="w-5 h-5" />
+                      <Utensils className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
-                    <span className="text-xs uppercase tracking-[0.2em] font-black">Bio-Fuel</span>
+                    <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-black">Bio-Fuel</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                 </div>
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-4xl font-display font-black text-white leading-none">
+                      <p className="text-3xl md:text-4xl font-display font-black text-white leading-none">
                         {Math.max(0, userTargets.calories - (nutritionData?.calories || 0))}
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">KCAL REMAINING</p>
+                      <p className="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-widest mt-1 md:mt-2">KCAL LEFT</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-display font-bold text-white/80 leading-none">
+                      <p className="text-xl md:text-2xl font-display font-bold text-white/80 leading-none">
                         {Math.max(0, userTargets.protein - (nutritionData?.protein || 0))}G
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2">PROTEIN</p>
+                      <p className="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-widest mt-1 md:mt-2">PROTEIN</p>
                     </div>
                   </div>
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -556,22 +556,22 @@ export default function Dashboard() {
 
               <Card 
                 onClick={() => setLocation('/app/streak')}
-                className="bg-white/[0.02] border-white/5 p-8 rounded-[2rem] space-y-6 hover:border-orange-500/20 transition-all cursor-pointer group"
+                className="bg-white/[0.02] border-white/5 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] space-y-4 md:space-y-6 hover:border-orange-500/20 transition-all cursor-pointer group"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 text-orange-500">
                     <div className="p-2 bg-orange-500/10 rounded-xl">
-                      <Flame className="w-5 h-5" />
+                      <Flame className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
-                    <span className="text-xs uppercase tracking-[0.2em] font-black">Momentum</span>
+                    <span className="text-[10px] md:text-xs uppercase tracking-[0.2em] font-black">Momentum</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
                 </div>
                 <div className="flex items-end gap-3">
-                  <p className="text-6xl font-display font-black text-white leading-none">{streakDaysCount}</p>
+                  <p className="text-5xl md:text-6xl font-display font-black text-white leading-none">{streakDaysCount}</p>
                   <div className="pb-1">
-                    <p className="text-xs font-bold text-orange-500 uppercase">Days</p>
-                    <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Active Streak</p>
+                    <p className="text-[10px] md:text-xs font-bold text-orange-500 uppercase">Days</p>
+                    <p className="text-[8px] md:text-[9px] text-muted-foreground uppercase tracking-widest">Active</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
