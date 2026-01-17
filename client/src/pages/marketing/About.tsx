@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Target, Heart, Zap, Award, Dumbbell, Brain, Users, Clock, Quote } from "lucide-react";
 import { useLocation } from "wouter";
 import PageWrapper from "@/components/PageWrapper";
-import founderImg from "@/assets/founder/founder.jpg";
+import founderImg from "@/assets/founder.jpg";
 
 export default function About() {
   const [, setLocation] = useLocation();
