@@ -29,18 +29,51 @@ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
 
-  try {
-    const profile = await sheetLogin(email, password);
+    try {
+      const profile = await sheetLogin(email, password);
 
-    if (!profile) {
-      throw new Error("Invalid credentials");
-    }
+      if (!profile) {
+        throw new Error("Invalid credentials");
+      }
 
-    // Store user in auth context
-  login({
-  ...profile,
-  userId: profile.user_id, // 🔥 THIS IS THE FIX
-});
+      // Plan expiration check
+      if (profile.plan_end_date) {
+        const endDate = new Date(profile.plan_end_date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (endDate < today) {
+          toast({
+            title: "Plan Expired",
+            description: "Plan expired, contact Cap's Coach to re-activate your account.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Store user in auth context
+      login({
+        user_id: profile.user_id,
+        email: profile.email,
+        name: profile.name,
+        gender: profile.gender,
+        age: Number(profile.age),
+        height_cm: Number(profile.height_cm),
+        muscle_mass: 'medium', // Defaulting since it's missing from profile
+        starting_weight: Number(profile.starting_weight),
+        current_weight: Number(profile.current_weight),
+        goal_weight: Number(profile.goal_weight),
+        calorie_target: Number(profile.calorie_target),
+        protein_target: Number(profile.protein_target),
+        carbs_target: Number(profile.carbs_target),
+        fats_target: Number(profile.fats_target),
+        plan_assigned: profile.plan_assigned || '',
+        plan_start_date: profile.plan_start_date,
+        plan_end_date: profile.plan_end_date,
+        next_session_date: profile.next_session_date,
+        currentStreak: 0
+      } as any);
 
 
     toast({
