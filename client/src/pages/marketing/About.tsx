@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Target, Heart, Zap, Award, Dumbbell, Brain, Users, Clock } from "lucide-react";
+import { ArrowLeft, Target, Heart, Zap, Award, Dumbbell, Brain, Users, Clock, Quote } from "lucide-react";
 import { useLocation } from "wouter";
 import PageWrapper from "@/components/PageWrapper";
+import founderImg from "@/assets/founder/founder.jpg";
 
 export default function About() {
   const [, setLocation] = useLocation();
@@ -114,22 +115,40 @@ export default function About() {
             >
               <Card className="bg-card/80 backdrop-blur-sm border border-primary/30 neon-border overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none" />
-                <CardHeader className="relative">
-                  <CardTitle className="text-3xl font-display">Our Mission</CardTitle>
-                </CardHeader>
-                <CardContent className="relative space-y-4 text-lg leading-relaxed text-foreground/90">
-                  <p>
-                    Hey I am Anto, Cap's FITNESS was created with a simple vision: make fitness easier for people who feel lost.
-                    I built my body alone — no coach, no mentor, no guidance — and I understand the confusion, the mistakes, and the slow progress that comes with it.
-                  </p>
-                  <p>
-                    Now, I guide others with what I never had: structured, science-backed, and experience-tested coaching that actually works.
-                  </p>
-                  <p>
-                    Whether you're just starting your fitness journey or looking to break through a plateau, 
-                    we're here to guide, support, and motivate you every step of the way.
-                  </p>
-                </CardContent>
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div className="relative aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
+                    <img 
+                      src={founderImg} 
+                      alt="Anto - Founder of Cap's Fitness" 
+                      className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent md:bg-gradient-to-r" />
+                  </div>
+                  <div className="p-8 md:p-12 space-y-6 relative">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest">
+                      Founder's Story
+                    </div>
+                    <CardTitle className="text-4xl md:text-5xl font-display font-bold">Meet Anto</CardTitle>
+                    <div className="space-y-4 text-lg leading-relaxed text-foreground/80 font-medium">
+                      <p className="relative">
+                        <Quote className="absolute -left-8 -top-4 w-8 h-8 text-primary/20 rotate-180" />
+                        Cap's FITNESS was created with a simple vision: make fitness easier for people who feel lost.
+                        I built my body alone — no coach, no mentor, no guidance — and I understand the confusion, the mistakes, and the slow progress that comes with it.
+                      </p>
+                      <p>
+                        Now, I guide others with what I never had: structured, science-backed, and experience-tested coaching that actually works.
+                      </p>
+                      <p>
+                        Whether you're just starting your fitness journey or looking to break through a plateau, 
+                        we're here to guide, support, and motivate you every step of the way.
+                      </p>
+                    </div>
+                    <div className="pt-4 border-t border-white/5">
+                      <p className="text-primary font-display font-bold text-xl uppercase tracking-widest">Anto</p>
+                      <p className="text-muted-foreground text-sm uppercase tracking-widest">Founder & Head Coach</p>
+                    </div>
+                  </div>
+                </div>
               </Card>
             </motion.div>
 
