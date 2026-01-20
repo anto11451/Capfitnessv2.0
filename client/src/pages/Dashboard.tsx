@@ -38,6 +38,8 @@ import femaleObeseImg from "@/assets/body-types/female_obese_body_type.png";
 import femaleSkinnyImg from "@/assets/body-types/female_skinny_body_type.png";
 import femaleFitImg from "@/assets/body-types/female_fit_body_type.png";
 import femaleMuscularImg from "@/assets/body-types/female_muscular_body_type.png";
+import femaleoverweightImg from "@/assets/body-types/Female_overweight.png";
+import maleoverweightImg from "@/assets/body-types/Male_overweight.png";
 
 type BodyType = "obese" | "skinny" | "overweight" |"fit" | "muscular";
 
@@ -99,8 +101,8 @@ function ImageBodyMap({
   const [isHovered, setIsHovered] = useState(false);
   
   const bodyImages: Record<string, Record<BodyType, string>> = {
-    male: { obese: maleObeseImg, skinny: maleSkinnyImg, fit: maleFitImg, muscular: maleMuscularImg },
-    female: { obese: femaleObeseImg, skinny: femaleSkinnyImg, fit: femaleFitImg, muscular: femaleMuscularImg },
+    male: { obese: maleObeseImg, skinny: maleSkinnyImg, fit: maleFitImg, muscular: maleMuscularImg,  overweight: maleoverweightImg, },
+    female: { obese: femaleObeseImg, skinny: femaleSkinnyImg, fit: femaleFitImg, muscular: femaleMuscularImg,  overweight: femaleoverweightImg, },
   };
 
   const selectedImage = bodyImages[gender.toLowerCase()]?.[bodyType] || bodyImages.male[bodyType];
