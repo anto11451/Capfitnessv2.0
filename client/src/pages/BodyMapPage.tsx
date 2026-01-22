@@ -24,15 +24,36 @@ import femaleObeseImg from "@/assets/body-types/female_obese_body_type.png";
 import femaleSkinnyImg from "@/assets/body-types/female_skinny_body_type.png";
 import femaleFitImg from "@/assets/body-types/female_fit_body_type.png";
 import femaleMuscularImg from "@/assets/body-types/female_muscular_body_type.png";
+import femaleoverweightImg from "@/assets/body-types/Female_overweight.png";
+import maleoverweightImg from "@/assets/body-types/Male_overweight.png";
 
-type BodyType = "obese" | "skinny" | "fit" | "muscular";
+type BodyType = "obese" | "skinny" | "overweight" |"fit" | "muscular";
 
-function determineBodyType(bmi: number, muscleMass: string = "average"): BodyType {
-  if (muscleMass === "high") return "muscular";
-  if (bmi >= 30) return "obese";
-  if (bmi < 18.5) return "skinny";
-  return "fit";
+function determineBodyType(
+  bmi: number,
+  muscleMass: "low" | "average" | "high" = "average"
+): BodyType {
+
+  // Muscular override (but only if BMI isn't extreme)
+  if (muscleMass === "high" && bmi < 30) {
+    return "muscular";
+  }
+
+  if (bmi < 18.5) {
+    return "skinny";
+  }
+
+  if (bmi >= 18.5 && bmi < 25) {
+    return "fit";
+  }
+
+  if (bmi >= 25 && bmi < 30) {
+    return "overweight";
+  }
+
+  return "obese";
 }
+
 
 function calculateIdealWeight(heightCm: number, gender: string) {
   const heightM = heightCm / 100;
