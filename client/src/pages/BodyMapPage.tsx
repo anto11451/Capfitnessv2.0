@@ -100,8 +100,8 @@ export default function BodyMapPage() {
   const idealWeight = calculateIdealWeight(userHeight, userGender);
 
   const bodyImages: Record<string, Record<BodyType, string>> = {
-    male: { obese: maleObeseImg, skinny: maleSkinnyImg, fit: maleFitImg, muscular: maleMuscularImg },
-    female: { obese: femaleObeseImg, skinny: femaleSkinnyImg, fit: femaleFitImg, muscular: femaleMuscularImg },
+    male: { obese: maleObeseImg, skinny: maleSkinnyImg, fit: maleFitImg, muscular: maleMuscularImg,  overweight: maleoverweightImg, },
+    female: { obese: femaleObeseImg, skinny: femaleSkinnyImg, fit: femaleFitImg, muscular: femaleMuscularImg,  overweight: femaleoverweightImg,  },
   };
 
   const selectedImage = bodyImages[userGender.toLowerCase()]?.[bodyType] || bodyImages.male[bodyType];
