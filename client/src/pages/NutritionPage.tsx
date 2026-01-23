@@ -69,9 +69,9 @@ interface DailyLog {
   fatsConsumed: number;
 }
 
-import riceImg from "@/assets/nutrition/rice-cartoon.png";
-import chickenImg from "@/assets/nutrition/chicken-cartoon.png";
-import eggImg from "@/assets/nutrition/egg-cartoon.png";
+import riceImg from "@/assets/rice-cartoon.png";
+import chickenImg from "@/assets/chicken-cartoon.png";
+import eggImg from "@/assets/egg-cartoon.png";
 
 const foodDatabase: Record<
   string,
