@@ -44,6 +44,7 @@ import {
 import { useAuth } from "@/App";
 import { useToast } from "@/hooks/use-toast";
 import { getMacroData, syncFuelTrackerWithMacros, NutritionData } from "@/lib/nutritionSync";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DAILY_LOG_KEY = "capsfitness_daily_log";
 
@@ -68,6 +69,10 @@ interface DailyLog {
   fatsConsumed: number;
 }
 
+import riceImg from "@/assets/nutrition/rice-cartoon.png";
+import chickenImg from "@/assets/nutrition/chicken-cartoon.png";
+import eggImg from "@/assets/nutrition/egg-cartoon.png";
+
 const foodDatabase: Record<
   string,
   {
@@ -77,143 +82,17 @@ const foodDatabase: Record<
     calories: number;
     defaultUnit: string;
     servingSize: number;
+    image?: string;
   }
 > = {
-  Paneer: {
-    protein: 18,
-    carbs: 4,
-    fats: 22,
-    calories: 265,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  Chapati: {
-    protein: 3,
-    carbs: 18,
-    fats: 4,
-    calories: 120,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Paratha: {
-    protein: 4,
-    carbs: 30,
-    fats: 10,
-    calories: 220,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Idli: {
-    protein: 2,
-    carbs: 12,
-    fats: 0.5,
-    calories: 60,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Dosa: {
-    protein: 4,
+  Rice: {
+    protein: 2.7,
     carbs: 28,
-    fats: 5,
-    calories: 170,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Poha: {
-    protein: 3,
-    carbs: 25,
-    fats: 4,
-    calories: 150,
-    defaultUnit: "bowl",
-    servingSize: 1,
-  },
-  Upma: {
-    protein: 4,
-    carbs: 22,
-    fats: 6,
-    calories: 160,
-    defaultUnit: "bowl",
-    servingSize: 1,
-  },
-  Rajma: {
-    protein: 9,
-    carbs: 23,
-    fats: 0.5,
-    calories: 127,
+    fats: 0.3,
+    calories: 130,
     defaultUnit: "g",
     servingSize: 100,
-  },
-  Chole: {
-    protein: 8,
-    carbs: 27,
-    fats: 3,
-    calories: 164,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  Dal: {
-    protein: 9,
-    carbs: 20,
-    fats: 1,
-    calories: 116,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  Sprouts: {
-    protein: 7,
-    carbs: 12,
-    fats: 1,
-    calories: 80,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  Omelette: {
-    protein: 12,
-    carbs: 1,
-    fats: 10,
-    calories: 140,
-    defaultUnit: "eggs",
-    servingSize: 2,
-  },
-  "Chicken Curry": {
-    protein: 25,
-    carbs: 8,
-    fats: 12,
-    calories: 240,
-    defaultUnit: "g",
-    servingSize: 150,
-  },
-  "Fish Fry": {
-    protein: 20,
-    carbs: 5,
-    fats: 10,
-    calories: 180,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Curd: {
-    protein: 4,
-    carbs: 5,
-    fats: 3,
-    calories: 60,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  "Whey Scoop": {
-    protein: 24,
-    carbs: 3,
-    fats: 1,
-    calories: 120,
-    defaultUnit: "scoop",
-    servingSize: 1,
-  },
-  Eggs: {
-    protein: 6,
-    carbs: 1,
-    fats: 5,
-    calories: 70,
-    defaultUnit: "piece",
-    servingSize: 1,
+    image: riceImg
   },
   "Chicken Breast": {
     protein: 31,
@@ -222,12 +101,22 @@ const foodDatabase: Record<
     calories: 165,
     defaultUnit: "g",
     servingSize: 100,
+    image: chickenImg
   },
-  Rice: {
-    protein: 2.7,
-    carbs: 28,
-    fats: 0.3,
-    calories: 130,
+  Eggs: {
+    protein: 6,
+    carbs: 1,
+    fats: 5,
+    calories: 70,
+    defaultUnit: "piece",
+    servingSize: 1,
+    image: eggImg
+  },
+  Paneer: {
+    protein: 18,
+    carbs: 4,
+    fats: 22,
+    calories: 265,
     defaultUnit: "g",
     servingSize: 100,
   },
@@ -271,101 +160,13 @@ const foodDatabase: Record<
     defaultUnit: "g",
     servingSize: 100,
   },
-  "Brown Rice": {
-    protein: 2.6,
-    carbs: 23,
-    fats: 0.9,
-    calories: 111,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  "Boiled Egg": {
-    protein: 6,
-    carbs: 1,
-    fats: 5,
-    calories: 70,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  "Egg Whites": {
-    protein: 11,
-    carbs: 1,
-    fats: 0,
-    calories: 52,
-    defaultUnit: "eggs",
-    servingSize: 2,
-  },
-  "Cooked Oats": {
-    protein: 6,
-    carbs: 28,
-    fats: 3,
-    calories: 154,
-    defaultUnit: "cup",
-    servingSize: 1,
-  },
-  "Veg Salad": {
+  "Sweet Potato": {
     protein: 2,
-    carbs: 10,
+    carbs: 20,
     fats: 0,
-    calories: 50,
-    defaultUnit: "bowl",
-    servingSize: 1,
-  },
-  "Grilled Chicken": {
-    protein: 31,
-    carbs: 0,
-    fats: 4,
-    calories: 165,
+    calories: 86,
     defaultUnit: "g",
     servingSize: 100,
-  },
-  "Multigrain Roti": {
-    protein: 4,
-    carbs: 17,
-    fats: 3,
-    calories: 110,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Khichdi: {
-    protein: 7,
-    carbs: 28,
-    fats: 3,
-    calories: 160,
-    defaultUnit: "bowl",
-    servingSize: 1,
-  },
-  "Mixed Veg Sabzi": {
-    protein: 3,
-    carbs: 12,
-    fats: 4,
-    calories: 100,
-    defaultUnit: "bowl",
-    servingSize: 1,
-  },
-  Apple: {
-    protein: 0.3,
-    carbs: 25,
-    fats: 0.2,
-    calories: 95,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Orange: {
-    protein: 1,
-    carbs: 15,
-    fats: 0.2,
-    calories: 62,
-    defaultUnit: "piece",
-    servingSize: 1,
-  },
-  Grapes: {
-    protein: 1,
-    carbs: 18,
-    fats: 0.2,
-    calories: 69,
-    defaultUnit: "cup",
-    servingSize: 1,
   },
   "Brown Bread": {
     protein: 4,
@@ -373,15 +174,7 @@ const foodDatabase: Record<
     fats: 1,
     calories: 110,
     defaultUnit: "slice",
-    servingSize: 2,
-  },
-  "White Bread": {
-    protein: 3,
-    carbs: 24,
-    fats: 1,
-    calories: 120,
-    defaultUnit: "slice",
-    servingSize: 2,
+    servingSize: 1,
   },
   "Peanut Chikki": {
     protein: 5,
@@ -391,68 +184,47 @@ const foodDatabase: Record<
     defaultUnit: "piece",
     servingSize: 1,
   },
-  Tofu: {
-    protein: 8,
-    carbs: 2,
-    fats: 4,
-    calories: 76,
+  "Sattu": {
+    protein: 20,
+    carbs: 60,
+    fats: 7,
+    calories: 380,
     defaultUnit: "g",
     servingSize: 100,
   },
-  "Soya Chunks": {
-    protein: 52,
-    carbs: 33,
-    fats: 0.5,
-    calories: 345,
+  "Greek Yogurt": {
+    protein: 10,
+    carbs: 4,
+    fats: 5,
+    calories: 100,
     defaultUnit: "g",
     servingSize: 100,
   },
-  "Sweet Potato": {
-    protein: 2,
-    carbs: 20,
-    fats: 0,
-    calories: 86,
-    defaultUnit: "g",
-    servingSize: 100,
-  },
-  Corn: {
-    protein: 3.5,
-    carbs: 19,
-    fats: 1.5,
-    calories: 86,
-    defaultUnit: "cup",
-    servingSize: 1,
-  },
-  Buttermilk: {
-    protein: 3,
-    carbs: 5,
-    fats: 1,
-    calories: 40,
-    defaultUnit: "ml",
-    servingSize: 100,
-  },
-  "Green Tea": {
-    protein: 0,
+  "Fish (Tilapia)": {
+    protein: 26,
     carbs: 0,
-    fats: 0,
-    calories: 0,
-    defaultUnit: "cup",
-    servingSize: 1,
+    fats: 3,
+    calories: 128,
+    defaultUnit: "g",
+    servingSize: 100,
   },
+  "Lentils (Dal)": {
+    protein: 9,
+    carbs: 20,
+    fats: 0.4,
+    calories: 116,
+    defaultUnit: "g",
+    servingSize: 100,
+  },
+  "Chickpeas (Chole)": {
+    protein: 19,
+    carbs: 61,
+    fats: 6,
+    calories: 364,
+    defaultUnit: "g",
+    servingSize: 100,
+  }
 };
-
-const unitOptions = [
-  "g",
-  "ml",
-  "oz",
-  "cup",
-  "tbsp",
-  "tsp",
-  "piece",
-  "scoop",
-  "bowl",
-  "eggs",
-];
 
 interface ProteinHackBlog {
   id: string;
@@ -585,805 +357,361 @@ const proteinHackBlogs: ProteinHackBlog[] = [
             "Seitan: 25g per 100g - wheat protein",
           ],
         },
-        {
-          heading: "Sample High-Protein Vegetarian Day",
-          content: "Heres what 120g+ protein looks like without any meat.",
-          tips: [
-            "Breakfast: Paneer bhurji (2 eggs worth paneer) + 2 rotis = 28g",
-            "Mid-morning: Greek yogurt + almonds = 18g",
-            "Lunch: Soya chunk curry + rice + dal = 38g",
-            "Snack: Roasted chana + protein shake = 28g",
-            "Dinner: Chole + roti + raita = 24g",
-            "TOTAL: 136g protein - completely vegetarian!",
-          ],
-        },
-        {
-          heading: "Bioavailability Matters",
-          content:
-            "Not all protein is absorbed equally. Here is how to maximize absorption from plant sources.",
-          tips: [
-            "Soak legumes overnight - reduces anti-nutrients",
-            "Sprout your beans - increases protein availability by 20%",
-            "Combine with Vitamin C - enhances iron and protein absorption",
-            "Fermented foods (curd, tempeh) - pre-digested proteins",
-            "Avoid excess fiber with protein meals - can reduce absorption",
-          ],
-        },
       ],
       conclusion:
         "Vegetarian bodybuilding is not just possible - its thriving. With strategic food combinations and proper planning, you can build just as much muscle as any meat-eater. The key is consistency and variety.",
     },
   },
-  {
-    id: "protein-timing",
-    title: "Protein Timing: When to Eat for Maximum Gains",
-    subtitle: "Optimize your protein intake around workouts",
-    readTime: "6 min read",
-    category: "Science",
-    icon: <Timer className="w-5 h-5" />,
-    color: "from-blue-500 to-indigo-600",
-    excerpt:
-      "Does protein timing really matter? Learn the science behind when to eat protein for optimal muscle protein synthesis and recovery.",
-    content: {
-      intro:
-        'Youve heard about the "anabolic window" - but is it real? Lets separate fact from fiction and understand what science actually says about protein timing for muscle growth.',
-      sections: [
-        {
-          heading: "The Anabolic Window: Myth or Reality?",
-          content:
-            "The old belief that you MUST eat protein within 30 minutes of training is largely overblown. Research shows the anabolic window is actually 4-6 hours around your workout.",
-          tips: [
-            "Pre-workout meal protein stays elevated during training",
-            "Post-workout window is 2-3 hours, not 30 minutes",
-            "Total daily protein matters MORE than timing",
-            "Fasted training may benefit from faster post-workout nutrition",
-            "Dont stress about exact timing - focus on consistency",
-          ],
-        },
-        {
-          heading: "Optimal Protein Distribution",
-          content:
-            "How you spread protein throughout the day impacts muscle protein synthesis (MPS). Heres the science-backed approach.",
-          tips: [
-            "Aim for 20-40g protein per meal (dose-response peaks here)",
-            "Eat protein every 3-4 hours for consistent MPS elevation",
-            "4-5 protein feedings per day is optimal for most",
-            "Larger doses (40g+) are fine but offer diminishing returns",
-            "Spreading beats piling - 4x30g > 2x60g for MPS",
-          ],
-        },
-        {
-          heading: "Pre-Workout Protein Strategy",
-          content:
-            "What and when to eat before training for optimal performance and gains.",
-          tips: [
-            "2-3 hours before: Full meal with 30-40g protein",
-            "1 hour before: Light meal with 20-25g protein",
-            "30 min before: Whey shake if training fasted",
-            "Slow proteins (casein, meat) for longer sessions",
-            "Fast proteins (whey, eggs) for shorter windows",
-          ],
-        },
-        {
-          heading: "Post-Workout Nutrition",
-          content:
-            "Recovery starts the moment your workout ends. Heres how to maximize it.",
-          tips: [
-            "Within 2 hours: 30-40g protein for optimal MPS",
-            "Combine with carbs for insulin spike (helps protein uptake)",
-            "Whey protein is fastest absorbing - ideal post-workout",
-            "Whole foods work just as well if timing permits",
-            "Dont forget hydration - protein synthesis needs water",
-          ],
-        },
-        {
-          heading: "Before Bed: The Overlooked Opportunity",
-          content:
-            "Nighttime is prime recovery time. Feed your muscles while you sleep.",
-          tips: [
-            "Casein protein before bed - slow release over 7-8 hours",
-            "Greek yogurt or cottage cheese - natural casein sources",
-            "30-40g protein before sleep supports overnight recovery",
-            "Avoid large meals - focus on protein-rich snacks",
-            "This can add 10-15% to your muscle protein synthesis",
-          ],
-        },
-      ],
-      conclusion:
-        "While total daily protein is king, optimizing timing can give you an extra edge. Spread your protein across 4-5 meals, prioritize around training, and dont forget your pre-sleep protein. Small optimizations compound into big results.",
-    },
-  },
-  {
-    id: "high-protein-indian",
-    title: "High-Protein Indian Cooking Hacks",
-    subtitle: "Traditional recipes with a protein twist",
-    readTime: "7 min read",
-    category: "Recipes",
-    icon: <ChefHat className="w-5 h-5" />,
-    color: "from-orange-500 to-amber-600",
-    excerpt:
-      "Love Indian food but struggling with protein? These cooking hacks will transform your favorite dishes into muscle-building meals.",
-    content: {
-      intro:
-        "Indian cuisine is rich in flavor but often carb-heavy. With a few smart modifications, you can keep the taste while dramatically boosting the protein content of your favorite dishes.",
-      sections: [
-        {
-          heading: "Protein-Boosted Breakfast Ideas",
-          content: "Start your day the high-protein Indian way.",
-          tips: [
-            "Besan Chilla Upgrade: Add 2 eggs to batter = +12g protein",
-            "Poha Power: Mix in soya granules = +15g protein",
-            "Upma Hack: Add paneer cubes and peanuts = +18g protein",
-            "Dosa Twist: Fill with egg bhurji instead of potato = +12g protein",
-            "Paratha Plus: Stuff with paneer + sprouts = +20g protein",
-          ],
-        },
-        {
-          heading: "Lunch and Dinner Transformations",
-          content:
-            "Turn regular meals into protein powerhouses without sacrificing taste.",
-          tips: [
-            "Replace half the rice with soya chunks = +26g protein",
-            "Add paneer to any vegetable curry = +14g protein",
-            "Use double dal in dal-rice = +12g protein",
-            "Protein roti: Mix besan with wheat flour = +8g per 2 rotis",
-            "Curd rice: Use Greek yogurt instead = +10g protein",
-          ],
-        },
-        {
-          heading: "Protein-Rich Curry Bases",
-          content: "These curry modifications work with any dish.",
-          tips: [
-            "Cashew paste instead of onion paste = more healthy fats + protein",
-            "Add peanut butter to gravies = +8g per tbsp",
-            "Use hung curd as curry base = creamy + protein-rich",
-            "Blend silken tofu into sauces = invisible protein boost",
-            "Soya milk in curries = dairy-free protein addition",
-          ],
-        },
-        {
-          heading: "Snack Upgrades",
-          content: "Indian snacks can be protein bombs with these tweaks.",
-          tips: [
-            "Roasted makhana with protein powder dust = +24g",
-            "Chana chaat with extra chana = 20g protein",
-            "Paneer tikka as evening snack = 18g protein",
-            "Sprouted moong namkeen = 15g protein",
-            "Besan ladoo (skip sugar, add protein powder) = gym fuel",
-          ],
-        },
-        {
-          heading: "Protein Lassi and Drinks",
-          content: "Traditional drinks with a protein makeover.",
-          tips: [
-            "Protein Lassi: Curd + whey + banana = 35g protein",
-            "Sattu Sharbat: Natural 20g protein drink",
-            "Badam Milk: Add protein powder = 30g protein",
-            "Buttermilk + protein = refreshing 25g protein drink",
-            "Masala Chai Protein: Add collagen powder = +10g protein",
-          ],
-        },
-      ],
-      conclusion:
-        "Indian food and high protein goals are not mutually exclusive. With these simple swaps and additions, you can enjoy your favorite cuisines while building the body you want. The best diet is one you can stick to - and nothing beats the comfort of ghar ka khana!",
-    },
-  },
-  {
-    id: "protein-myths",
-    title: "7 Protein Myths Debunked",
-    subtitle: "Stop believing these common misconceptions",
-    readTime: "5 min read",
-    category: "Education",
-    icon: <BookOpen className="w-5 h-5" />,
-    color: "from-purple-500 to-pink-600",
-    excerpt:
-      'From kidney damage fears to the "30g limit" myth, lets bust the most common protein misconceptions holding you back from your goals.',
-    content: {
-      intro:
-        "Misinformation about protein is everywhere. These myths can sabotage your progress and cause unnecessary worry. Lets set the record straight with science-backed facts.",
-      sections: [
-        {
-          heading: "Myth 1: High Protein Damages Your Kidneys",
-          content:
-            "This is perhaps the most persistent myth. The truth? For healthy individuals, high protein intake (even 2-3g per kg bodyweight) shows no kidney damage in research. This concern only applies to those with pre-existing kidney disease.",
-          tips: [
-            "Studies up to 4.4g/kg showed no kidney issues in healthy adults",
-            "Your kidneys are designed to filter protein byproducts",
-            "Stay hydrated to support kidney function",
-            "Get regular checkups if youre concerned",
-            "Pre-existing conditions require medical guidance",
-          ],
-        },
-        {
-          heading: "Myth 2: You Can Only Absorb 30g Protein Per Meal",
-          content:
-            "Your body doesnt waste excess protein. It simply takes longer to digest and absorb larger amounts. The 30g limit is about optimal MPS per meal, not absorption capacity.",
-          tips: [
-            "Your body absorbs nearly 100% of protein you eat",
-            "Larger doses digest more slowly but still get used",
-            "30-40g optimizes muscle protein synthesis per meal",
-            "Intermittent fasters absorb large protein doses fine",
-            "Spread protein for convenience, not because of limits",
-          ],
-        },
-        {
-          heading: "Myth 3: Plant Protein Cant Build Muscle",
-          content:
-            "Completely false. While plant proteins may have lower leucine content, eating adequate amounts and combining sources builds muscle just as effectively.",
-          tips: [
-            "Eat 10-20% more plant protein to match animal protein",
-            "Combine sources for complete amino acid profiles",
-            "Many successful bodybuilders are fully plant-based",
-            "Soy protein is nearly equivalent to whey in studies",
-            "Variety is key - dont rely on single sources",
-          ],
-        },
-        {
-          heading: "Myth 4: You Need Protein Immediately After Training",
-          content:
-            'The "anabolic window" is much larger than 30 minutes. Total daily protein matters far more than post-workout timing.',
-          tips: [
-            "The real window is 4-6 hours around your workout",
-            "Pre-workout meal protein counts toward this window",
-            "Stressing about timing causes more harm than imperfect timing",
-            "Focus on daily totals first, then optimize timing",
-            "Consistency beats perfection",
-          ],
-        },
-        {
-          heading: "Myth 5: More Protein = More Muscle",
-          content:
-            "Theres a ceiling. Beyond 1.6-2.2g per kg bodyweight, extra protein doesnt build more muscle. It just gets used for energy.",
-          tips: [
-            "1.6-2.2g/kg is the research-backed sweet spot",
-            "Beginners may benefit from higher end (2.2g/kg)",
-            "Excess protein = expensive calories, not extra muscle",
-            "Better to hit 1.6g consistently than 2.5g inconsistently",
-            "During cuts, aim for 2.2g+ to preserve muscle",
-          ],
-        },
-        {
-          heading: "Myth 6: Protein Powders Are Steroids/Harmful",
-          content:
-            "Protein powder is just food - dried and powdered dairy (whey) or plants (pea, soy). Theres nothing magical or harmful about it.",
-          tips: [
-            "Whey is a byproduct of cheese making",
-            'Its as "natural" as milk or paneer',
-            "Choose reputable brands with third-party testing",
-            "Whole foods are ideal but powders are convenient",
-            "No hormones or steroids in quality protein powders",
-          ],
-        },
-        {
-          heading: "Myth 7: High Protein Causes Bone Loss",
-          content:
-            "Old research misinterpreted. High protein actually IMPROVES bone density when calcium intake is adequate.",
-          tips: [
-            "Protein provides the building blocks for bone matrix",
-            "Higher protein = better calcium absorption",
-            "Athletes with high protein have stronger bones",
-            "Ensure adequate calcium (1000mg/day) and Vitamin D",
-            "Weight training + protein = optimal bone health",
-          ],
-        },
-      ],
-      conclusion:
-        "Dont let myths hold you back. High protein intake is safe, effective, and essential for anyone looking to build or maintain muscle. Trust the science, not the bro-science, and focus on hitting your daily targets consistently.",
-    },
-  },
 ];
 
-function getTodayKey(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
-function getEmptyLog(): DailyLog {
-  return {
-    date: getTodayKey(),
+export default function NutritionPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [selectedFood, setSelectedFood] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<string>("100");
+  const [unit, setUnit] = useState<string>("g");
+  const [dailyLog, setDailyLog] = useState<DailyLog>({
+    date: new Date().toLocaleDateString(),
     entries: [],
     caloriesConsumed: 0,
     proteinConsumed: 0,
     carbsConsumed: 0,
     fatsConsumed: 0,
-  };
-}
-
-export default function NutritionPage() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [macroInput, setMacroInput] = useState("");
-  const [calculatedMacros, setCalculatedMacros] = useState<{
-    p: number;
-    c: number;
-    f: number;
-    cal: number;
-    name: string;
-  } | null>(null);
-  const [dailyLog, setDailyLog] = useState<DailyLog>(getEmptyLog());
-  const [activeTab, setActiveTab] = useState<string>("calculator");
-
-  const [portionQuantity, setPortionQuantity] = useState<number>(1);
-  const [portionUnit, setPortionUnit] = useState<string>("serving");
-
-  // Read URL tab parameter on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get("tab");
-    if (tabParam && ["calculator", "recipes", "hacks"].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, []);
+  });
 
   const targets = {
-    calories: (user as any)?.calorie_target || 2000,
-    protein: (user as any)?.protein_target || 150,
-    carbs: (user as any)?.carbs_target || 200,
-    fats: (user as any)?.fats_target || 65,
+    calories: 2500,
+    protein: 150,
+    carbs: 300,
+    fats: 70,
   };
 
-  const indianPresets = [
-    "Dal",
-    "Sprouts",
-    "Omelette",
-    "Chicken Curry",
-    "Fish Fry",
-    "Curd",
-    "Whey Scoop",
-    "Brown Rice",
-    "Boiled Egg",
-    "Egg Whites",
-    "Cooked Oats",
-    "Veg Salad",
-    "Grilled Chicken",
-    "Multigrain Roti",
-    "Khichdi",
-    "Mixed Veg Sabzi",
-    "Apple",
-    "Orange",
-    "Grapes",
-    "Brown Bread",
-    "White Bread",
-    "Peanut Chikki",
-    "Tofu",
-    "Soya Chunks",
-    "Sweet Potato",
-    "Corn",
-    "Buttermilk",
-    "Green Tea",
-  ];
-
   useEffect(() => {
-    const stored = localStorage.getItem(DAILY_LOG_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as DailyLog;
-      if (parsed.date === getTodayKey()) {
+    const savedLog = localStorage.getItem(DAILY_LOG_KEY);
+    if (savedLog) {
+      const parsed = JSON.parse(savedLog);
+      if (parsed.date === new Date().toLocaleDateString()) {
         setDailyLog(parsed);
-      } else {
-        localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(getEmptyLog()));
       }
     }
   }, []);
 
-  useEffect(() => {
-    const checkAndResetLog = () => {
-      const stored = localStorage.getItem(DAILY_LOG_KEY);
-      if (!stored) return;
-
-      try {
-        const log: DailyLog = JSON.parse(stored);
-        const logDate = new Date(log.date);
-        const now = new Date();
-        
-        // 9 AM Reset Logic
-        const resetTimeToday = new Date(now);
-        resetTimeToday.setHours(9, 0, 0, 0);
-
-        const lastLogDate = new Date(log.date);
-        const isDifferentDay = lastLogDate.toDateString() !== now.toDateString();
-        
-        // If the log is from before 9am today and it's now past 9am
-        // OR if it's a completely different day and we've passed 9am
-        if ((isDifferentDay && now.getHours() >= 9) || (logDate < resetTimeToday && now >= resetTimeToday)) {
-          console.log("Refreshing nutrition log (9:00 AM Daily Reset)");
-          const newLog: DailyLog = {
-            date: now.toISOString(),
-            entries: [],
-            caloriesConsumed: 0,
-            proteinConsumed: 0,
-            carbsConsumed: 0,
-            fatsConsumed: 0,
-          };
-          localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(newLog));
-          setDailyLog(newLog);
-          window.dispatchEvent(new CustomEvent("nutrition-data-updated", { detail: null }));
-        }
-      } catch (e) {
-        console.error("Error parsing nutrition log for reset:", e);
-      }
-    };
-
-    checkAndResetLog();
-    const interval = setInterval(checkAndResetLog, 1000 * 60 * 5); // Check every 5 mins
-    return () => clearInterval(interval);
-  }, []);
-
-  const saveDailyLog = (log: DailyLog) => {
-    localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(log));
-    setDailyLog(log);
-    
-    // Get latest targets from the nutrition calculator sync
-    const syncedMacros = getMacroData();
-    const targetCalories = syncedMacros?.caloriesGoal || user?.calorie_target || 2000;
-    const targetProtein = syncedMacros?.proteinGoal || user?.protein_target || 150;
-    const targetCarbs = syncedMacros?.carbsGoal || user?.carbs_target || 200;
-    const targetFats = syncedMacros?.fatsGoal || user?.fats_target || 60;
-
-    // Save merged data to ensure persistence
+  const saveDailyLog = (newLog: DailyLog) => {
+    setDailyLog(newLog);
+    localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(newLog));
     syncFuelTrackerWithMacros({
-      protein: log.proteinConsumed,
-      carbs: log.carbsConsumed,
-      fats: log.fatsConsumed,
-      calories: log.caloriesConsumed,
-    }, {
-      calories: targetCalories,
-      protein: targetProtein,
-      carbs: targetCarbs,
-      fats: targetFats
-    });
-
-    // Broadcast update for Dashboard with correctly calculated consumed values
-    window.dispatchEvent(new CustomEvent("nutrition-data-updated", { 
-      detail: {
-        ...syncedMacros, 
-        calories: log.caloriesConsumed,
-        protein: log.proteinConsumed,
-        carbs: log.carbsConsumed,
-        fats: log.fatsConsumed,
-        caloriesGoal: targetCalories,
-        proteinGoal: targetProtein,
-        carbsGoal: targetCarbs,
-        fatsGoal: targetFats
-      }
-    }));
+      calories: newLog.caloriesConsumed,
+      protein: newLog.proteinConsumed,
+      carbs: newLog.carbsConsumed,
+      fats: newLog.fatsConsumed,
+    }, targets);
   };
 
-  const calculateFromInput = (
-    input: string,
-  ): { p: number; c: number; f: number; cal: number } => {
-    let totalP = 0,
-      totalC = 0,
-      totalF = 0,
-      totalCal = 0;
+  const handleRemoveEntry = (id: string) => {
+    const entryToRemove = dailyLog.entries.find((e) => e.id === id);
+    if (!entryToRemove) return;
 
-    const items = input.split(",").map((item) => item.trim().toLowerCase());
-
-    for (const item of items) {
-      const quantityMatch = item.match(
-        /^(\d+\.?\d*)\s*(g|ml|oz|cup|cups|piece|pieces|scoop|scoops|bowl|bowls|eggs?|tbsp|tsp)?\s*/i,
-      );
-      let quantity = 1;
-      let cleanItem = item;
-
-      if (quantityMatch) {
-        quantity = parseFloat(quantityMatch[1]) || 1;
-        cleanItem = item.replace(quantityMatch[0], "").trim();
-      }
-
-      for (const [foodName, data] of Object.entries(foodDatabase)) {
-        if (
-          cleanItem.toLowerCase().includes(foodName.toLowerCase()) ||
-          foodName.toLowerCase().includes(cleanItem)
-        ) {
-          const multiplier = quantity / data.servingSize;
-          totalP += data.protein * multiplier;
-          totalC += data.carbs * multiplier;
-          totalF += data.fats * multiplier;
-          totalCal += data.calories * multiplier;
-          break;
-        }
-      }
-    }
-
-    if (totalCal === 0 && input.length > 0) {
-      const baseMultiplier = Math.min(input.length / 10, 3);
-      totalP = Math.round(15 * baseMultiplier);
-      totalC = Math.round(20 * baseMultiplier);
-      totalF = Math.round(8 * baseMultiplier);
-      totalCal = Math.round(totalP * 4 + totalC * 4 + totalF * 9);
-    }
-
-    return {
-      p: Math.round(totalP * portionQuantity),
-      c: Math.round(totalC * portionQuantity),
-      f: Math.round(totalF * portionQuantity),
-      cal: Math.round(totalCal * portionQuantity),
-    };
-  };
-
-  const handleCalculate = () => {
-    if (!macroInput.trim()) {
-      toast({
-        title: "Enter food items",
-        description: "Please type what you ate to calculate macros.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const macros = calculateFromInput(macroInput);
-    setCalculatedMacros({
-      ...macros,
-      name: macroInput,
-    });
-  };
-
-  const handleAddToLog = async () => {
-    if (!calculatedMacros) return;
-
-    const newEntry: FoodEntry = {
-      id: Date.now().toString(),
-      name: calculatedMacros.name,
-      quantity: portionQuantity,
-      unit: portionUnit,
-      protein: calculatedMacros.p,
-      carbs: calculatedMacros.c,
-      fats: calculatedMacros.f,
-      calories: calculatedMacros.cal,
-      timestamp: Date.now(),
-    };
-
+    const newEntries = dailyLog.entries.filter((e) => e.id !== id);
     const updatedLog: DailyLog = {
       ...dailyLog,
-      entries: [...dailyLog.entries, newEntry],
-      caloriesConsumed: dailyLog.caloriesConsumed + newEntry.calories,
-      proteinConsumed: dailyLog.proteinConsumed + newEntry.protein,
-      carbsConsumed: dailyLog.carbsConsumed + newEntry.carbs,
-      fatsConsumed: dailyLog.fatsConsumed + newEntry.fats,
+      entries: newEntries,
+      caloriesConsumed: dailyLog.caloriesConsumed - entryToRemove.calories,
+      proteinConsumed: dailyLog.proteinConsumed - entryToRemove.protein,
+      carbsConsumed: dailyLog.carbsConsumed - entryToRemove.carbs,
+      fatsConsumed: dailyLog.fatsConsumed - entryToRemove.fats,
     };
-
-    saveDailyLog(updatedLog);
-    setMacroInput("");
-    setCalculatedMacros(null);
-    setPortionQuantity(1);
-    setPortionUnit("serving");
-
-    let syncSuccess = false;
-    if ((user as any)?.user_id) {
-      try {
-        const result = await submitNutrition((user as any).user_id, getTodayKey(), [
-          {
-            name: newEntry.name,
-            calories: newEntry.calories,
-            protein: newEntry.protein,
-            carbs: newEntry.carbs,
-            fats: newEntry.fats,
-          },
-        ]);
-        syncSuccess = result?.ok === true;
-      } catch (error) {
-        console.error("Failed to sync nutrition to cloud:", error);
-      }
-    }
-
-    toast({
-      title: "Added to daily log",
-      description: syncSuccess
-        ? `${newEntry.name} (${newEntry.calories} cal) synced to cloud.`
-        : `${newEntry.name} (${newEntry.calories} cal) saved locally.`,
-    });
-  };
-
-  const handleRemoveEntry = (entryId: string) => {
-    const entry = dailyLog.entries.find((e) => e.id === entryId);
-    if (!entry) return;
-
-    const updatedLog: DailyLog = {
-      ...dailyLog,
-      entries: dailyLog.entries.filter((e) => e.id !== entryId),
-      caloriesConsumed: dailyLog.caloriesConsumed - entry.calories,
-      proteinConsumed: dailyLog.proteinConsumed - entry.protein,
-      carbsConsumed: dailyLog.carbsConsumed - entry.carbs,
-      fatsConsumed: dailyLog.fatsConsumed - entry.fats,
-    };
-
     saveDailyLog(updatedLog);
     toast({
-      title: "Removed from log",
-      description: `${entry.name} removed from your daily log.`,
+      title: "Entry Removed",
+      description: "Successfully removed from your log.",
     });
   };
 
   const progressPercent = (consumed: number, target: number) => {
-    return Math.min((consumed / target) * 100, 100);
+    return Math.min(100, Math.round((consumed / target) * 100));
   };
 
   return (
     <Layout>
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-display font-bold text-white">
-            NUTRITION <span className="text-neon-green">HUB</span>
+      <div className="max-w-7xl mx-auto px-4 py-8 space-y-12 mb-20">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-display font-black text-white italic tracking-tighter">
+            FUEL <span className="text-primary">CENTER</span>
           </h1>
-          <p className="text-muted-foreground">
-            Fuel your body with precision.
+          <p className="text-muted-foreground text-sm uppercase font-black tracking-widest flex items-center gap-2">
+            <Zap className="w-4 h-4 text-primary" /> SCIENTIFIC NUTRITION & MACRO TRACKING
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="bg-black/40 border border-white/10 p-1">
+        <Tabs defaultValue="calculator" className="space-y-8">
+          <TabsList className="bg-card/40 backdrop-blur-xl border border-white/5 p-1 rounded-2xl h-14">
             <TabsTrigger
               value="calculator"
-              className="data-[state=active]:bg-neon-green data-[state=active]:text-black"
+              className="rounded-xl px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black italic tracking-tight"
             >
-              MACRO CALC
-            </TabsTrigger>
-            <TabsTrigger
-              value="recipes"
-              className="data-[state=active]:bg-neon-green data-[state=active]:text-black"
-            >
-              RECIPES
+              MACRO CALCULATOR
             </TabsTrigger>
             <TabsTrigger
               value="hacks"
-              className="data-[state=active]:bg-neon-green data-[state=active]:text-black"
+              className="rounded-xl px-8 h-full data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black italic tracking-tight"
             >
               PROTEIN HACKS
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="recipes" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recipes.map((recipe) => (
-                <Dialog key={recipe.id}>
-                  <DialogTrigger asChild>
-                    <Card className="cursor-pointer overflow-hidden bg-card/40 border-white/5 hover:border-neon-green/50 transition-all group">
-                      <div className="h-48 relative">
-                        <img
-                          src={recipe.image}
-                          alt={recipe.name}
-                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                        />
-                        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black to-transparent p-4">
-                          <h3 className="text-lg font-bold text-white leading-tight">
-                            {recipe.name}
+          <TabsContent value="calculator" className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-8">
+              <div className="space-y-6">
+                <div className="bg-card/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
+                  
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
+                      <Calculator className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-display font-black text-white italic tracking-tight">FUEL <span className="text-primary">CALCULATOR</span></h2>
+                      <p className="text-xs text-muted-foreground uppercase font-black tracking-widest">Select food & adjust grams</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-10">
+                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] mb-4 block">Select Food Item</Label>
+                    <Select
+                      onValueChange={(value) => {
+                        const data = foodDatabase[value];
+                        if (data) {
+                          setSelectedFood(value);
+                          setQuantity(data.servingSize.toString());
+                          setUnit(data.defaultUnit);
+                        }
+                      }}
+                      value={selectedFood || ""}
+                    >
+                      <SelectTrigger className="w-full h-16 bg-card/50 border-2 border-white/5 rounded-2xl text-lg font-black italic tracking-tight focus:ring-primary/20 transition-all hover:border-primary/30">
+                        <SelectValue placeholder="CHOOSE YOUR FUEL..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-card/95 backdrop-blur-xl border-white/10 rounded-2xl max-h-[400px]">
+                        {Object.keys(foodDatabase).sort().map((name) => (
+                          <SelectItem 
+                            key={name} 
+                            value={name}
+                            className="font-display font-black italic text-sm py-3 focus:bg-primary focus:text-primary-foreground rounded-xl m-1 transition-colors"
+                          >
+                            {name.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedFood && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      className="p-8 rounded-[2rem] bg-gradient-to-br from-card/80 to-card border-2 border-primary/20 space-y-8 relative overflow-hidden shadow-2xl"
+                    >
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] -mr-32 -mt-32 animate-pulse" />
+                      
+                      <div className="flex flex-col sm:flex-row items-center justify-between relative z-10 gap-6">
+                        <div className="space-y-1 text-center sm:text-left">
+                          <p className="text-[10px] text-primary font-black uppercase tracking-[0.3em]">Fuel Customizer</p>
+                          <h3 className="text-3xl font-display font-black text-white italic flex items-center justify-center sm:justify-start gap-4">
+                            {selectedFood.toUpperCase()}
+                            {foodDatabase[selectedFood]?.image && (
+                              <img src={foodDatabase[selectedFood].image} className="w-10 h-10 object-contain drop-shadow-xl" />
+                            )}
                           </h3>
                         </div>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <div className="grid grid-cols-4 gap-2 text-center">
-                          <div className="bg-white/5 rounded p-2">
-                            <p className="text-xs text-muted-foreground">CAL</p>
-                            <p className="font-bold text-white">
-                              {recipe.calories}
-                            </p>
+                        <div className="flex flex-col items-center sm:items-end gap-2">
+                           <div className="flex items-center gap-4 bg-background/80 px-6 py-4 rounded-2xl border-2 border-primary/30 shadow-inner backdrop-blur-md">
+                            <Input
+                              type="number"
+                              value={quantity}
+                              onChange={(e) => setQuantity(e.target.value)}
+                              className="w-24 h-12 bg-transparent border-none text-right font-black text-3xl focus-visible:ring-0 p-0 text-primary"
+                            />
+                            <span className="text-lg font-black text-foreground/50 uppercase tracking-widest border-l border-border/50 pl-4">{unit}</span>
                           </div>
-                          <div className="bg-neon-green/10 rounded p-2 border border-neon-green/20">
-                            <p className="text-xs text-neon-green">PRO</p>
-                            <p className="font-bold text-neon-green">
-                              {recipe.protein}g
-                            </p>
-                          </div>
-                          <div className="bg-white/5 rounded p-2">
-                            <p className="text-xs text-muted-foreground">
-                              CARB
-                            </p>
-                            <p className="font-bold text-white">
-                              {recipe.carbs}g
-                            </p>
-                          </div>
-                          <div className="bg-white/5 rounded p-2">
-                            <p className="text-xs text-muted-foreground">FAT</p>
-                            <p className="font-bold text-white">
-                              {recipe.fats}g
-                            </p>
-                          </div>
+                          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Enter amount in {unit}</p>
                         </div>
-                        <Button
-                          variant="outline"
-                          className="w-full border-neon-green/50 text-neon-green font-bold hover:bg-neon-green hover:text-black"
-                        >
-                          VIEW RECIPE
-                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 relative z-10">
+                        {[
+                          { label: 'CALORIES', val: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.calories || 0)), color: 'text-primary', bg: 'bg-primary/10', icon: Zap },
+                          { label: 'PROTEIN', val: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.protein || 0)), color: 'text-orange-400', bg: 'bg-orange-400/10', icon: Beef },
+                          { label: 'CARBS', val: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.carbs || 0)), color: 'text-blue-400', bg: 'bg-blue-400/10', icon: Leaf },
+                          { label: 'FATS', val: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.fats || 0)), color: 'text-yellow-400', bg: 'bg-yellow-400/10', icon: Cloud },
+                        ].map(m => (
+                          <div key={m.label} className={`${m.bg} p-5 rounded-3xl border border-white/5 space-y-2 backdrop-blur-md hover:scale-105 transition-transform shadow-lg`}>
+                            <div className="flex items-center justify-between">
+                              <m.icon className={`w-5 h-5 ${m.color}`} />
+                              <p className="text-[9px] text-muted-foreground font-black uppercase tracking-tighter">{m.label}</p>
+                            </div>
+                            <p className="text-3xl font-black italic tracking-tighter">{m.val}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        onClick={async () => {
+                          if (!selectedFood) return;
+                          const macros = {
+                            p: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.protein || 0)),
+                            c: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.carbs || 0)),
+                            f: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.fats || 0)),
+                            cal: Math.round((Number(quantity) / (foodDatabase[selectedFood]?.servingSize || 1)) * (foodDatabase[selectedFood]?.calories || 0)),
+                            name: selectedFood
+                          };
+                          
+                          const newEntry: FoodEntry = {
+                            id: Date.now().toString(),
+                            name: selectedFood,
+                            quantity: Number(quantity),
+                            unit: unit,
+                            protein: macros.p,
+                            carbs: macros.c,
+                            fats: macros.f,
+                            calories: macros.cal,
+                            timestamp: Date.now(),
+                          };
+
+                          const updatedLog: DailyLog = {
+                            ...dailyLog,
+                            entries: [newEntry, ...dailyLog.entries],
+                            caloriesConsumed: dailyLog.caloriesConsumed + macros.cal,
+                            proteinConsumed: dailyLog.proteinConsumed + macros.p,
+                            carbsConsumed: dailyLog.carbsConsumed + macros.c,
+                            fatsConsumed: dailyLog.fatsConsumed + macros.f,
+                          };
+
+                          saveDailyLog(updatedLog);
+                          toast({
+                            title: "Fuel Added! ⚡",
+                            description: `Added ${quantity}${unit} of ${selectedFood} to your log.`,
+                          });
+                        }}
+                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-[2rem] py-10 text-2xl neon-glow shadow-[0_20px_50px_rgba(var(--primary),0.5)] group transition-all relative overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                        <div className="flex items-center justify-center relative z-10">
+                          <Plus className="w-8 h-8 mr-4 group-hover:rotate-180 transition-transform duration-500" />
+                          SYNC TO FUEL LOG
+                        </div>
+                      </Button>
+                    </motion.div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    { label: "CALORIES", consumed: dailyLog.caloriesConsumed, target: targets.calories, color: "from-primary/20 to-primary/5", text: "text-primary" },
+                    { label: "PROTEIN", consumed: dailyLog.proteinConsumed, target: targets.protein, color: "from-orange-500/20 to-orange-500/5", text: "text-orange-400" },
+                    { label: "CARBS", consumed: dailyLog.carbsConsumed, target: targets.carbs, color: "from-blue-500/20 to-blue-500/5", text: "text-blue-400" },
+                    { label: "FATS", consumed: dailyLog.fatsConsumed, target: targets.fats, color: "from-yellow-500/20 to-yellow-500/5", text: "text-yellow-400" },
+                  ].map((macro) => (
+                    <Card key={macro.label} className={`p-6 bg-gradient-to-br ${macro.color} border-white/5 relative overflow-hidden group hover:scale-105 transition-transform`}>
+                      <div className="relative z-10">
+                        <p className="text-[10px] font-black text-muted-foreground uppercase mb-2 tracking-widest">{macro.label}</p>
+                        <div className="flex items-baseline gap-1">
+                          <span className={`text-2xl font-black ${macro.text} italic`}>{Math.round(macro.consumed)}</span>
+                          <span className="text-xs text-muted-foreground font-bold">/ {macro.target}</span>
+                        </div>
+                        <div className="mt-4 h-1.5 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercent(macro.consumed, macro.target)}%` }}
+                            className={`h-full rounded-full bg-gradient-to-r ${macro.text === 'text-primary' ? 'from-primary to-primary/60' : 
+                               macro.text === 'text-orange-400' ? 'from-orange-500 to-orange-300' :
+                               macro.text === 'text-blue-400' ? 'from-blue-500 to-blue-300' :
+                               'from-yellow-500 to-yellow-300'}`}
+                          />
+                        </div>
                       </div>
                     </Card>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl bg-card border-white/10 text-white max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl font-display font-bold text-white">
-                        {recipe.name}
-                      </DialogTitle>
-                      <DialogDescription className="text-muted-foreground">
-                        {recipe.tags.join(" • ")}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-6 py-4">
-                      <div className="relative h-64 rounded-xl overflow-hidden">
-                        <img
-                          src={recipe.image}
-                          alt={recipe.name}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-4 right-4 flex gap-2">
-                          {recipe.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-2 py-1 bg-black/60 backdrop-blur rounded text-xs text-white"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                  ))}
+                </div>
+              </div>
 
-                      <div className="grid grid-cols-4 gap-4 text-center">
-                        <div className="p-3 bg-white/5 rounded-lg">
-                          <p className="text-sm text-muted-foreground">
-                            Calories
-                          </p>
-                          <p className="text-xl font-bold">{recipe.calories}</p>
-                        </div>
-                        <div className="p-3 bg-neon-green/10 border border-neon-green/20 rounded-lg">
-                          <p className="text-sm text-neon-green">Protein</p>
-                          <p className="text-xl font-bold text-neon-green">
-                            {recipe.protein}g
-                          </p>
-                        </div>
-                        <div className="p-3 bg-white/5 rounded-lg">
-                          <p className="text-sm text-muted-foreground">Carbs</p>
-                          <p className="text-xl font-bold">{recipe.carbs}g</p>
-                        </div>
-                        <div className="p-3 bg-white/5 rounded-lg">
-                          <p className="text-sm text-muted-foreground">Fats</p>
-                          <p className="text-xl font-bold">{recipe.fats}g</p>
-                        </div>
+              <div className="space-y-6">
+                <Card className="bg-card/40 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] shadow-2xl">
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                        <Utensils className="w-5 h-5 text-orange-400" />
                       </div>
-
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-bold text-white mb-2">
-                            Ingredients
-                          </h4>
-                          <ul className="space-y-1 text-sm text-muted-foreground list-disc list-inside">
-                            {recipe.ingredients.map((ing, i) => (
-                              <li key={i}>{ing}</li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-white mb-2">
-                            Instructions
-                          </h4>
-                          <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-                            {recipe.instructions?.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            )) || <li>No instructions provided.</li>}
-                          </ol>
-                        </div>
-                      </div>
-
-                      {recipe.videoUrl && (
-                        <a
-                          href={recipe.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button className="w-full bg-red-600 hover:bg-red-700 text-white mt-2">
-                            <Video className="w-4 h-4 mr-2" /> WATCH COOKING
-                            VIDEO
-                          </Button>
-                        </a>
-                      )}
+                      <h3 className="text-xl font-display font-black text-white italic">DAILY FUEL LOG</h3>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              ))}
+                    <div className="bg-white/5 px-4 py-1.5 rounded-full border border-white/10">
+                      <p className="text-[10px] font-black text-primary uppercase">TODAY'S ENTRIES</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                    {dailyLog.entries.length === 0 ? (
+                      <div className="text-center py-12 space-y-3">
+                        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Cloud className="w-8 h-8 text-muted-foreground/30" />
+                        </div>
+                        <p className="text-muted-foreground font-bold">Your fuel log is empty.</p>
+                        <p className="text-[10px] text-muted-foreground/50 uppercase font-black">Select food from above to start tracking</p>
+                      </div>
+                    ) : (
+                      dailyLog.entries.map((entry) => (
+                        <motion.div
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          key={entry.id}
+                          className="group relative"
+                        >
+                          <div className="p-5 bg-white/5 hover:bg-white/10 rounded-3xl border border-white/5 transition-all flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className="w-14 h-14 bg-black/40 rounded-2xl flex items-center justify-center overflow-hidden border border-white/5 shadow-lg group-hover:scale-110 transition-transform">
+                                {foodDatabase[entry.name]?.image ? (
+                                  <img src={foodDatabase[entry.name].image} alt={entry.name} className="w-10 h-10 object-contain drop-shadow-lg" />
+                                ) : (
+                                  <Utensils className="w-6 h-6 text-muted-foreground/50" />
+                                )}
+                              </div>
+                              <div>
+                                <h4 className="font-display font-black text-white italic group-hover:text-primary transition-colors">{entry.name.toUpperCase()}</h4>
+                                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-wider">
+                                  {entry.quantity}{entry.unit} • {entry.calories} CAL
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="hidden sm:flex flex-col items-end">
+                                <div className="flex gap-2">
+                                  <span className="text-[9px] font-black text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded-full">P: {entry.protein}g</span>
+                                  <span className="text-[9px] font-black text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full">C: {entry.carbs}g</span>
+                                  <span className="text-[9px] font-black text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">F: {entry.fats}g</span>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveEntry(entry.id)}
+                                className="w-10 h-10 rounded-2xl hover:bg-red-500/20 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="hacks" className="space-y-6">
+          <TabsContent value="hacks" className="space-y-8">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-display font-bold text-white mb-2">
-                PROTEIN HACK <span className="text-neon-green">BLOG</span>
+                PROTEIN HACK <span className="text-primary">BLOG</span>
               </h2>
               <p className="text-muted-foreground">
                 Expert tips and strategies to maximize your protein intake
@@ -1394,7 +722,7 @@ export default function NutritionPage() {
               {proteinHackBlogs.map((blog) => (
                 <Dialog key={blog.id}>
                   <DialogTrigger asChild>
-                    <Card className="cursor-pointer overflow-hidden bg-card/40 border-white/5 hover:border-neon-green/50 transition-all group h-full flex flex-col">
+                    <Card className="cursor-pointer overflow-hidden bg-card/40 border-white/5 hover:border-primary/50 transition-all group h-full flex flex-col">
                       <div
                         className={`h-24 bg-gradient-to-br ${blog.color} flex items-center justify-center relative overflow-hidden`}
                       >
@@ -1409,7 +737,7 @@ export default function NutritionPage() {
                         </div>
                       </div>
                       <div className="p-5 flex-1 flex flex-col">
-                        <h3 className="text-lg font-bold text-white mb-1 group-hover:text-neon-green transition-colors">
+                        <h3 className="text-lg font-bold text-white mb-1 group-hover:text-primary transition-colors">
                           {blog.title}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3">
@@ -1423,7 +751,7 @@ export default function NutritionPage() {
                             <Clock className="w-3 h-3" />
                             {blog.readTime}
                           </div>
-                          <div className="flex items-center gap-1 text-xs text-neon-green font-bold group-hover:translate-x-1 transition-transform">
+                          <div className="flex items-center gap-1 text-xs text-primary font-bold group-hover:translate-x-1 transition-transform">
                             READ MORE <ArrowRight className="w-3 h-3" />
                           </div>
                         </div>
@@ -1464,7 +792,7 @@ export default function NutritionPage() {
                       {blog.content.sections.map((section, idx) => (
                         <div key={idx} className="space-y-3">
                           <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green text-sm font-bold">
+                            <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">
                               {idx + 1}
                             </span>
                             {section.heading}
@@ -1479,7 +807,7 @@ export default function NutritionPage() {
                                   key={tipIdx}
                                   className="flex items-start gap-2 text-sm"
                                 >
-                                  <span className="w-1.5 h-1.5 rounded-full bg-neon-green mt-2 flex-shrink-0" />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                                   <span className="text-white/90">{tip}</span>
                                 </li>
                               ))}
@@ -1488,8 +816,8 @@ export default function NutritionPage() {
                         </div>
                       ))}
 
-                      <div className="mt-8 p-6 bg-neon-green/10 border border-neon-green/30 rounded-xl">
-                        <h4 className="text-lg font-bold text-neon-green mb-2 flex items-center gap-2">
+                      <div className="mt-8 p-6 bg-primary/10 border border-primary/30 rounded-xl">
+                        <h4 className="text-lg font-bold text-primary mb-2 flex items-center gap-2">
                           <Zap className="w-5 h-5" /> Key Takeaway
                         </h4>
                         <p className="text-white/90 leading-relaxed">
@@ -1500,317 +828,6 @@ export default function NutritionPage() {
                   </DialogContent>
                 </Dialog>
               ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent
-            value="calculator"
-            className="max-w-5xl mx-auto space-y-6"
-          >
-            <div className="grid md:grid-cols-2 gap-8">
-              <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl h-full">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-neon-green/20 flex items-center justify-center text-neon-green">
-                    <Calculator className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-display font-bold">
-                      MACRO CALCULATOR
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Type what you ate, get instant macros.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">
-                      Select Food Item
-                    </Label>
-                    <Select
-                      onValueChange={(value) =>
-                        setMacroInput((prev) =>
-                          prev ? `${prev}, ${value}` : value,
-                        )
-                      }
-                    >
-                      <SelectTrigger className="bg-black/40 border border-white/10 text-white">
-                        <SelectValue placeholder="Choose a food" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border-white/10 max-h-60 overflow-y-auto">
-                        {Object.keys(foodDatabase).map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <textarea
-                    className="w-full h-28 bg-black/40 border border-white/10 rounded-xl p-4 text-white focus:border-neon-green focus:ring-1 focus:ring-neon-green outline-none resize-none"
-                    placeholder="E.g., 2 eggs, 200g chicken breast, 1 cup rice..."
-                    value={macroInput}
-                    onChange={(e) => setMacroInput(e.target.value)}
-                  />
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">
-                        Quantity
-                      </Label>
-                      <Input
-                        type="number"
-                        min={0.1}
-                        step={0.5}
-                        value={portionQuantity}
-                        onChange={(e) =>
-                          setPortionQuantity(parseFloat(e.target.value) || 1)
-                        }
-                        className="bg-black/40 border-white/10 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-1 block">
-                        Unit
-                      </Label>
-                      <Select
-                        value={portionUnit}
-                        onValueChange={setPortionUnit}
-                      >
-                        <SelectTrigger className="bg-black/40 border-white/10 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-card border-white/10">
-                          <SelectItem value="serving">serving</SelectItem>
-                          {unitOptions.map((unit) => (
-                            <SelectItem key={unit} value={unit}>
-                              {unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest mb-2">
-                      Quick Add
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {indianPresets.slice(0, 8).map((item) => (
-                        <Button
-                          key={item}
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            setMacroInput((prev) =>
-                              prev ? `${prev}, ${item}` : item,
-                            )
-                          }
-                          className="text-xs bg-white/5 border-white/10 text-white hover:border-neon-green hover:text-neon-green hover:bg-neon-green/10"
-                        >
-                          <Plus className="w-3 h-3 mr-1" /> {item}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button
-                    className="w-full !bg-neon-green !text-black font-bold hover:!bg-neon-green/80 h-12 text-lg mt-2 !border-none"
-                    onClick={handleCalculate}
-                  >
-                    CALCULATE MACROS
-                  </Button>
-
-                  {calculatedMacros && (
-                    <div className="mt-6 pt-6 border-t border-white/10 animate-in slide-in-from-bottom-4">
-                      <div className="grid grid-cols-4 gap-4 text-center mb-4">
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Calories
-                          </p>
-                          <p className="text-2xl font-display font-bold text-white">
-                            {calculatedMacros.cal}
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Protein
-                          </p>
-                          <p className="text-2xl font-display font-bold text-neon-green">
-                            {calculatedMacros.p}g
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Carbs
-                          </p>
-                          <p className="text-2xl font-display font-bold text-white">
-                            {calculatedMacros.c}g
-                          </p>
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                            Fats
-                          </p>
-                          <p className="text-2xl font-display font-bold text-white">
-                            {calculatedMacros.f}g
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        className="w-full bg-neon-green/20 hover:bg-neon-green/40 text-neon-green border border-neon-green/50 font-bold"
-                        onClick={handleAddToLog}
-                      >
-                        <Check className="w-4 h-4 mr-2" /> ADD TO DAILY LOG
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </Card>
-
-              <Card className="p-8 bg-card/40 border-white/5 backdrop-blur-xl h-full">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center text-secondary">
-                    <Utensils className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-display font-bold">
-                      DAILY TARGETS
-                    </h3>
-                    <p className="text-muted-foreground text-sm">
-                      Your goals vs reality.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                    <div className="flex justify-between items-end mb-2">
-                      <div>
-                        <p className="text-sm font-bold text-white">Calories</p>
-                        <p className="text-xs text-muted-foreground">
-                          Remaining:{" "}
-                          {Math.max(
-                            0,
-                            targets.calories - dailyLog.caloriesConsumed,
-                          )}
-                        </p>
-                      </div>
-                      <p className="text-2xl font-display font-bold text-white">
-                        {dailyLog.caloriesConsumed}{" "}
-                        <span className="text-sm text-muted-foreground font-normal">
-                          / {targets.calories}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-300 ${dailyLog.caloriesConsumed > targets.calories ? "bg-red-500" : "bg-white"}`}
-                        style={{
-                          width: `${progressPercent(dailyLog.caloriesConsumed, targets.calories)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                        Protein
-                      </p>
-                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-neon-green transition-all duration-300"
-                          style={{
-                            width: `${progressPercent(dailyLog.proteinConsumed, targets.protein)}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-sm font-bold text-white">
-                        {dailyLog.proteinConsumed} / {targets.protein}g
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                        Carbs
-                      </p>
-                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-500 transition-all duration-300"
-                          style={{
-                            width: `${progressPercent(dailyLog.carbsConsumed, targets.carbs)}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-sm font-bold text-white">
-                        {dailyLog.carbsConsumed} / {targets.carbs}g
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider">
-                        Fats
-                      </p>
-                      <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-yellow-500 transition-all duration-300"
-                          style={{
-                            width: `${progressPercent(dailyLog.fatsConsumed, targets.fats)}%`,
-                          }}
-                        />
-                      </div>
-                      <p className="text-sm font-bold text-white">
-                        {dailyLog.fatsConsumed} / {targets.fats}g
-                      </p>
-                    </div>
-                  </div>
-
-                  {dailyLog.entries.length > 0 && (
-                    <div className="pt-4 mt-4 border-t border-white/10">
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
-                        Today's Log
-                      </p>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {dailyLog.entries.map((entry) => (
-                          <div
-                            key={entry.id}
-                            className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-sm"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-white truncate">
-                                {entry.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {entry.calories} cal | P:{entry.protein}g C:
-                                {entry.carbs}g F:{entry.fats}g
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleRemoveEntry(entry.id)}
-                              className="text-red-400 hover:text-red-300 hover:bg-red-500/20 ml-2"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pt-4 mt-4 border-t border-white/5 text-center">
-                    <p className="text-sm text-muted-foreground italic">
-                      {dailyLog.caloriesConsumed === 0
-                        ? "Start logging your meals to track your progress!"
-                        : targets.calories - dailyLog.caloriesConsumed > 0
-                          ? `You're ${targets.calories - dailyLog.caloriesConsumed} calories under your target.`
-                          : `You're ${dailyLog.caloriesConsumed - targets.calories} calories over your target.`}
-                    </p>
-                  </div>
-                </div>
-              </Card>
             </div>
           </TabsContent>
         </Tabs>
