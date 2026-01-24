@@ -12,6 +12,7 @@ interface Step4Props {
 }
 
 const EQUIPMENT_OPTIONS = [
+  "None",
   "Dumbbells",
   "Resistance Bands",
   "Bench",
