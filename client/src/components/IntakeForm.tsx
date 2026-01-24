@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ChevronLeft, ChevronRight, Dumbbell } from "lucide-react";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import Step1Personal from "./intake-steps/Step1Personal";
 import Step2Body from "./intake-steps/Step2Body";
 import Step3Health from "./intake-steps/Step3Health";
@@ -61,6 +62,7 @@ const stepTitles = [
 ];
 
 export default function IntakeForm() {
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -102,6 +104,46 @@ export default function IntakeForm() {
   };
 
   const handleNext = () => {
+    const missingFields: string[] = [];
+
+    if (currentStep === 1) {
+      if (!formData.name) missingFields.push("Name");
+      if (!formData.age) missingFields.push("Age");
+      if (!formData.gender) missingFields.push("Gender");
+      if (!formData.phone) missingFields.push("Phone");
+      if (!formData.email) missingFields.push("Email");
+    } else if (currentStep === 2) {
+      if (!formData.height) missingFields.push("Height");
+      if (!formData.weight) missingFields.push("Weight");
+      if (!formData.sleepHours) missingFields.push("Sleep Hours");
+      if (!formData.sittingHours) missingFields.push("Sitting Hours");
+      if (!formData.activityLevel) missingFields.push("Activity Level");
+    } else if (currentStep === 3) {
+      if (!formData.medicalConditions) missingFields.push("Medical Conditions");
+      if (formData.onMedications && !formData.medicationDetails) missingFields.push("Medication Details");
+      if (formData.pastSurgeries && !formData.surgeryDetails) missingFields.push("Surgery Details");
+    } else if (currentStep === 4) {
+      if (!formData.primaryGoal) missingFields.push("Primary Goal");
+      if (!formData.shortTermGoal) missingFields.push("Short-term Goal");
+      if (!formData.longTermGoal) missingFields.push("Long-term Goal");
+      if (!formData.motivation) missingFields.push("Motivation");
+      if (!formData.trainingStyle) missingFields.push("Training Style");
+      if (!formData.daysPerWeek) missingFields.push("Days Per Week");
+      if (formData.trainingStyle === "home" && formData.equipment.length === 0) missingFields.push("Equipment");
+    } else if (currentStep === 5) {
+      if (!formData.eatingPattern) missingFields.push("Eating Pattern");
+      if (!formData.privacyAccepted) missingFields.push("Privacy Agreement");
+    }
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Mandatory Fields Missing",
+        description: `Please fill in the following to proceed: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (currentStep < TOTAL_STEPS) {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
