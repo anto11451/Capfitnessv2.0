@@ -1,14 +1,63 @@
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Calculator, Bot, LogIn, X } from "lucide-react";
+import { ArrowRight, Calculator, Bot, LogIn, X, Quote } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import PageWrapper from "./PageWrapper";
 import ChatBot from "./ChatBot";
+import rohitImg from "@/assets/success-rohit.jpg";
+import tabuImg from "@/assets/success-tabu.jpg";
+import satyaImg from "@/assets/success-satya.jpg";
+import michaelImg from "@/assets/success-michael.jpg";
+
+interface Story {
+  name: string;
+  age: number;
+  image: string;
+  shortDesc: string;
+  fullStory: string;
+  color: string;
+}
+
+const STORIES: Story[] = [
+  {
+    name: "Rohit",
+    age: 32,
+    image: rohitImg,
+    shortDesc: "Lost 9 kg in 14 weeks while working night shifts.",
+    fullStory: "Rohit struggled with irregular sleep and poor eating habits due to his night shift schedule. By focusing on meal timing and high-intensity, short workouts, he dropped 9kg and completely transformed his energy levels.",
+    color: "primary",
+  },
+{
+  name: "Tabu",
+  age: 25, // adjust if needed
+  image: tabuImg, // import image accordingly
+  shortDesc: "Reduced weight from 75 kg to 64 kg in 8 weeks through discipline and structure.",
+  fullStory: "Tabu is a college student dealing with high body fat, late-night sleeping, frequent overeating, and no fixed routine. Instead of shortcuts, we focused on a strict but structured diet, consistent workouts, and gradually fixing her sleep pattern. Over 8 weeks, she reduced her weight from 75 kg to 64 kg and, more importantly, learned how to stay disciplined and in control of her habits.",
+  color: "accent",
+},
+  {
+  name: "Satya",
+  age: 30, // adjust if needed
+  image: satyaImg, // import image accordingly
+  shortDesc: "Dropped from 98.2 kg to 93.5 kg in 4 weeks despite a 12–9 desk job.",
+  fullStory: "Satya works long 12–9 shifts with mostly table work and struggled with frequent binge eating and street food cravings. Instead of extreme restrictions, we focused on structured meals, smarter food choices, and realistic workouts that fit his schedule. In just 4 weeks, he reduced his weight from 98.2 kg to 93.5 kg and gained control over his eating habits without feeling deprived.",
+  color: "primary",
+},
+  {
+    name: "Michael",
+    age: 29,
+    image: michaelImg,
+    shortDesc: "Gained 7 kg of lean muscle in 16 weeks through structured bulking.",
+    fullStory: "Michael was always the 'skinny guy' who couldn't put on weight. We dialed in his surplus with nutrient-dense foods and heavy compound lifting. He's gained 7kg of lean mass and finally has the physique he always wanted.",
+    color: "accent",
+  },
+];
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
   const [showLoginPopup, setShowLoginPopup] = useState(true);
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -143,6 +192,135 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
+
+      {/* SUCCESS STORIES SECTION */}
+      <section className="py-24 relative overflow-hidden bg-black">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(0,255,157,0.05)_0%,transparent_70%)]" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <div className="text-center mb-16">
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-primary font-display font-bold uppercase tracking-[0.3em] text-sm"
+            >
+              Real Results
+            </motion.span>
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl md:text-5xl font-display font-bold mt-4 text-white"
+            >
+              Success Stories
+            </motion.h2>
+          </div>
+          
+          <div className="flex overflow-x-auto pb-12 gap-8 no-scrollbar snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible">
+            {STORIES.map((story, index) => (
+              <motion.div 
+                key={story.name}
+                whileHover={{ y: -10 }}
+                transition={{ delay: index * 0.1 }}
+                className="min-w-[300px] flex-shrink-0 snap-center group relative cursor-pointer"
+                onClick={() => setSelectedStory(story)}
+              >
+                <div className={`absolute -inset-0.5 bg-gradient-to-r ${story.color === 'primary' ? 'from-primary to-accent' : 'from-accent to-primary'} opacity-0 group-hover:opacity-20 rounded-3xl blur transition duration-500`} />
+                <div className="relative h-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl flex flex-col">
+                  <div className={`relative w-20 h-20 mb-6 rounded-2xl overflow-hidden border-2 ${story.color === 'primary' ? 'border-primary/30' : 'border-accent/30'}`}>
+                    <img src={story.image} alt={story.name} className="w-full h-full object-cover" />
+                    <div className={`absolute inset-0 ${story.color === 'primary' ? 'bg-primary/20' : 'bg-accent/20'} mix-blend-overlay`} />
+                  </div>
+                  <Quote className={`w-8 h-8 ${story.color === 'primary' ? 'text-primary/20' : 'text-accent/20'} absolute top-8 right-8`} />
+                  <h3 className="font-display font-bold text-white text-2xl mb-2">{story.name}, {story.age}</h3>
+                  <p className="text-muted-foreground leading-relaxed mb-6">
+                    {story.shortDesc.split(story.name === "Michael" ? "7 kg of lean muscle" : story.name === "Rohit" ? "9 kg in 14 weeks" : story.name === "Anjali" ? "built strength in 12 weeks" : "consistency in 10 weeks").map((part, i, arr) => (
+                      <span key={i}>
+                        {part}
+                        {i < arr.length - 1 && (
+                          <span className={`${story.color === 'primary' ? 'text-primary' : 'text-accent'} font-bold`}>
+                            {story.name === "Michael" ? "7 kg of lean muscle" : story.name === "Rohit" ? "9 kg in 14 weeks" : story.name === "Anjali" ? "built strength in 12 weeks" : "consistency in 10 weeks"}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </p>
+                  <div className={`mt-auto pt-6 border-t border-white/5 flex items-center gap-2 ${story.color === 'primary' ? 'text-primary' : 'text-accent'} text-sm font-bold uppercase tracking-widest`}>
+                    View Transformation <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* STORY MODAL */}
+      <AnimatePresence>
+        {selectedStory && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              onClick={() => setSelectedStory(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-lg bg-black/90 border border-white/10 p-8 rounded-[2rem] shadow-2xl"
+            >
+              <button 
+                onClick={() => setSelectedStory(null)}
+                className="absolute top-6 right-6 text-muted-foreground hover:text-white transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className="flex items-center gap-6 mb-8">
+                <div className={`relative w-24 h-24 rounded-2xl overflow-hidden border-2 ${selectedStory.color === 'primary' ? 'border-primary/30' : 'border-accent/30'}`}>
+                  <img src={selectedStory.image} alt={selectedStory.name} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 className="text-3xl font-display font-bold text-white">{selectedStory.name}, {selectedStory.age}</h3>
+                  <p className={`text-sm font-bold uppercase tracking-widest ${selectedStory.color === 'primary' ? 'text-primary' : 'text-accent'}`}>Success Story</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-6 rounded-2xl bg-white/5 border border-white/5 italic text-lg text-white/90 leading-relaxed">
+                  "{selectedStory.fullStory}"
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Impact</p>
+                    <p className={`text-lg font-bold ${selectedStory.color === 'primary' ? 'text-primary' : 'text-accent'}`}>100% Personal</p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Mindset</p>
+                    <p className="text-lg font-bold text-white">Consistent</p>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => {
+                    setSelectedStory(null);
+                    setLocation("/intake");
+                  }}
+                  className={`w-full py-7 rounded-2xl text-lg font-bold text-black neon-glow ${selectedStory.color === 'primary' ? 'bg-primary' : 'bg-accent'}`}
+                >
+                  Start Your Journey
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* CURIOSITY TEXT */}
       <section className="py-12 border-t border-white/5">
