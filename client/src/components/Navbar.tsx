@@ -101,7 +101,7 @@ export default function Navbar() {
           </div>
 
           <button
-            className="lg:hidden p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            className="lg:hidden p-3 -mr-2 rounded-xl hover:bg-muted/50 transition-colors touch-manipulation active:bg-muted/70"
             onClick={() => setIsOpen(!isOpen)}
           >
             {isOpen ? (
@@ -133,11 +133,11 @@ export default function Navbar() {
                       setIsOpen(false);
                     }}
                     className={`
-                      w-full px-4 py-3 rounded-lg text-left font-medium
-                      flex items-center gap-3 transition-all
+                      w-full px-4 py-4 rounded-xl text-left font-medium
+                      flex items-center gap-3 transition-all touch-manipulation
                       ${isActive 
                         ? "bg-primary/20 text-primary border border-primary/30" 
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:bg-muted/70"
                       }
                     `}
                     initial={{ opacity: 0, x: -20 }}
@@ -153,7 +153,7 @@ export default function Navbar() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="pt-4 space-y-2"
+                className="pt-4 space-y-3"
               >
                 <Button 
                   onClick={() => {
@@ -161,9 +161,10 @@ export default function Navbar() {
                     setIsOpen(false);
                   }}
                   variant="ghost"
-                  className="w-full text-secondary hover:bg-secondary/20 border border-secondary/30"
+                  size="lg"
+                  className="w-full text-secondary hover:bg-secondary/20 border border-secondary/30 py-4"
                 >
-                  <Shield className="w-4 h-4 mr-2" />
+                  <Shield className="w-5 h-5 mr-2" />
                   Admin Login
                 </Button>
                 <Button 
@@ -172,9 +173,10 @@ export default function Navbar() {
                     setIsOpen(false);
                   }}
                   variant="outline"
-                  className="w-full border-accent text-accent hover:bg-accent hover:text-white font-bold neon-glow-accent"
+                  size="lg"
+                  className="w-full border-accent text-accent hover:bg-accent hover:text-white font-bold neon-glow-accent py-4"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <LogIn className="w-5 h-5 mr-2" />
                   Members - Click Here
                 </Button>
                 <Button 
@@ -182,9 +184,10 @@ export default function Navbar() {
                     setLocation("/intake");
                     setIsOpen(false);
                   }}
-                  className="w-full bg-primary hover:bg-primary/90 neon-glow-primary"
+                  size="lg"
+                  className="w-full bg-primary hover:bg-primary/90 neon-glow-primary py-4"
                 >
-                  <ClipboardList className="w-4 h-4 mr-2" />
+                  <ClipboardList className="w-5 h-5 mr-2" />
                   Start Assessment
                 </Button>
               </motion.div>
