@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Calculator, Bot, LogIn, X, Quote } from "lucide-react";
+import { ArrowRight, Calculator, Bot, LogIn, X, Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import PageWrapper from "./PageWrapper";
@@ -58,6 +58,15 @@ export default function LandingPage() {
   const [, setLocation] = useLocation();
   const [showLoginPopup, setShowLoginPopup] = useState(true);
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
+  const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+
+  const nextStory = () => {
+    setCurrentStoryIndex((prev) => (prev + 1) % STORIES.length);
+  };
+
+  const prevStory = () => {
+    setCurrentStoryIndex((prev) => (prev - 1 + STORIES.length) % STORIES.length);
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -218,40 +227,67 @@ export default function LandingPage() {
             </motion.h2>
           </div>
           
-          <div className="flex overflow-x-auto pb-12 gap-8 no-scrollbar snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible">
-            {STORIES.map((story, index) => (
-              <motion.div 
-                key={story.name}
-                whileHover={{ y: -10 }}
-                transition={{ delay: index * 0.1 }}
-                className="min-w-[300px] flex-shrink-0 snap-center group relative cursor-pointer"
-                onClick={() => setSelectedStory(story)}
-              >
-                <div className={`absolute -inset-0.5 bg-gradient-to-r ${story.color === 'primary' ? 'from-primary to-accent' : 'from-accent to-primary'} opacity-0 group-hover:opacity-20 rounded-3xl blur transition duration-500`} />
-                <div className="relative h-full bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-3xl flex flex-col">
-                  <div className={`relative w-20 h-20 mb-6 rounded-2xl overflow-hidden border-2 ${story.color === 'primary' ? 'border-primary/30' : 'border-accent/30'}`}>
-                    <img src={story.image} alt={story.name} className="w-full h-full object-cover" />
-                    <div className={`absolute inset-0 ${story.color === 'primary' ? 'bg-primary/20' : 'bg-accent/20'} mix-blend-overlay`} />
+          <div className="relative flex items-center justify-center gap-4 md:gap-8">
+            {/* Left Arrow */}
+            <button
+              onClick={prevStory}
+              className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 hover:border-primary/30 transition-all touch-manipulation active:scale-95"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+
+            {/* Story Card */}
+            <div className="flex-1 max-w-md">
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={currentStoryIndex}
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                  className="group relative cursor-pointer"
+                  onClick={() => setSelectedStory(STORIES[currentStoryIndex])}
+                >
+                  <div className={`absolute -inset-0.5 bg-gradient-to-r ${STORIES[currentStoryIndex].color === 'primary' ? 'from-primary to-accent' : 'from-accent to-primary'} opacity-0 group-hover:opacity-20 rounded-3xl blur transition duration-500`} />
+                  <div className="relative h-full bg-white/5 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-3xl flex flex-col">
+                    <div className={`relative w-20 h-20 mb-6 rounded-2xl overflow-hidden border-2 ${STORIES[currentStoryIndex].color === 'primary' ? 'border-primary/30' : 'border-accent/30'}`}>
+                      <img src={STORIES[currentStoryIndex].image} alt={STORIES[currentStoryIndex].name} className="w-full h-full object-cover" />
+                      <div className={`absolute inset-0 ${STORIES[currentStoryIndex].color === 'primary' ? 'bg-primary/20' : 'bg-accent/20'} mix-blend-overlay`} />
+                    </div>
+                    <Quote className={`w-8 h-8 ${STORIES[currentStoryIndex].color === 'primary' ? 'text-primary/20' : 'text-accent/20'} absolute top-6 right-6 md:top-8 md:right-8`} />
+                    <h3 className="font-display font-bold text-white text-xl md:text-2xl mb-2">{STORIES[currentStoryIndex].name}, {STORIES[currentStoryIndex].age}</h3>
+                    <p className="text-muted-foreground leading-relaxed mb-6 text-sm md:text-base">
+                      {STORIES[currentStoryIndex].shortDesc}
+                    </p>
+                    <div className={`mt-auto pt-6 border-t border-white/5 flex items-center gap-2 ${STORIES[currentStoryIndex].color === 'primary' ? 'text-primary' : 'text-accent'} text-sm font-bold uppercase tracking-widest`}>
+                      View Transformation <ArrowRight className="w-4 h-4" />
+                    </div>
                   </div>
-                  <Quote className={`w-8 h-8 ${story.color === 'primary' ? 'text-primary/20' : 'text-accent/20'} absolute top-8 right-8`} />
-                  <h3 className="font-display font-bold text-white text-2xl mb-2">{story.name}, {story.age}</h3>
-                  <p className="text-muted-foreground leading-relaxed mb-6">
-                    {story.shortDesc.split(story.name === "Michael" ? "7 kg of lean muscle" : story.name === "Rohit" ? "9 kg in 14 weeks" : story.name === "Anjali" ? "built strength in 12 weeks" : "consistency in 10 weeks").map((part, i, arr) => (
-                      <span key={i}>
-                        {part}
-                        {i < arr.length - 1 && (
-                          <span className={`${story.color === 'primary' ? 'text-primary' : 'text-accent'} font-bold`}>
-                            {story.name === "Michael" ? "7 kg of lean muscle" : story.name === "Rohit" ? "9 kg in 14 weeks" : story.name === "Anjali" ? "built strength in 12 weeks" : "consistency in 10 weeks"}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </p>
-                  <div className={`mt-auto pt-6 border-t border-white/5 flex items-center gap-2 ${story.color === 'primary' ? 'text-primary' : 'text-accent'} text-sm font-bold uppercase tracking-widest`}>
-                    View Transformation <ArrowRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={nextStory}
+              className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-white/10 hover:border-primary/30 transition-all touch-manipulation active:scale-95"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Dots indicator */}
+          <div className="flex justify-center gap-2 mt-8">
+            {STORIES.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentStoryIndex(index)}
+                className={`w-2.5 h-2.5 rounded-full transition-all touch-manipulation ${
+                  index === currentStoryIndex 
+                    ? 'bg-primary w-8 shadow-[0_0_10px_rgba(0,255,157,0.5)]' 
+                    : 'bg-white/20 hover:bg-white/40'
+                }`}
+              />
             ))}
           </div>
         </div>
