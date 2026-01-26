@@ -107,14 +107,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </main>
       
       {/* Mobile Bottom Nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-white/10 h-20 flex items-center justify-around z-40 px-4 pb-safe">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-2xl border-t border-white/10 h-[72px] flex items-center justify-around z-40 px-2 pb-safe safe-area-inset-bottom">
         {navItems.filter(item => ["Dashboard", "Plans", "Streak", "Progress", "Profile"].includes(item.label)).map((item) => {
           const isActive = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
               <a className={cn(
-                "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-300 relative group",
-                isActive ? "text-primary scale-110" : "text-muted-foreground/60 hover:text-white"
+                "flex flex-col items-center justify-center p-3 min-w-[56px] rounded-xl transition-all duration-300 relative group touch-manipulation",
+                isActive ? "text-primary scale-105" : "text-muted-foreground/60 hover:text-white active:text-white"
               )}>
                 {isActive && (
                   <motion.div 
@@ -123,12 +123,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   />
                 )}
                 <item.icon className={cn(
-                  "w-6 h-6 mb-1 transition-all duration-300",
-                  isActive ? "drop-shadow-[0_0_8px_rgba(0,255,157,0.6)]" : "group-hover:scale-110"
+                  "w-6 h-6 mb-1.5 transition-all duration-300",
+                  isActive ? "drop-shadow-[0_0_8px_rgba(0,255,157,0.6)]" : "group-hover:scale-110 group-active:scale-110"
                 )} />
                 <span className={cn(
-                  "text-[9px] font-bold uppercase tracking-tighter transition-all duration-300",
-                  isActive ? "opacity-100 translate-y-0" : "opacity-60"
+                  "text-[10px] font-bold uppercase tracking-tight transition-all duration-300",
+                  isActive ? "opacity-100 translate-y-0" : "opacity-70"
                 )}>
                   {item.label}
                 </span>
