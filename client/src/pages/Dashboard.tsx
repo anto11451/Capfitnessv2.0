@@ -437,7 +437,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto space-y-10 pb-32 pt-4 px-4">
+      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-10 pb-24 sm:pb-32 pt-2 sm:pt-4 px-3 sm:px-4">
         {/* Premium Header */}
         <header className="relative group">
           <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-accent/10 to-transparent blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -454,7 +454,7 @@ export default function Dashboard() {
               <motion.h1 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-5xl md:text-6xl font-display font-black text-white leading-none tracking-tight uppercase"
+                className="text-3xl sm:text-5xl md:text-6xl font-display font-black text-white leading-none tracking-tight uppercase"
               >
                 HELLO, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-white to-primary bg-[length:200%_auto] animate-gradient-x">{firstName}</span>
               </motion.h1>
@@ -479,13 +479,13 @@ export default function Dashboard() {
               className="relative rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-white/5 group"
             >
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(0,255,157,0.1),transparent)] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="p-10 relative z-10 space-y-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                    <Zap className="w-6 h-6 text-primary animate-pulse" />
+              <div className="p-5 sm:p-10 relative z-10 space-y-5 sm:space-y-8">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
                   </div>
-                  <div>
-                    <h3 className="text-3xl font-bold text-white tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="text-xl sm:text-3xl font-bold text-white tracking-tight truncate">
                       {nextSession ? `READY FOR TAKEOFF?` : "RECOVERY PROTOCOL ACTIVE"}
                     </h3>
                     <p className="text-muted-foreground text-sm font-medium">
@@ -494,41 +494,41 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 md:gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
                   <motion.button 
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, y: -3 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setLocation('/app/plans')}
-                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 text-black shadow-[0_10px_30px_rgba(0,255,157,0.3)] transition-all group min-w-0"
+                    className="flex flex-col items-center gap-1.5 sm:gap-2 p-4 sm:p-3 md:p-6 rounded-xl sm:rounded-2xl md:rounded-[2rem] bg-gradient-to-br from-primary to-emerald-400 text-black shadow-[0_10px_30px_rgba(0,255,157,0.3)] transition-all group min-w-0 touch-manipulation active:scale-95"
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-black/10 flex items-center justify-center backdrop-blur-md shrink-0">
-                      <Dumbbell className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />
+                    <div className="w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl bg-black/10 flex items-center justify-center backdrop-blur-md shrink-0">
+                      <Dumbbell className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 animate-pulse" />
                     </div>
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center truncate w-full px-1">Deploy</span>
+                    <span className="text-[10px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center truncate w-full px-1">Deploy</span>
                   </motion.button>
 
                   <motion.button 
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, y: -3 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setLocation('/app/bodymap')}
-                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-primary/30 hover:bg-white/[0.05] transition-all group min-w-0"
+                    className="flex flex-col items-center gap-1.5 sm:gap-2 p-4 sm:p-3 md:p-6 rounded-xl sm:rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-primary/30 hover:bg-white/[0.05] transition-all group min-w-0 touch-manipulation active:scale-95 active:bg-white/[0.08]"
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
-                      <Zap className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                    <div className="w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+                      <Zap className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
                     </div>
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Analyse</span>
+                    <span className="text-[10px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Analyse</span>
                   </motion.button>
 
                   <motion.button 
-                    whileHover={{ scale: 1.05, y: -5 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.03, y: -3 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => setLocation('/app/workout-partner')}
-                    className="flex flex-col items-center gap-2 p-3 md:p-6 rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-accent/30 hover:bg-white/[0.05] transition-all group min-w-0"
+                    className="flex flex-col items-center gap-1.5 sm:gap-2 p-4 sm:p-3 md:p-6 rounded-xl sm:rounded-2xl md:rounded-[2rem] bg-white/[0.03] border border-white/10 hover:border-accent/30 hover:bg-white/[0.05] transition-all group min-w-0 touch-manipulation active:scale-95 active:bg-white/[0.08]"
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
-                      <HeartPulse className="w-5 h-5 md:w-6 md:h-6 text-accent" />
+                    <div className="w-11 h-11 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl md:rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors shrink-0">
+                      <HeartPulse className="w-5 h-5 sm:w-5 sm:h-5 md:w-6 md:h-6 text-accent" />
                     </div>
-                    <span className="text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Partner</span>
+                    <span className="text-[10px] sm:text-[9px] md:text-[10px] font-black uppercase tracking-wider text-center text-white/80 group-hover:text-white truncate w-full px-1">Partner</span>
                   </motion.button>
                 </div>
               </div>
