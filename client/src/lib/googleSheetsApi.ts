@@ -27,6 +27,33 @@ export interface UserProfile {
   avatar_type: string;
   plan_assigned?: string;
   last_updated?: string;
+  waist_cm?: number;
+  neck_cm?: number;
+  hip_cm?: number;
+}
+
+export function calculateBodyFatPercentage(
+  gender: string,
+  height: number,
+  waist: number,
+  neck: number,
+  hip?: number
+): number | null {
+  if (!waist || !neck || !height) return null;
+  
+  const heightCm = height;
+  const waistCm = waist;
+  const neckCm = neck;
+  
+  if (gender.toLowerCase() === 'female') {
+    if (!hip) return null;
+    const hipCm = hip;
+    const bodyFat = 495 / (1.29579 - 0.35004 * Math.log10(waistCm + hipCm - neckCm) + 0.22100 * Math.log10(heightCm)) - 450;
+    return Math.max(0, Math.min(60, bodyFat));
+  } else {
+    const bodyFat = 495 / (1.0324 - 0.19077 * Math.log10(waistCm - neckCm) + 0.15456 * Math.log10(heightCm)) - 450;
+    return Math.max(0, Math.min(60, bodyFat));
+  }
 }
 
 export interface UserProgress {
