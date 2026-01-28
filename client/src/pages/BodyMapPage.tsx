@@ -1,5 +1,5 @@
 import { useMemo, useEffect, useState } from "react";
-import { getUserById, UserProfile } from "@/lib/googleSheetsApi";
+import { getUserById, UserProfile, calculateBodyFatPercentage } from "@/lib/googleSheetsApi";
 import Layout from "@/components/layout/Layout";
 import { Card } from "@/components/ui/card";
 import { 
@@ -9,7 +9,8 @@ import {
   Info, 
   ChevronRight,
   TrendingUp,
-  Dumbbell
+  Dumbbell,
+  Percent
 } from "lucide-react";
 import { useAuth } from "@/App";
 import { motion } from "framer-motion";
@@ -96,6 +97,13 @@ export default function BodyMapPage() {
   const proteinTarget = (liveProfile as any)?.protein_target ?? 150;
 
   const bmi = userWeight / Math.pow(userHeight / 100, 2);
+  const bodyFat = calculateBodyFatPercentage(
+    userGender,
+    userHeight,
+    (liveProfile as any)?.waist_cm,
+    (liveProfile as any)?.neck_cm,
+    (liveProfile as any)?.hip_cm
+  );
   const bodyType = determineBodyType(bmi, userMuscleMass);
   const idealWeight = calculateIdealWeight(userHeight, userGender);
 
@@ -164,6 +172,13 @@ export default function BodyMapPage() {
                 value={bmi.toFixed(1)} 
                 subValue={bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese"}
                 color="text-primary"
+              />
+              <MetricCard 
+                icon={Percent} 
+                label="Body Fat" 
+                value={bodyFat !== null ? `${bodyFat.toFixed(1)}%` : '--'} 
+                subValue={bodyFat !== null ? (bodyFat < 15 ? "Athletic" : bodyFat < 25 ? "Fitness" : bodyFat < 32 ? "Average" : "Above Average") : "Add measurements"}
+                color="text-purple-500"
               />
               <MetricCard 
                 icon={Scale} 
