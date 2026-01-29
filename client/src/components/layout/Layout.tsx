@@ -12,7 +12,8 @@ import {
   HeartPulse,
   Zap,
   Flame,
-  Layout as SidebarIcon
+  Layout as SidebarIcon,
+  LogOut
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -54,12 +55,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-card/50 backdrop-blur-xl border-r border-white/5">
       <div className="p-6 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <img src={capLogo} alt="Cap's Fitness" className="w-10 h-10 object-contain" />
-          <h1 className="text-lg font-display font-bold text-white tracking-widest uppercase">
-            CAP'S<span className="text-primary">FITNESS</span>
-          </h1>
-        </div>
+        <Link href="/app">
+          <a className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+            <img src={capLogo} alt="Cap's Fitness" className="w-10 h-10 object-contain" />
+            <h1 className="text-lg font-display font-bold text-white tracking-widest uppercase">
+              CAP'S<span className="text-primary">FITNESS</span>
+            </h1>
+          </a>
+        </Link>
       </div>
       
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -71,6 +74,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           />
         ))}
       </nav>
+
+      <div className="p-4 border-t border-white/5">
+        <Link href="/">
+          <a className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-all duration-200 text-sm font-medium">
+            <LogOut className="w-4 h-4" />
+            Logout
+          </a>
+        </Link>
+      </div>
     </div>
   );
 
@@ -83,10 +95,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-card/80 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <img src={capLogo} alt="Cap's Fitness" className="w-8 h-8 object-contain" />
-          <span className="font-display font-bold text-lg">CAP'S<span className="text-primary">FITNESS</span></span>
-        </div>
+        <Link href="/app">
+          <a className="flex items-center gap-2 cursor-pointer">
+            <img src={capLogo} alt="Cap's Fitness" className="w-8 h-8 object-contain" />
+            <span className="font-display font-bold text-lg">CAP'S<span className="text-primary">FITNESS</span></span>
+          </a>
+        </Link>
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="text-white">
