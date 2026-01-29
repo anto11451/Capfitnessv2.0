@@ -58,9 +58,24 @@ export default function Privacy() {
             data for fitness-related services.
           </p>
 
-          <h2 className="text-2xl font-semibold text-primary">6. Contact Us</h2>
+          <h2 className="text-2xl font-semibold text-primary">6. Grievance Officer</h2>
           <p>
-            For questions or requests: <br />
+            In accordance with the Digital Personal Data Protection Act (DPDPA), 2023, the following 
+            Grievance Officer has been appointed to address any concerns or complaints regarding 
+            data privacy:
+          </p>
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 mt-2">
+            <p><strong className="text-white">Name:</strong> Anto Mathew</p>
+            <p><strong className="text-white">Email:</strong> <span className="text-primary">anto.anand111@gmail.com</span></p>
+          </div>
+          <p className="mt-2">
+            You may contact the Grievance Officer for any queries, complaints, or requests related 
+            to your personal data. We will respond to your concerns within 30 days.
+          </p>
+
+          <h2 className="text-2xl font-semibold text-primary">7. Contact Us</h2>
+          <p>
+            For general questions or requests: <br />
             📧 <span className="text-primary">anto.anand111@gmail.com</span>
           </p>
         </div>
