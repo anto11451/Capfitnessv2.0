@@ -419,3 +419,31 @@ export async function getUserById(userId: string): Promise<UserProfile | null> {
     return null;
   }
 }
+
+// Verify user age for password reset
+export async function verifyUserAge(email: string, age: number): Promise<{ ok: boolean; user_id?: string }> {
+  try {
+    const result = await apiCall<{ ok: boolean; user_id?: string }>('verifyUserAge', {
+      email,
+      age,
+    });
+    return result;
+  } catch (error) {
+    console.error('Verify age failed:', error);
+    return { ok: false };
+  }
+}
+
+// Reset user password
+export async function resetPassword(email: string, newPassword: string): Promise<{ ok: boolean }> {
+  try {
+    const result = await apiCall<{ ok: boolean }>('resetPassword', {
+      email,
+      new_password: newPassword,
+    });
+    return result;
+  } catch (error) {
+    console.error('Reset password failed:', error);
+    return { ok: false };
+  }
+}
