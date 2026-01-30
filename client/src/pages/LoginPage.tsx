@@ -1,8 +1,8 @@
-import { login as sheetLogin } from "@/lib/googleSheetsApi";
+import { login as sheetLogin, verifyUserAge, resetPassword } from "@/lib/googleSheetsApi";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
-import { Mail, Lock, LogIn, ArrowLeft } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Mail, Lock, LogIn, ArrowLeft, KeyRound, Calendar, Eye, EyeOff, X, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import capLogo from "@/assets/cap-logo.png";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,118 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Forgot password states
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotStep, setForgotStep] = useState<'email' | 'verify' | 'reset' | 'success'>('email');
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotAge, setForgotAge] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  const resetForgotPassword = () => {
+    setShowForgotPassword(false);
+    setForgotStep('email');
+    setForgotEmail("");
+    setForgotAge("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleVerifyAge = async () => {
+    if (!forgotEmail || !forgotAge) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and age",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const result = await verifyUserAge(forgotEmail, parseInt(forgotAge));
+      if (result.ok) {
+        setForgotStep('reset');
+        toast({
+          title: "Verified!",
+          description: "Age verified successfully. You can now set a new password.",
+        });
+      } else {
+        toast({
+          title: "Verification Failed",
+          description: "The age you entered does not match our records.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to verify. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Missing Password",
+        description: "Please enter and confirm your new password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords Don't Match",
+        description: "Please make sure both passwords are the same",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password Too Short",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const result = await resetPassword(forgotEmail, newPassword);
+      if (result.ok) {
+        setForgotStep('success');
+        toast({
+          title: "Password Updated!",
+          description: "Your password has been changed successfully.",
+        });
+      } else {
+        toast({
+          title: "Reset Failed",
+          description: "Failed to update password. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
@@ -153,9 +265,18 @@ const handleSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="text-foreground">
+                    Password
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-xs text-primary hover:text-primary/80 hover:underline transition-colors"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
@@ -202,6 +323,177 @@ const handleSubmit = async (e: React.FormEvent) => {
           </CardContent>
         </Card>
       </motion.div>
+
+      <AnimatePresence>
+        {showForgotPassword && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={(e) => e.target === e.currentTarget && resetForgotPassword()}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card border border-primary/20 rounded-2xl p-6 w-full max-w-md relative"
+            >
+              <button
+                onClick={resetForgotPassword}
+                className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <KeyRound className="w-8 h-8 text-primary" />
+                </div>
+                <h2 className="text-2xl font-display font-bold text-foreground">
+                  {forgotStep === 'success' ? 'Password Changed!' : 'Reset Password'}
+                </h2>
+                <p className="text-muted-foreground text-sm mt-2">
+                  {forgotStep === 'email' && "Enter your email and verify your age"}
+                  {forgotStep === 'reset' && "Create your new password"}
+                  {forgotStep === 'success' && "You can now login with your new password"}
+                </p>
+              </div>
+
+              {forgotStep === 'email' && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-email">Email Address</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="forgot-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        className="pl-11 bg-background/50 border-border/50 focus:border-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-age">Confirm Your Age</Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="forgot-age"
+                        type="number"
+                        placeholder="Enter your age"
+                        value={forgotAge}
+                        onChange={(e) => setForgotAge(e.target.value)}
+                        className="pl-11 bg-background/50 border-border/50 focus:border-primary"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter the age you registered with to verify your identity
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleVerifyAge}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5"
+                    disabled={forgotLoading}
+                  >
+                    {forgotLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        Verifying...
+                      </div>
+                    ) : (
+                      "Verify & Continue"
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {forgotStep === 'reset' && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="new-password"
+                        type={showNewPassword ? "text" : "password"}
+                        placeholder="Enter new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="pl-11 pr-11 bg-background/50 border-border/50 focus:border-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm new password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="pl-11 pr-11 bg-background/50 border-border/50 focus:border-primary"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleResetPassword}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5"
+                    disabled={forgotLoading}
+                  >
+                    {forgotLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        Updating Password...
+                      </div>
+                    ) : (
+                      "Update Password"
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {forgotStep === 'success' && (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
+                      <CheckCircle className="w-10 h-10 text-green-500" />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={resetForgotPassword}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold py-5"
+                  >
+                    Back to Login
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
