@@ -11,7 +11,6 @@ export default function Pricing() {
   const [, setLocation] = useLocation();
 
   const plans = [
-    const plans = [
 {
 name: "Standard Diet Plan",
 price: "₹799",
